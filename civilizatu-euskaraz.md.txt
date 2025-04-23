@@ -1,0 +1,1247 @@
+# PRAKTIKA: CIVilizaTu WEB APLIKAZIOAREN GARAPENA
+
+## 1. DESKRIBAPEN OROKORRA
+
+Praktika honetan Civilization joko klasikoan inspiratutako txandakako estrategia joko baten web aplikazioa garatuko da. **Proiektu hau guztiz hezkuntzarakoa da** eta ez du marka erregistratuen aurka jotzeko asmorik. Jokoaren mekanika Civilization joko klasikoaren inspiraziotik dator, interfaze grafikoa 2D grafiko originalak erabiliz diseinatuko da. Jokoak erabiltzaileei erregistratzeko, partidak kudeatzeko eta GroQ hizkuntz ereduekin elikatutako adimen artifizialaren aurka lehiatzeko aukera emango die.
+
+Proiektua 3 pertsonako talde batek garatzeko diseinatuta dago, bakoitzak rol espezifiko batekin: Frontend Developer, Backend Developer eta AI/ML Specialist. Egitura honek lanaren banaketa orekatua ahalbidetuko du eta sistemaren osagai ezberdinen garapen paraleloa erraztuko du.
+
+## 2. HELBURUAK
+
+* JavaScript/TypeScript-eko frontend eta Python-eko backend-arekin web aplikazio funtzional bat garatzea
+* Txandakako estrategia joko klasikoetan inspiratutako interfaze grafiko bat inplementatzea
+* Txandakako joko mekanika original bat sortzea, nahiz eta joko klasikoetan inspiratuta egon
+* GroQ adimen artifizialak integratzea aurkari gisa
+* Web garapena, API-ak, eta bezero-zerbitzari komunikazioaren ezagutzak aplikatzea
+* IA generatiboa erabiltzea baliabideak sortzeko (irudiak, mapak, soinuak) helburu hezigarrietarako soilik
+
+## 3. FUNTZIONALITATE ESKAKIZUNAK
+
+### 3.1. Erabiltzaile eta Partida Sistema
+
+#### Erabiltzaileen Kudeaketa
+* Erabiltzaile erregistro eta autentikazio sistema
+* Kredentzialen biltegiratze segurua
+* Oinarrizko erabiltzaile profilak
+* Joko saio iraunkorrak
+
+#### Partiden Kudeaketa
+* Partidak eskuz gordetzea edozein momentutan
+* Txanda bakoitzaren amaieran auto-gordetzeko sistema
+* Gordetako partidak kargatzea
+* Erabiltzaileko partida erabilgarriak zerrendatzea
+* Partidak JSON formatuan gordetzea
+* Eszenatokien aukeraketa partida berri bat hastean
+
+### 3.2. Joko Sistema
+
+#### Txanden Mekanika
+* Jokoa txandaka garatuko da giza jokalariaren eta IA-ren artean txandakatuz
+* Txanda bakoitzak hauek barneratuko ditu:
+  - Ekoizpen fasea (hiriek ekoiztu dezaketena aukeratzea)
+  - Ikerketa fasea (garatu beharreko teknologiak aukeratzea)
+  - Mugimendu fasea (unitateen mugimendua mapan zehar)
+  - Diplomazia fasea (beste zibilizazioekin negoziatzea)
+  - Eraikitze fasea (hiriak eta azpiegiturak garatzea)
+  - Txanda amaiera fasea (baliabide ekoizpena, hiritar hazkundea)
+
+#### Eszenatokiak
+* Gutxienez eszenatoki jokagarri oso bat inplementatu behar da
+* Eszenatokiak hauek izan behar ditu:
+  - Lurralde ezberdinak dituen mapa
+  - Hiriak
+  - Baliabideak
+  - Elementu bereziak (teknologiak, baliabide naturalak, etab.)
+  - Fog of War (esploratu gabeko eremuak ezkutuan mantentzen dira)
+
+#### Zibilizazioa
+* Jokalari bakoitzak zibilizazio bat hautatu behar du
+* Zibilizazio bakoitzak ezaugarri hauek ditu:
+  - Estatistika propioak (teknologia, kultura, diplomazia, militarra)
+  - Abantaila bereziak (adibidez, zientzian edo ekoizpenean)
+  - Unitate bereziak
+  - Hasierako teknologiak
+
+#### Ekonomia eta Baliabideak
+* Gutxienez ondorengo baliabideak dituen baliabide sistema:
+  - Elikagaiak (hiritar hazkundea)
+  - Ekoizpena (eraikuntza)
+  - Zientzia (teknologia)
+  - Urrea (mantentzea eta merkataritza)
+* Txanda amaierako baliabide kalkuluak honetan oinarrituak:
+  - Kontrolatutako hiriak
+  - Lurralde hobetzeak
+  - Merkataritza bideak
+
+### 3.3. Mapako Elementuak
+
+#### Hiriak
+* Hiri kudeaketa interfazea hau duena:
+  - Eraiki daitezkeen eraikuntzak (gutxienez 5 mota ezberdin)
+  - Unitate sorrera (gutxienez 3 unitate mota)
+  - Baliabideen eta ekoizpenaren informazioa
+  - Hazkundearen kudeaketa
+
+#### Baliabide Naturalak
+* Gutxienez 3 baliabide natural mota ezberdin:
+  - Minerala (ekoizpenerako)
+  - Ganadua (elikagaietarako)
+  - Luxuzko baliabideak (zorionerako)
+* Baliabide natural bakoitzak txandako kantitate finko bat eman behar du
+
+#### Beste Elementuak
+* Gutxienez 2 elementu mota gehigarri:
+  - Aintzinak (teknologia bostaren edo abantailak)
+  - Barbaro kanpamenduak (mehatxuak)
+  - Hiriburu naturalak (berritze puntuak)
+  - Luxuzko baliabideak (kultura)
+
+### 3.4. Borroka
+* Txandakako borroka sistema bat inplementatzea
+* 1. Aukera (Gomendagarria): Unitate borrokak mapa nagusian
+  - Unitatearen indarra, defentsa eta bizitza
+  - Unitate mota bakoitzak bere abantailak
+  - Lurralde mota ezberdinek eragin estrategikoa
+* 2. Aukera (Minimoa): Borroka simulazioa
+  - Kalkulua automatikoa estatistiketan oinarrituta
+  - Emaitzaren eta baja kopuruaren laburpena erakustea
+
+### 3.5. Adimen Artifiziala
+
+* GroQ modeloen bitartez IA aurkari bat implementatzea
+* IA-k ondorengoa egin beharko du:
+  - Jokoaren egoeraren informazioa JSON formatuan jaso
+  - Erabaki estrategikoak hartu (mugimendua, borroka, kudeaketa)
+  - Jokoaren arauak errespetatu
+  - Jokalariari erronka egoki bat eskaini
+* Hainbat modeloentzako backup sistema:
+  - Hainbat GroQ endpoint konfiguratzea
+  - Aldaketa automatikoa 429 erroreetan (token muga)
+  - Ereduen artean aldatzean testuingurua mantentzea
+
+### 3.6. Trikimailu Modua
+
+* Probak errazteko trikimailu kode sistema bat implementatzea
+* Jokalariak Ctrl+Tab sakatuz txat leihoa aktibatu dezake mapan
+* Ondorengo kodeak sartzeak berehalako efektuak izango ditu:
+  - **eraiki_guztiak** - Hautatutako hirian eraikin guztiak eraikitzea
+  - **berehalako_porrota** - Partida berehala galtzea
+  - **berehalako_garaipena** - Partida berehala irabaztea
+  - **tanke_eskuadroia** - Hautatutako hiriak 5 tanke unitate jasotzen ditu
+  - **teknologia_aurreratua** - Hautatutako zibilizazioak teknologia aurreratu bat jasotzen du
+  - **maila_igo** - Hautatutako hiriak maila bat igotzen du
+  - **baliabide_maximoak** - Baliabide guztien maila maximoa lortzen da
+  - **mugimendu_infinitua** - Unitate guztientzako mugimendu mugagabea
+  - **zorion_maximoa** - Hautatutako hiriak zorion maximoa lortzen du
+  - **mapa_agertu** - Mapa osoa agerraraztea (fog of war kentzea)
+* Kodeak log batean erregistratu behar dira arazketa errazteko
+  - Produkzio ingurunean kodeak desaktibatzeko aukera egon behar da
+
+---
+
+## Angular: Estructura de Componentes Recomendada
+
+- **core/**: Servicios globales (auth, api, game-state, ia, etc.)
+- **shared/**: Componentes reutilizables (botones, modales, iconos, etc.)
+- **auth/**: Registro, login, perfil de usuario
+- **game/**
+  - **map/**: Vista principal del mapa y elementos del mapa
+  - **city/**: Vista y gestión de ciudades
+  - **combat/**: Vista de combate
+  - **management/**: Gestión de tecnologías, recursos, diplomacia, etc.
+  - **ai-turn/**: Visualización de la IA
+  - **cheat-mode/**: Interfaz de trucos
+  - **game-menu/**: Menú de partida, guardar/cargar, selección de escenario
+- **layout/**: Estructura general, navegación, header, footer
+
+Ejemplo de árbol de componentes:
+
+app/
+  core/
+  shared/
+  auth/
+    login/
+    register/
+    profile/
+  game/
+    map/
+      map-view/
+      tile/
+      resource-icon/
+      fog-of-war/
+    city/
+      city-view/
+      city-buildings/
+      city-units/
+      city-growth/
+    combat/
+      combat-view/
+      combat-summary/
+    management/
+      tech-tree/
+      resource-panel/
+      diplomacy-panel/
+    ai-turn/
+      ai-turn-view/
+      ai-action-sequence/
+      ai-summary-panel/
+    cheat-mode/
+      cheat-chat/
+      cheat-log/
+    game-menu/
+      save-game/
+      load-game/
+      scenario-select/
+      game-settings/
+  layout/
+    header/
+    footer/
+    sidebar/
+
+Cada carpeta puede ser un módulo Angular. Los servicios globales van en `core/`, componentes reutilizables en `shared/`, y el resto según funcionalidad.
+
+## 4. ESKAKIZUN TEKNIKOAK
+
+**GARRANTZITSUA!**: Talde bakoitzari frontend eta backend teknologia konbinazio espezifiko bat esleituko zaio. **Guztiz derrigorrezkoa da bakarrik esleitutako teknologiak erabiltzea**. Betekizun hau betetzen ez duten proiektuak **EZ DIRA EBALUATUKO**, haien funtzionalitatea edo kalitatea edozein izanda ere.
+
+### 4.1. Frontend
+
+* Esleitutako frontend teknologia hauetako bat izango da:
+  - React
+  - Angular
+  - Vue
+  - Svelte
+* TypeScript erabiltzea gomendatzen da kodearen sendotasuna hobetzeko
+* Node.js ingurunea dependentziak eta build kudeatzeko
+* Ondorengo bisten inplementazioa:
+  - Mapa nagusiaren bista
+  - Hiriaren bista
+  - Borroka bista (1. aukera inplementatzekotan)
+  - Kudeaketa interfazeak (teknologiak, baliabideak, etab.)
+* Txandakako estrategia jokoetan inspiratutako interfaze grafiko originala:
+  - Estilo bisual koherentea (panelak, ikonoak, etab.)
+  - 2D grafiko originalak edo IA bidez sortuak (etiketa egokiarekin)
+  - Oinarrizko animazioak
+
+### 4.2. IA-ren Txandaren Bistaratze Sistema
+
+* IA-ren txandarako bistaratze modua bi aukera inplementatuekin:
+  - **1. Aukera - Bista aldaketa**: IA-ren txanda iritsitakoan, jokalariaren bista aldi baterako IA-ren bistagatik ordezkatzen da, ekintzak denbora errealean erakutsiz. IA-ren txanda amaitzean, jokalariaren bistara itzultzen da.
+  - **2. Aukera - Pantaila zatitua**: IA-ren txandan, pantaila bi zatitan banatzen da:
+    * Ezkerraldea: Jokalariaren bista (estatikoa)
+    * Eskuinaldea: IA-ren bista (dinamikoa) mugimendua eta ekintzak erakutsiz
+* IA-ren ekintzen bistaratze argi eta zehatza:
+  - Unitateen mugimenduak ibilbidearen adierazle bisualekin
+  - IA-k hasitako borrokak eta emaitza ikusgaiak
+  - Eraikuntzak eta errekrutatzeak hirietan
+  - Baliabideen eta objektuen bilketa
+* IA-ren ekintzen bistaratze abiaduraren kontrola (normal, azkarra, bat-batekoa)
+* Zehaztasuneko bistaratze hau aktibatu/desaktibatzeko aukera
+
+### 4.3. Backend
+
+* Esleitutako backend teknologia hauetako bat izango da:
+  - Flask
+  - FastAPI
+* REST API inplementazioa honetarako:
+  - Jokoaren egoeraren kudeaketa
+  - Autentikazioa eta erabiltzaile kudeaketa
+  - Partidak gordetzea eta kargatzea
+  - GroQ modeloekin komunikazioa
+* Autentikazio sistema liburutegi ezarrietan oinarritua:
+  - JWT autentikazio tokenetarako
+  - OAuth2 FastAPI/Flask luzapenen bidez
+  - Auth0, Firebase Authentication, etab. bezalako zerbitzuak erabiltzeko aukera
+
+### 4.4. LLM Deietarako Osagaia
+
+* GroQ modeloekin interakziorako modulu espezifikoa
+* Funtzionalitateak:
+  - Jokoaren deskribapena duten prompt-en prestaketa
+  - Uneko egoera JSON formatuan bidaltzea
+  - Erantzunen kudeaketa
+  - Erroreen kudeaketa eta ordezko modeloetara aldatzea
+  - Erabilitako token kopuruaren kontrola
+
+### 4.5. Osagaien arteko Komunikazioa
+
+* Frontend → Backend:
+  - HTTP REST eskaeren bidezko komunikazioa
+  - JSON formatua datuen trukerako
+  - Jokoko ekintza guztietarako endpoint-ak (mugimendua, borroka, kudeaketa)
+
+* Backend → LLM:
+  - GroQ API-ra deiak
+  - Jokoaren deskribapena eta arauak dituen hasierako prompt-a
+  - IA-rentzat ikusgai dagoen egoeraren eguneratzea (Fog of War errespetatuz)
+  - Erantzunak joko ekintzetara itzultzeko prozesatzea
+
+* LLM → Backend:
+  - Erantzunak JSON formatuan jasotzea
+  - Proposatutako ekintzen balidazioa
+  - Ekintza baliozkoen inplementazioa
+
+* Backend → Frontend:
+  - Ekintzen emaitzak dituzten HTTP erantzunak
+  - Gertaeren jakinarazpenak (WebSockets aukeran)
+  - Jokoaren egoeraren eguneraketak
+
+## 5. SISTEMAREN ARKITEKTURA
+
+### 5.1. Osagaiak
+
+Sistema lau osagai nagusik osatuko dute, bakoitza bere Docker edukiontzi propioan:
+
+1. **Frontend**: React/Angular/Vue/Svelte-n oinarritutako web aplikazioa
+2. **Backend**: Flask/FastAPI-n REST API-a
+3. **MongoDB datu-basea**: Erabiltzaileen, partiden eta eszenatokien biltegiratzerako
+4. **IA Zerbitzua**: GroQ modeloetarako deiak kudeatzeko osagaia
+
+### 5.2. Osagaien arteko Komunikazioa
+
+* Frontend → Backend:
+  - HTTP REST eskaeren bidezko komunikazioa
+  - JSON formatua datuen trukerako
+  - Jokoko ekintza guztietarako endpoint-ak (mugimendua, borroka, kudeaketa)
+
+* Backend → MongoDB:
+  - Erabiltzaile datuen biltegiraketa
+  - Gordetako partiden eta auto-gordetzeen iraunkortasuna
+  - Eszenatoki erabilgarrien kudeaketa
+
+* Backend → IA Zerbitzua:
+  - IA-ren erabakiak lortzeko eskaerak
+  - Eredu ezberdinen arteko aldaketen kudeaketa
+  - Jokoaren testuinguruaren eguneratzea
+
+* IA Zerbitzua → GroQ:
+  - GroQ kanpoko API-ra deiak
+  - Tokenen eta API-aren mugaketen kudeaketa
+  - Erantzunen prozesatzea
+
+## 6. HEDAPENA
+
+* Docker bidezko edukiontzi osoa:
+  - Frontend-erako Dockerfile
+  - Backend-erako Dockerfile
+  - Orkestraziorako Docker Compose
+
+* Hedapen eskakizunak:
+  - Ingurune aldagaien bidezko konfigurazioa
+  - Datuen iraunkortasuna (Docker bolumenak)
+  - Hedapen prozesurako dokumentazio argia
+
+* Exekuzio jarraibideak:
+  - Biltegi klonaketa
+  - Ingurune aldagaiak konfiguratu (.env)
+  - `docker compose up --build` exekutatu
+  - Aplikaziora nabigatzaile bidez sartu
+
+## 7. IA BIDEZ SORTUTAKO BALIABIDEAK
+
+* IA generatiboa erabiltzea honetarako:
+  - Unitateen eta hirien irudiak
+  - Maparako lursailak
+  - Baliabide eta eraikinen ikonoak
+  - Oinarrizko soinu efektuak (aukeran)
+  - Atzeko musika (aukeran)
+
+* Sortze prozesuaren dokumentazioa:
+  - Erabilitako prompt-ak
+  - Erabilitako tresnak
+  - Aplikatutako post-prozesatzea
+
+### 7.1. IA Bidez Edukia Sortzeko Baliabide Gomendatuak
+
+Kostu handiegiak sortu gabe baliabideak sortzea errazteko, ondorengo tresnak gomendatzen dira. **Garrantzitsua da IA bidez sortutako baliabide guztiek adierazpen argi bat eramatea, helburu hezigarrietarako soilik IA bidez sortu direla adieraziz**, bai metadatuetan zein proiektuaren dokumentazioan.
+
+#### IA bidez sortutako baliabideentzako adierazpen beharrezkoak
+* "IA bidez sortua Zibilizazioa hezkuntza proiekturako" esaldia gehitzea hemen:
+  - Fitxategi bakoitzaren metadatuetan ahal denean
+  - Irudien beheko eskuin aldean (tamaina txikian baina irakurgarria)
+  - Sortutako baliabide guztien zerrendarekin dokumentazio teknikoan
+  - Baliabide hauek erabiltzen direnean kodean iruzkinekin
+* Audio fitxategientzat, ohar labur bat README-n eta dokumentazioan jartzea
+* Karpeta bereizi bat mantentzea (adib: `/assets/ai-generated/`) IA bidez sortutako baliabide guztientzat
+
+#### Irudiak eta Grafikoak
+* **Stable Diffusion** (inplementazio lokala edo Google Colab doakoaren bidez)
+* **Leonardo.ai** (plan doakoa, sortze-kopuru mugatuekin)
+* **Midjourney** (oinarrizko harpidetza hilabetez, taldean partekatuta)
+* **DALL-E mini / Craiyon** (doakoa, kalitate baxuagokoa)
+* **Bing Image Creator** (doakoa eguneko muga batekin)
+* **RunwayML** (bertsio doakoa mugak dituena)
+
+#### Sprite-ak eta Lursailak
+* **PixelMe** (sprite pixelatuak sortzeko)
+* **Pixelicious** (irudiak pixel art estilora eraldatzeko)
+* **Pixelorama** (sortutako irudiak fintzeko doako editorea)
+
+#### Musika eta Soinu Efektuak
+* **AIVA** (bertsio doakoaren muga batzuekin)
+* **Mubert** (oinarrizko soinu efektuetarako plan doakoa)
+* **Soundraw** (proba epea)
+* **Riffusion** (Stable Diffusion-en oinarritutako musika sorkuntza, kode irekikoa)
+* **FreeSound** (lizentzia libreko soinu efektuen liburutegia)
+
+#### Bihurketa eta Post-prozesatzea
+* **GIMP** (irudiak doitzeko doako editorea)
+* **Inkscape** (ikonoetarako doako editore bektoriala)
+* **Audacity** (audioa editatzeko doako programa)
+
+Tresna hauek guztiek aukera doakoak edo kostu baxukoak eskaintzen dituzte, proiektuaren helburua betetzeko nahikoak direnak. Taldeak baliabideen beharrak planifikatzea eta sortzea aldi zehatzetan kontzentratzea gomendatzen da, plataformen doako mugak ahal den gehiena aprobetxatzeko.
+
+## 8. LANAREN ANTOLAKETA
+
+### 8.1. Rol eta Erantzukizunen Banaketa
+
+3 pertsonako talde bat izanik, ondorengo rol banaketa gomendatzen da:
+
+#### 1. Rola: Frontend Developer
+* Erantzukizunak:
+  - Erabiltzaile-interfazearen inplementazio osoa
+  - Diseinu bisuala Civilization-en oinarrituta
+  - Backend-aren API-arekin integrazioa
+  - Bista ezberdinen inplementazioa (mapa, hiria, borroka)
+  - Erabiltzaile eta partida kudeaketarako interfazea
+  - IA bidez baliabide bisualen sortzea eta egokitzea
+  - IA-ren txandaren bistaratze sistemaren inplementazioa
+  - Trikimailu moduaren interfazearen garapena
+
+#### 2. Rola: Backend Developer
+* Erantzukizunak:
+  - REST API-aren diseinua eta inplementazioa
+  - Jokoaren logika (arauak, txandak, borroka)
+  - Baliabide eta jokoaren egoera kudeatzeko sistema
+  - Autentikazioa eta erabiltzaile kudeaketa
+  - MongoDB-rekin integrazioa
+  - Docker-ekin hedapenaren konfigurazioa
+  - Trikimailu moduaren logikarako inplementazioa
+
+#### 3. Rola: AI/ML Specialist
+* Erantzukizunak:
+  - GroQ modeloekin integrazioa
+  - IA-rentzako prompt eta datu formatuaren diseinua
+  - Hainbat modelo eta ordezko sistemaren kudeaketa
+  - Edukiaren sortzea (mapak, unitateak) IA bidez
+  - Partidak gorde/kargatzeko datu egitura
+  - Sistemaren dokumentazioa eta erabiltzaile manuala
+  - IA-ren portaera optimizatzea joko estrategiak simulatzeko
+
+### 8.2. Garapen Plan Gomendatua
+
+| Astea | 1. Rola (Frontend) | 2. Rola (Backend) | 3. Rola (AI/ML) |
+|--------|------------------|-----------------|---------------|
+| 1 | Hasierako UI diseinua eta autentikazioa | API eta datu ereduaren diseinua | GroQ-ren ikerketa |
+| 2 | Erregistro/login inplementazioa | MongoDB eta autentikazioa konfiguraketa | JSON partiden formatu diseinua |
+| 3 | Mapa bistaren inplementazioa | Oinarrizko joko logika | Prompt-en diseinua |
+| 4 | Hiri bista | Partida kudeaketa (gorde/kargatu) | GroQ-rekin integrazioa |
+| 5 | Borroka bista eta trikimailu sistema | IA zerbitzuarekin integrazioa | Multi-modelo sistema |
+| 6 | IA txandaren bistaratzea | Docker hedapena | Dokumentazioa |
+
+### 8.3. Taldearen Koordinazioa
+
+Taldekideen artean koordinazio mekanismoak ezartzea funtsezkoa da:
+
+* Asteko jarraipen bilerak
+* Proiektu kudeaketa tresnen erabilera (Trello, Jira, etab.)
+* Git bidezko bertsio kontrola eta integrazio pull request-en bidez
+* Erabaki teknikoen dokumentazio partekatua
+* Hasieran adostutako kode estandarrak eta konbentzioak
+
+## 9. ENTREGAGARRIAK
+
+1. Iturburu kode osoa Git biltegian
+2. Dokumentazio teknikoa:
+   - Sistemaren arkitektura
+   - API endpoint-ak
+   - Datu eredua
+   - GroQ-rekin integrazioa
+   - Gordetako partiden egitura
+   - **IA bidez sortutako baliabideen inbentario zehatza** hauekin:
+     - Erabilitako tresna
+     - Aplikatutako prompt-a
+     - Sortze data
+     - Proiektuan erabilera
+3. Originaltasun eta erabilera hezigarriaren adierazpena (proiektua hezigarria soilik dela eta ez komertziala baieztatzea)
+4. Erabiltzaile manuala
+5. Proiektuaren aurkezpena
+6. Hedapenerako Docker fitxategiak (4 edukiontzi)
+7. Proiektuaren memoria hauek dituela:
+   - Kide bakoitzaren ekarpena
+   - Izandako erronkak eta konponbideak
+   - Diseinu eta inplementazio erabakiak
+
+## 10. EBALUAZIO IRIZPIDEAK
+
+### 10.1. Ezinbesteko Eskakizuna
+
+**ATENZIOA!**: Praktika gainditzeko, **APLIKAZIOAK ZUZEN FUNTZIONATU BEHAR DU** eta **ESLEITUTAKO TEKNOLOGIEKIN GARATUTA EGON BEHAR DU**. Hauek dira eskakizun guztiz ezinbesteko eta ez negoziagagarriak. Aplikazioak ez badu funtzionatzen proba ingurunean zehaztutako hedapen prozeduraren bidez (docker compose up) edo esleitutako teknologiez bestelakoak erabili badira, praktika automatikoki suspenditurik geldituko da kodearen edo dokumentazioaren kalitatea edozein izanda ere.
+
+"Zuzen funtzionatzea" horrela ulertzen da:
+- Aplikazioa errorerik gabe hasten da
+- Gutxienez eszenatoki oso bat jokatzea posible da
+- Txanda, borroka eta baliabide kudeaketa mekanikak zehaztapenei jarraiki funtzionatzen dute
+- GroQ-rekin integrazioak egoki erantzuten du
+- Ez daude joko esperientzia eragozten duten errore kritikorik
+
+### 10.2. Talde Ebaluazioa (70%)
+
+| Irizpidea | Portzentajea |
+|----------|------------|
+| Funtzionalitate osoa | 25% |
+| Kodearen kalitatea | 15% |
+| GroQ-rekin integrazioa | 10% |
+| Interfaze grafikoa | 10% |
+| Hedapen zuzena | 5% |
+| Dokumentazioa | 5% |
+
+### 10.3. Banakako Ebaluazioa (30%)
+
+| Irizpidea | Portzentajea |
+|----------|------------|
+| Kodera ekarpena (commit-ak) | 10% |
+| Banakako lanaren kalitatea | 10% |
+| Esleitutako erantzukizunen betetzea | 5% |
+| Aurkezpenean parte-hartzea | 5% |
+
+Taldean parekoen arteko ebaluazioa egingo da banakako ekarpenak balidatzeko.
+
+### 10.4. Lege eta Etika Alderdiak
+
+* **Erabilera hezigarria**: Proiektu honek helburu hezigarria soilik du, merkataritza helbururik gabe.
+* **Edukiaren originaltasuna**:
+  - Joko komertzialetatik datozen aktibo grafiko, audio edo kode erabilpena debekatuta dago.
+  - Eduki guztia originala, domeinu publikokoa edo IA bidez sortua izan behar da.
+* **IA bidez sortutako edukia**:
+  - IA bidez sortutako eduki guztia argi etiketatuta egon behar da.
+  - Erabilitako prompt-en erregistro zehatza mantendu behar da.
+  - IA bidez sortutako irudiek ur-marka edo aipamen bisual diskretua izan behar dute.
+* **Egilearen aitormena**:
+  - Hirugarrenen liburutegien erabilera egoki aitortu behar da.
+  - Domeinu publikoko baliabideen erabilera dokumentatu behar da beren lizentziekin.
+* **Gardentasuna**:
+  - Dokumentazioak baliabide guztien jatorriari buruzko atal espezifiko bat izan behar du.
+  - Argi adierazi behar da jokoa txandakako estrategia joko klasikoetan "inspiratuta" dagoela, marka erregistratuak aipatu gabe.
+
+Alderdi hauek ez betetzeak proiektuaren ebaluazioan eragina izan dezake.
+
+## 11. ERANSKINA: KOMUNIKAZIO ETA ARKITEKTURAREN DESKRIBAPEN TEKNIKOA
+
+### 11.1. Sistemaren Arkitektura Orokorra
+
+```
++------------------+       +-----------------+       +------------------+
+|                  |       |                 |       |                  |
+|     FRONTEND     |<----->|     BACKEND     |<----->|   IA ZERBITZUA   |
+|                  |  HTTP |                 |  HTTP |                  |
+| (React/Angular/  |  REST | (Flask/FastAPI) |       | (GroQ kudeatzail)|
+|  Vue/Svelte)     |       |                 |       |                  |
++------------------+       +-----------------+       +------------------+
+                                   ^ |                       |
+                                   | v                       v
+                           +----------------+        +----------------+
+                           |                |        |                |
+                           |    MONGODB     |        |   GROQ MODELS  |
+                           |                |        |                |
+                           | (Erabiltzaile, |        |    (LLMs)      |
+                           |  Partidak)     |        |                |
+                           +----------------+        +----------------+
+```
+
+### 11.2. Frontend-Backend Komunikazioa
+
+```
++----------------+       HTTP Eskaera        +----------------+
+|                |  ---------------------->  |                |
+|    Frontend    |                           |    Backend     |
+|    (Node.js)   |  <----------------------  |    (Python)    |
+|                |       HTTP Erantzuna      |                |
++----------------+                           +----------------+
+```
+
+#### IA Txandaren Bistaratzeko Komunikazioa
+
+```
++------------------+                               +------------------+
+|                  |  1. POST /api/game/endTurn    |                  |
+|     Frontend     |  ----------------------->     |     Backend      |
+| (React/Vue/etc.) |                               |   (FastAPI)      |
+|                  |  2. IA ekintzak prozesatzen   |                  |
+|                  |                               |                  |
+|                  |  3. Ekintzen eta egoeren      |                  |
+|                  |     zerrenda sekuentziala     |                  |
+|                  |     itzultzen du              |                  |
+|                  |  <-----------------------     |                  |
+|                  |                               |                  |
+|   IA txandaren   |  4. Ekintzak sekuentzialki    |                  |
+|   bistaratze     |     erreproduzitzen ditu      |                  |
+|   zatitua        |     (animazioa)               |                  |
++------------------+                               +------------------+
+```
+
+#### Komunikazio fluxua:
+
+1. **Autentikazioa eta Erabiltzaile Kudeaketa**:
+   - Erabiltzaile berriaren erregistroa (POST /api/auth/register)
+   - Erabiltzaile login-a (POST /api/auth/login)
+   - Erabiltzaile profila lortzea (GET /api/auth/profile)
+   - Profila eguneratzea (PUT /api/auth/profile)
+
+2. **Partiden Kudeaketa**:
+   - Gordetako partidak zerrendatzea (GET /api/games)
+   - Partida berria sortzea (POST /api/games)
+   - Uneko partida gordetzea (POST /api/games/{gameId}/save)
+   - Gordetako partida kargatzea (GET /api/games/{gameId})
+   - Eszenatoki erabilgarriak zerrendatzea (GET /api/scenarios)
+
+3. **Jokalariaren txandan**:
+   - Frontend-ak jokalariaren ekintzak bidaltzen ditu (POST /api/games/{gameId}/action)
+   - Backend-ak ekintzak balidatzen eta prozesatzen ditu
+   - Backend-ak emaitza eta egoera berria itzultzen du
+
+4. **Jokalariaren txanda amaieran**:
+   - Frontend-ak txanda amaiera eskaera bidaltzen du (POST /api/games/{gameId}/endTurn)
+   - Backend-ak txanda amaiera prozesatzen du (baliabide kalkulua, etab.)
+   - Backend-ak uneko egoera gordetzen du (auto-gordetzea)
+   - Backend-ak IA-ren txanda hasten du
+
+5. **Trikimailu Sistema**:
+   - Frontend-ak Ctrl+Tab konbinazioa detektatzen du eta txat interfazea erakusten du
+   - Frontend-ak trikimailu kodea bidaltzen du (POST /api/games/{gameId}/cheat)
+   - Backend-ak kodea balidatzen du eta dagozkion efektuak aplikatzen ditu
+   - Backend-ak jokoaren egoera berria itzultzen du aplikatutako aldaketekin
+
+### 11.3. Backend-MongoDB Komunikazioa
+
+```
++----------------+      MongoDB Driver       +----------------+
+|                |  ---------------------->  |                |
+|    Backend     |                           |    MongoDB     |
+|    (Python)    |  <----------------------  |                |
+|                |       Kontsulta Emaitzak  |                |
++----------------+                           +----------------+
+```
+
+#### Datu-basearen Egitura:
+
+1. **Erabiltzaile Bilduma**:
+   ```json
+   {
+     "_id": "ObjectId",
+     "username": "string",
+     "email": "string",
+     "password_hash": "string",
+     "created_at": "date",
+     "last_login": "date"
+   }
+   ```
+
+2. **Partida Bilduma**:
+   ```json
+   {
+     "_id": "ObjectId",
+     "user_id": "ObjectId",
+     "name": "string",
+     "scenario_id": "string",
+     "created_at": "date",
+     "last_saved": "date",
+     "is_autosave": "boolean",
+     "cheats_used": ["string"],
+     "game_state": {
+       "turn": "number",
+       "player": {
+         "cities": [...],
+         "units": [...],
+         "technologies": [...],
+         "resources": {...}
+       },
+       "ai": {
+         "cities": [...],
+         "units": [...],
+         "technologies": [...],
+         "resources": {...}
+       },
+       "map": {
+         "size": {"width": "number", "height": "number"},
+         "tiles": [...],
+         "fog_of_war": [...]
+       },
+       "current_player": "string"
+     }
+   }
+   ```
+
+3. **Eszenatoki Bilduma**:
+   ```json
+   {
+     "_id": "ObjectId",
+     "name": "string",
+     "description": "string",
+     "difficulty": "string",
+     "map_size": {"width": "number", "height": "number"},
+     "initial_state": {...}
+   }
+   ```
+
+### 11.4. Backend-IA Zerbitzua Komunikazioa
+
+```
++----------------+       API Eskaera         +----------------+
+|                |  ---------------------->  |                |
+|    Backend     |                           |  GroQ Models   |
+|    (Python)    |  <----------------------  |                |
+|                |       API Erantzuna       |                |
++----------------+                           +----------------+
+```
+
+#### Komunikazio fluxua:
+
+1. **IA Hasieratzea**:
+   - Backend-ak hasierako prompt-a bidaltzen du jokoaren deskribapena eta arauak dituena
+   - Backend-ak elkarrizketa testuingurua gordetzen du
+
+2. **IA-ren Txanda**:
+   - Backend-ak IA-rentzat ikusgai den egoera prestatzen du (JSON)
+   - Backend-ak egoera GroQ-ren lehen mailako modelora bidaltzen du
+   - 429 errorea badago (token muga), ordezko modelora aldatzen da
+   - GroQ-k IA-ren erabakiak JSON formatuan itzultzen ditu
+   - Backend-ak IA-ren ekintzak balidatzen eta exekutatzen ditu
+   - Backend-ak jokoaren egoera eguneratzen du
+   - Backend-ak ekintzen sekuentzia bidalten dio frontend-ari bisualizaziorako
+
+3. **Testuinguruaren Kudeaketa**:
+   - Backend-ak ekintza garrantzitsuen laburpen historia mantentzen du
+   - Testuingurua mugatzen da token mugak ez gainditzeko
+   - Txanden artean ikasitako estrategiak gordetzen dira
+
+4. **IA-ren Ekintzen Bistaratzea**:
+   - Backend-ak egindako ekintzen zerrenda ordenatua sortzen du
+   - Ekintza bakoitzak aurretiko eta ondorengo egoera barne hartzen du
+   - Sekuentzia osoa frontend-ari bidaltzen zaio animaziorako
+
+## 12. ERANSKINA: PARTIDEN DATU EGITURA
+
+Jarraian partidak gordetzeko JSON formatuaren adibide bat erakusten da:
+
+### 12.1 Gordetako Partidaren Formatua
+
+```json
+{
+  "game_id": "65f1a2b3c4d5e6f7a8b9c0d1",
+  "name": "Nire partida IA-ren aurka",
+  "scenario_id": "basic_map_1",
+  "created_at": "2025-04-01T18:30:22.123Z",
+  "last_saved": "2025-04-01T19:45:33.456Z",
+  "turn": 12,
+  "current_player": "player",
+  "cheats_used": ["mapa_agertu", "maila_igo"],
+  "player": {
+    "resources": {
+      "food": 35,
+      "production": 28,
+      "science": 15,
+      "gold": 420
+    },
+    "cities": [
+      {
+        "id": "city1",
+        "name": "Bilbo",
+        "position": {"x": 15, "y": 22},
+        "population": 5,
+        "buildings": [
+          {"id": "granary", "type": "food_building"},
+          {"id": "library", "type": "science_building"},
+          {"id": "barracks", "type": "military_building"}
+        ],
+        "production": {
+          "current_item": "warrior",
+          "turns_remaining": 3
+        }
+      }
+    ],
+    "units": [
+      {
+        "id": "unit1",
+        "type": "settler",
+        "position": {"x": 12, "y": 18},
+        "movement_points": 2,
+        "movement_points_left": 1
+      },
+      {
+        "id": "unit2",
+        "type": "warrior",
+        "position": {"x": 14, "y": 20},
+        "movement_points": 2,
+        "movement_points_left": 0,
+        "strength": 5,
+        "health": 100
+      }
+    ],
+    "technologies": [
+      {"id": "agriculture", "completed": true},
+      {"id": "pottery", "completed": true},
+      {"id": "animal_husbandry", "in_progress": true, "turns_remaining": 4}
+    ]
+  },
+  "ai": {
+    "resources": {
+      "food": 40,
+      "production": 22,
+      "science": 10,
+      "gold": 380
+    },
+    "cities": [
+      {
+        "id": "ai_city1",
+        "name": "Erroma",
+        "position": {"x": 42, "y": 35},
+        "visible": false
+      }
+    ],
+    "units": [
+      {
+        "id": "ai_unit1",
+        "type": "unknown",
+        "position": {"x": 45, "y": 38},
+        "visible": false
+      }
+    ],
+    "technologies": []
+  },
+  "map": {
+    "size": {"width": 72, "height": 72},
+    "explored": [
+      [0, 0, 0, 0, 1, 1, 1, 0, 0],
+      [0, 0, 1, 1, 1, 1, 1, 1, 0],
+      [0, 1, 1, 1, 1, 1, 1, 1, 0],
+      [1, 1, 1, 1, 1, 1, 1, 0, 0]
+    ],
+    "visible_objects": [
+      {
+        "type": "resource",
+        "resource_type": "iron",
+        "position": {"x": 14, "y": 25},
+        "improved": true
+      },
+      {
+        "type": "resource",
+        "resource_type": "cattle",
+        "position": {"x": 18, "y": 19},
+        "improved": false
+      },
+      {
+        "type": "barbarian_camp",
+        "position": {"x": 22, "y": 28}
+      }
+    ]
+  }
+}
+```
+
+### 12.2 IA Txanda Bistaratzearen Egitura
+
+IA-ren txandaren bistaratzea errazteko, ondorengo JSON formatua erabiliko da:
+
+```json
+{
+  "ai_turn_id": "65f1a2b3c4d5e6f7a8b9c0d2",
+  "game_id": "65f1a2b3c4d5e6f7a8b9c0d1",
+  "turn_number": 12,
+  "actions": [
+    {
+      "action_id": 1,
+      "type": "moveUnit",
+      "unitId": "ai_unit1",
+      "path": [
+        {"x": 42, "y": 35},
+        {"x": 43, "y": 35},
+        {"x": 44, "y": 36}
+      ],
+      "state_before": {
+        "resources": { /* aurretiko egoera laburra */ },
+        "units": { /* aurretiko egoera laburra */ },
+        "visible_map": { /* aurretiko egoera laburra */ }
+      },
+      "state_after": {
+        "resources": { /* ondorengo egoera laburra */ },
+        "units": { /* ondorengo egoera laburra */ },
+        "visible_map": { /* ondorengo egoera laburra */ }
+      },
+      "timestamp": "2025-04-01T19:40:15.123Z"
+    },
+    {
+      "action_id": 2,
+      "type": "buildStructure",
+      "cityId": "ai_city1",
+      "structureType": "library",
+      "state_before": { /* aurretiko egoera laburra */ },
+      "state_after": { /* ondorengo egoera laburra */ },
+      "timestamp": "2025-04-01T19:40:18.456Z"
+    },
+    {
+      "action_id": 3,
+      "type": "combat",
+      "attacker": {
+        "unitId": "ai_unit2",
+        "type": "warrior",
+        "strength": 5
+      },
+      "defender": {
+        "type": "barbarian",
+        "position": {"x": 44, "y": 36},
+        "strength": 4
+      },
+      "result": {
+        "winner": "attacker",
+        "casualties": {
+          "attacker": {"damage": 20},
+          "defender": {"killed": true}
+        },
+        "rewards": {
+          "gold": 50
+        }
+      },
+      "state_before": { /* aurretiko egoera laburra */ },
+      "state_after": { /* ondorengo egoera laburra */ },
+      "timestamp": "2025-04-01T19:40:25.789Z"
+    },
+    {
+      "action_id": 4,
+      "type": "endTurn",
+      "state_before": { /* aurretiko egoera laburra */ },
+      "state_after": { /* ondorengo egoera laburra */ },
+      "timestamp": "2025-04-01T19:40:30.123Z"
+    }
+  ],
+  "reasoning": "Nire unitate nagusia ekialderantz mugitzen nabil burdin mineralaren bila, aldi berean nire hiria garatzen liburutegi bat eraikiz teknologia berrien ikerketa azkartzeko."
+}
+```
+
+### 12.3 Trikimailu Sistemaren Formatua
+
+Trikimailu kodeak kudeatzeko, ondorengo eskaera eta erantzun formatua erabiliko da:
+
+**Eskaera:**
+```json
+{
+  "game_id": "65f1a2b3c4d5e6f7a8b9c0d1",
+  "cheat_code": "maila_igo",
+  "target": {
+    "type": "city",
+    "id": "city1"
+  }
+}
+```
+
+**Erantzuna:**
+```json
+{
+  "success": true,
+  "message": "Hiria maila bat igo da",
+  "affected_entity": {
+    "type": "city",
+    "id": "city1",
+    "changes": {
+      "population": {"before": 5, "after": 6},
+      "growth": {"before": 3, "after": 4}
+    }
+  },
+  "game_state": {
+    /* Jokoaren egoera eguneratua */
+  }
+}
+```
+
+## 13. ERANSKINA: LLM-RAKO HASIERAKO PROMPTA
+
+Jarraian GroQ modeloei jokoa deskribatzeko bidaliko zaien hasierako promptaren adibide bat erakusten da:
+
+```
+Hona hemen jokoaren uneko egoera:
+
+<game_state>
+{{GAME_STATE}}
+</game_state>
+
+Zu Civilization txandakako estrategia jokoan jokatzen ari den IA agente bat zara. Zure helburua da zure inperioa zabaltzea, hiriak konkistatzea, baliabideak biltzea eta zure aurkariari irabaztea. Jokoaren egoera jasoko duzu eta txanda honetako zure ekintzak erabaki behar dituzu.
+
+Zure zeregina da jokoaren egoera aztertzea, estrategia bat formulatzea, eta zure uneko txandarako ekintzak zehaztea. Jarraitu urrats hauei:
+
+1. Aztertu jokoaren egoera, hauek kontuan hartuz:
+   - Zure hirien kokapena, egoera eta eraikuntzak
+   - Zure unitateen kokapena eta gaitasunak
+   - Eskuragarri dituzun baliabideak eta diru-sarrerak
+   - Esploratutako mapa eremuak
+   - Etsaiaren kokapen eta indar ezagunak
+   - Inguruko aukerak (baliabideak, barbaro kanpamenduak, teknologiak)
+   - Fog of war (esploratu ez dituzun mapa eremuak)
+
+2. Formulatu estrategia bat lehentasun hauetan oinarrituta:
+   - Esplorazioa baliabideak eta hiriak aurkitzeko
+   - Diru-sarrera iturriak ziurtatzea
+   - Hirien garapena unitate indartsuagoak errekrutatzeko
+   - Teknologia aurrerapena abantaila lortzeko
+   - Ekonomia eta indar militarra orekatzea
+
+3. Sortu ekintza multzo bat txanda honetarako. Hainbat ekintza egin ditzakezu mugimendu puntuak agortu arte. Ekintza mota posibleak dira:
+   - moveUnit: Unitate bat kokapen berri batera mugitzea
+   - buildStructure: Eraikin bat eraikitzea hirian
+   - trainUnit: Unitate berri bat entrenatzea hirian
+   - improveResource: Baliabide bat hobetzea
+   - attackEnemy: Etsai batekin borroka hastea
+   - researchTechnology: Teknologia berri bat ikertzea
+   - foundCity: Hiri berri bat sortzea
+
+Zure azken erantzuna eman aurretik, idatzi zure pentsamendu prozesua eta estrategia kontsiderazioak <strategic_planning> etiketen artean. Atal honetan:
+
+1. Laburbildu jokoaren uneko egoera, hirien kokapena, baliabideak, eta etsaiari buruzko informazio ezaguna barne.
+2. Zerrendatu aukera eta mehatxu potentzialak.
+3. Lehenestatu helburuak uneko egoeraren arabera.
+4. Azaldu epe laburreko (txanda hau) eta epe luzeko (hurrengo txandak) estrategia.
+
+Atal hau nahiko luzea izatea ongi dago, estrategia sakona funtsezkoa baita jokoan arrakasta izateko.
+
+Zure azken erantzuna ondorengo JSON formatuan izan behar da:
+
+{
+  "actions": [
+    {
+      "type": "actionType",
+      "details": {
+        // Ekintzarako xehetasunak
+      }
+    },
+    // ... ekintza gehiago ...
+    {
+      "type": "endTurn"
+    }
+  ],
+  "reasoning": "Zure estrategiaren eta hurrengo txandetarako planen azalpen zehatza",
+  "analysis": "Jokoaren egoeraren eta aurkariaren posizioaren azterketa laburra"
+}
+
+Hona ekintzen formatuaren adibide bat:
+
+{
+  "actions": [
+    {
+      "type": "moveUnit",
+      "details": {
+        "unitId": "unit1",
+        "destination": {"x": 5, "y": 3}
+      }
+    },
+    {
+      "type": "buildStructure",
+      "details": {
+        "cityId": "city1",
+        "structureType": "granary"
+      }
+    },
+    {
+      "type": "trainUnit",
+      "details": {
+        "cityId": "city1",
+        "unitType": "warrior",
+        "quantity": 1
+      }
+    },
+    {
+      "type": "endTurn"
+    }
+  ],
+  "reasoning": "Estrategiaren eta hurrengo txandetarako planen azalpen zehatza",
+  "analysis": "Jokoaren egoeraren eta aurkariaren posizioaren azterketa laburra"
+}
+
+Gogoan izan:
+- Pentsatu estrategikoki eta epe luzerako planifikatu
+- Kudeatu zure baliabideak eraginkortasunez
+- Egokitu zure estrategia jokoaren egoerara, fog of war-ek ezkutatutako eremuak barne
+- Orekatu garapen ekonomikoa eta indar militarra
+- Aprobetxatu zure indarguneak eta aurkariaren ahuleziak
+- Beti amaitu zure txanda "endTurn" ekintzarekin
+- Eman zure erabakien arrazoiketa zehatza
+- Jokoko arau eta mekaniketan mantendu
+
+Orain, emandako jokoaren egoeran oinarrituta, aztertu egoera, formulatu zure estrategia, eta sortu zure ekintzak, arrazoiketa eta analisia txanda honetarako.
+```
+
+## 14. ERANSKINA: IA TXANDAREN BISTARATZEA INPLEMENTATZEA
+
+IA-ren txandaren bistaratzea zuzen inplementatzeko, ondorengo jarraibideak jarraitu behar dira:
+
+### 14.1. Bistaratzearako Datu Egitura
+
+Backend-ak frontend-ari datu egitura bat eskaini behar dio IA-k egindako ekintzak sekuentzialki animatzeko:
+
+```json
+{
+  "ai_turn_summary": {
+    "total_actions": 8,
+    "main_focus": "expansion",
+    "resources_gained": {"food": 12, "production": 5, "science": 3},
+    "territories_explored": 12,
+    "combat_results": [
+      {"location": {"x": 25, "y": 42}, "outcome": "victory", "reward": "gold"}
+    ]
+  },
+  "ai_actions_sequence": [
+    {
+      "id": 1,
+      "action_type": "movement",
+      "entity": {"id": "ai_unit_1", "name": "Warrior", "type": "unit"},
+      "path": [{"x": 10, "y": 15}, {"x": 11, "y": 16}, {"x": 12, "y": 16}],
+      "movement_points": {"initial": 2, "remaining": 0},
+      "state_snapshot_before": {...},
+      "state_snapshot_after": {...}
+    },
+    ...
+  ]
+}
+```
+
+### 14.2. Bistaratze Moduak
+
+Sistemak gutxienez bi bistaratze modu eskaini behar ditu IA-ren txandarako:
+
+1. **Pantaila Osoko Modua**:
+   - IA-ren txandan, jokalariaren bista aldi baterako IA-ren bistagatik ordezkatzen da
+   - Ekintza guztien animazio sekuentziala erakusten da
+   - Informazio testuinguruko albo-panel bat barne hartzen da (baliabideak, hiriak)
+   - Amaitzean, automatikoki jokalariaren bistara itzultzen da
+
+2. **Pantaila Zatitutako Modua**:
+   - Pantaila horizontalki bi zatitan banatzen da
+   - Ezkerraldean: jokalariaren bista estatikoa bere txanda amaieran
+   - Eskuinaldean: bista dinamikoa IA-ren ekintzen sekuentzia erakutsiz
+
+### 14.3. Erreprodukzio Kontrolak
+
+IA-ren txandaren bistaratze esperientzia hobetzeko, jokalariari ondorengo kontrolak inplementatu behar zaizkio:
+
+- Erreprodukzio pausatzea/jarraitzea
+- Pausoka aurreratzea (hurrengo ekintza)
+- Pausoka atzera egitea (aurreko ekintza)
+- Erreprodukzio abiadura doitzea (normala, azkarra, bat-batekoa)
+- Zuzenean amaierako emaitzara jauzi egitea
+
+### 14.4. Elementu Bisualak
+
+Bistaratzeak elementu grafiko hauek izan behar ditu ekintzen jarraipena errazteko:
+
+- Unitateen mugimenduetarako ibilbide adierazleak
+- Baliabide aldaketetarako balio numerikoen etiketak
+- Borroka eta erakintzetarako animazioak
+- Egoera aldaketen adierazleak (aurretik/ondoren)
+- Mapan kaltetutako eremuen nabarmentzea
+
+## 15. ERANSKINA: GAMEPLAY-AREN INPLEMENTAZIOA
+
+Civilization bezalako txandakako estrategia jokoen funtsa jasotzeko, garrantzitsua da ondorengo joko-mekanikak inplementatzea:
+
+### 15.1. Zibilizazioen Ezaugarri Sistema
+
+* **Zibilizazio bakoitzak ezaugarri propioak**: Zibilizazio bakoitzak abantaila bereziak ditu
+* **Zibilizazio bakoitzak unitate berezi propioa**: Beste zibilizazioek ez dituzten unitate exclusivoak
+* **Lider ezaugarriak**: Zibilizazio bakoitzaren burua den liderraren ezaugarri historikoak islatu
+
+### 15.2. Baliabide Naturalen Sistema
+
+* **Baliabide naturalak**: Mapa osoan zehar banatuta daude eta haien gainean hobekuntzak egin daitezke
+* **Hobekuntzak**: Baliabide natural bakoitza hobetzeko modu espezifikoa (nekazaritza, meatzaritza, etab.)
+* **Baliabideen Ekarpena**: Baliabide bakoitzak ekarpen zehatzak egiten ditu (elikagaiak, ekoizpena, urrea)
+
+### 15.3. Hirien Mekanika
+
+* **Hiritar Hazkundea**: Hiriek hazkunde naturala dute elikagaien arabera
+* **Eraikin Zuhaitza**: Eraikin batzuek beste batzuk behar dituzte aurretik
+* **Espezializazioa**: Hiri bakoitza baliabide edo unitate mota jakinetan espezializatu daiteke
+
+### 15.4. Teknologia Sistema
+
+* **Teknologia Zuhaitza**: Teknologiak orden logiko batean aurrerapena egiten da
+* **Era Ezberdinak**: Antzinako aroa, aro klasikoa, erdi aroa, industria aroa, eta aro modernoa
+* **Abantaila Teknologikoak**: Teknologia berriek abantaila militarrak edo ekonomikoak ematen dituzte
+
+### 15.5. Borroka Sistema
+
+* **Unitate Motak**: Ezberdinak indar, defentsa, eta mugimendu puntuetan
+* **Lursailaren Eragina**: Mendiek, ibaiek, eta basoak borrokan eragina dute
+* **Promozio Sistema**: Borroka irabazitakoan unitateek promozioak jaso ditzakete
+
+### 15.6. Garaipen Baldintzak
+
+* **Garaipen Mota Ezberdinak**:
+  - **Konkista**: Aurkariaren hiri guztiak konkistatu
+  - **Zientzia**: Teknologia zuhaitzaren amaierara iritsi eta espazioontzia eraiki
+  - **Kultura**: Kultura maila oso altua lortu
+  - **Domina**: Zibilizazio boteretsuena izan denbora mugaraino
+
+## 16. INPLEMENTAZIORAKO AHOLKUAK
+
+### 16.1. Garapen Estrategiak
+
+1. **Fasetan garatu**:
+   - 1. Fasea: Erabiltzaile eta partida oinarrizko sistema inplementatu
+   - 2. Fasea: Mapa eta oinarrizko mugimendua inplementatu
+   - 3. Fasea: Hiriak eta baliabideen kudeaketa gehitu
+   - 4. Fasea: Borroka sistema sinplifikatua inplementatu
+   - 5. Fasea: GroQ-rekin IA integratu
+   - 6. Fasea: Findu eta optimizatu
+
+2. **Rolen araberako garapen paraleloa**:
+   - Frontend: API-aren simulazioekin hasi daiteke backend-aren menpekotasunik gabe aurreratzeko
+   - Backend: Hasiera batean erantzun estatikoak dituzten endpoint-ak inplementatu daitezke
+   - AI/ML: GroQ-rekin integrazio finala baino lehen modelo lokalekin lan egin daiteke
+
+3. **Hedadura murriztea** (ikasle bakoitzak 50 ordu mantentzeko):
+   - Borroka sistema sinplifikatu (simulazio aukera)
+   - Unitate eta eraikin mota kopurua minimora mugatu
+   - Funtzionalitatea lehenetsi diseinu bisualaren aurretik
+   - Elementu aukerakoak minimizatu (soinuak, animazioak)
+
+### 16.2. Simplifikatzeko Gomendio Zehatzak
+
+* **Teknologia zuhaitza murriztu**: 15-20 teknologia nahikoa dira mekanika erakusteko
+* **Mapa tamaina ertaina**: 50x50 gelaxka nahikoa da jokatzeko
+* **Zibilizazio kopurua mugatu**: Jokalariak 1 eta IA-k 1, guztira 2 soilik
+* **Era kopurua mugatu**: 3 era nahikoa dira (antzinakoa, klasikoa, eta modernoa)
+* **Unitateen arteko abantaila sistema sinplifikatu**: 3 unitate mota oinarrizkoak (meleea, distantzia, zalduneria)
+* **Eraikin sinpleak**: Funtzionalitate argiekin, 3-4 eraikin mota per hiri
+* **Produktibitate faktore sinpleak**: Ekoizpen formulak sinpletzeko
+
+### 16.3. Frontend Optimizazioak
+
+* **Mapa**: Lursailen artxibategia aurre-kargatuta memorian gordetzea
+* **Ikono erabilera**: Ikonoen sprite-sheet sistema inplementatu
+* **Bistaratze optimizazio**: Soilik pantailan ikusten diren lursailak errendatzea
+* **Animazio sinpleak**: Mugimendu lerratuen ordez posizioen arteko saltoak
+
+### 16.4. Backend Optimizazioak
+
+* **Egoera inmutable**: Aldaketak egoera berri bat sortzea
+* **Zati txikiko mapa**: Soilik ikusgarria den maparako kalkuluak
+* **Simulazio sinplifikatuak**: Borroka eta IA simulazioak sinplifikatzea
+
+### 16.5. IA Pentsamendu Denbora Hobetzeko
+
+* **Aurreko txandetan ikasitakoa gehitu**: IA-ri lagunduko dion historial bat mantendu
+* **Erabaki zuhaitzak sinplifikatu**: IA-ren erabaki aukerak murriztu ikuspegi ezberdinetan fokua jartzeko
+* **Erantzunaren tokenak mugatu**: Prompt-ek erantzun formatua argi definitu behar dute token kopurua murrizteko
+
+### 16.6. Jokagarritasuna Ziurtatzeko Garapen Lehentasunak
+
+1. Oinarrizko mapa bistaratzea eta mugimenduak
+2. Txanda sistema funtzionala
+3. Hirietako eraikuntza minimoa
+4. Unitate rekrutatzea
+5. Baliabide sistema sinplifikatua
+6. Borroka sistema oinarrizkoa
+7. Teknologia zuhaitza sinplifikatua
+8. IA aurkari oinarrizkoa
+9. Garaipen baldintzen egiaztatzea
+10. Partiden gordetze eta kargatze sistema
+
+Proiektuaren lehen fasean funtzionalitate hauek inplementatzera mugatu, eta behin funtzionala denean, edozein hedapen edo konplexutasun gehigarri gehitu.
