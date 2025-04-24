@@ -1,1 +1,114 @@
-<p>register works!</p>
+<div class="register-container">
+  <div class="register-card">
+    <div class="register-header">
+      <h1>Civilization</h1>
+      <p>Funda tu nueva civilización</p>
+    </div>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
+      <div class="form-group">
+        <label for="username">Nombre del Líder</label>
+        <input 
+          type="text" 
+          id="username" 
+          formControlName="username" 
+          [class.is-invalid]="username?.invalid && (username?.dirty || username?.touched)"
+          placeholder="Tu nombre de líder"
+        >
+        @if (username?.invalid && (username?.dirty || username?.touched)) {
+          <div class="error-message">
+            @if (username?.errors?.['required']) {
+              <span>El nombre del líder es obligatorio</span>
+            }
+            @if (username?.errors?.['minlength']) {
+              <span>El nombre debe tener al menos 3 caracteres</span>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="email">Correo Real</label>
+        <input 
+          type="email" 
+          id="email" 
+          formControlName="email" 
+          [class.is-invalid]="email?.invalid && (email?.dirty || email?.touched)"
+          placeholder="ejemplo@correo.com"
+        >
+        @if (email?.invalid && (email?.dirty || email?.touched)) {
+          <div class="error-message">
+            @if (email?.errors?.['required']) {
+              <span>El correo electrónico es obligatorio</span>
+            }
+            @if (email?.errors?.['email']) {
+              <span>Introduce un correo electrónico válido</span>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="password">Sello Imperial</label>
+        <input 
+          type="password" 
+          id="password" 
+          formControlName="password" 
+          [class.is-invalid]="password?.invalid && (password?.dirty || password?.touched)"
+          placeholder="Crea tu sello secreto"
+        >
+        @if (password?.invalid && (password?.dirty || password?.touched)) {
+          <div class="error-message">
+            @if (password?.errors?.['required']) {
+              <span>La contraseña es obligatoria</span>
+            }
+            @if (password?.errors?.['minlength']) {
+              <span>La contraseña debe tener al menos 6 caracteres</span>
+            }
+          </div>
+        }
+      </div>
+      
+      <div class="form-group">
+        <label for="confirmPassword">Confirmar Sello</label>
+        <input 
+          type="password" 
+          id="confirmPassword" 
+          formControlName="confirmPassword" 
+          [class.is-invalid]="confirmPassword?.invalid && (confirmPassword?.dirty || confirmPassword?.touched)"
+          placeholder="Confirma tu sello secreto"
+        >
+        @if (confirmPassword?.invalid && (confirmPassword?.dirty || confirmPassword?.touched)) {
+          <div class="error-message">
+            @if (confirmPassword?.errors?.['required']) {
+              <span>Debes confirmar tu sello</span>
+            }
+            @if (confirmPassword?.errors?.['passwordMismatch']) {
+              <span>Los sellos no coinciden</span>
+            }
+          </div>
+        }
+      </div>
+
+      @if (errorMessage) {
+        <div class="alert alert-danger">
+          {{ errorMessage }}
+        </div>
+      }
+
+      <div class="form-actions">
+        <button 
+          type="submit" 
+          [disabled]="registerForm.invalid || isSubmitting" 
+          class="btn-primary"
+        >
+          {{ isSubmitting ? 'Fundando civilización...' : 'Fundar Civilización' }}
+        </button>
+      </div>
+
+      <div class="register-footer">
+        <p>¿Ya tienes un imperio? <a href="javascript:void(0)" (click)="goToLogin()">Retorna a tu trono</a></p>
+      </div>
+    </form>
+  </div>
+</div>

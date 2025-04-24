@@ -1,1 +1,42 @@
 /* You can add global styles to this file, and also import other style files */
+
+/* Importar fuente retro de videojuegos desde Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+/* Aplicar estilo retro de videojuegos a todo el documento */
+* {
+  font-family: 'Press Start 2P', cursive;
+}
+
+/* Estilos adicionales para mejorar la apariencia retro */
+body {
+  line-height: 1.5;
+  letter-spacing: 1px;
+  text-shadow: 2px 2px 0px rgba(0,0,0,0.2);
+  color: #eee;
+  background-color: #121212;
+}
+
+/* Estilo para encabezados con color pixelado */
+h1, h2, h3, h4, h5, h6 {
+  color: #33ff33;
+  margin-bottom: 1rem;
+}
+
+/* Estilo para botones con aspecto retro */
+button, .btn {
+  font-family: 'Press Start 2P', cursive;
+  border: 3px solid #33ff33;
+  background-color: #121212;
+  color: #33ff33;
+  padding: 0.5rem 1rem;
+  margin: 0.5rem;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+button:hover, .btn:hover {
+  background-color: #33ff33;
+  color: #121212;
+}

@@ -1,0 +1,180 @@
+.register-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: url('https://wallpapercave.com/wp/wp2555030.jpg') no-repeat center center;
+  background-size: cover;
+  padding: 20px;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+}
+
+.register-card {
+  position: relative;
+  background-color: rgba(30, 40, 55, 0.9);
+  border: 2px solid #c9a45b;
+  border-radius: 0;
+  box-shadow: 0 0 20px rgba(201, 164, 91, 0.5);
+  width: 100%;
+  max-width: 450px;
+  padding: 35px;
+  color: #fff;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    bottom: 5px;
+    border: 1px solid #c9a45b;
+    pointer-events: none;
+  }
+}
+
+.register-header {
+  text-align: center;
+  margin-bottom: 30px;
+  
+  h1 {
+    color: #c9a45b;
+    font-size: 2.2rem;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    font-family: 'Trajan Pro', 'Times New Roman', serif;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+  }
+  
+  p {
+    color: #a7a7a7;
+    font-size: 0.9rem;
+  }
+}
+
+.register-form {
+  .form-group {
+    margin-bottom: 24px;
+    
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #c9a45b;
+      font-family: 'Trajan Pro', 'Times New Roman', serif;
+      text-transform: uppercase;
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+    }
+    
+    input {
+      width: 100%;
+      padding: 12px 15px;
+      background-color: rgba(0, 0, 0, 0.4);
+      border: 1px solid #6a5c3d;
+      color: #fff;
+      font-size: 16px;
+      transition: all 0.3s;
+      box-sizing: border-box; // Añadir box-sizing para controlar el tamaño
+      
+      &:focus {
+        outline: none;
+        border-color: #c9a45b;
+        box-shadow: 0 0 0 1px rgba(201, 164, 91, 0.5);
+      }
+      
+      &.is-invalid {
+        border-color: #e63946;
+      }
+      
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+      }
+    }
+    
+    .error-message {
+      color: #e63946;
+      font-size: 0.8rem;
+      margin-top: 5px;
+    }
+  }
+  
+  .alert {
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    
+    &.alert-danger {
+      background-color: rgba(230, 57, 70, 0.2);
+      color: #f48c89;
+      border: 1px solid #e63946;
+    }
+  }
+  
+  .form-actions {
+    margin-top: 30px;
+    
+    button {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(to bottom, #c9a45b 0%, #8c6d2e 100%);
+      color: #1e1e1e;
+      border: none;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-family: 'Trajan Pro', 'Times New Roman', serif;
+      position: relative;
+      overflow: hidden;
+      
+      &:hover:not(:disabled) {
+        background: linear-gradient(to bottom, #deb978 0%, #a58339 100%);
+      }
+      
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      
+      &:active:not(:disabled) {
+        background: linear-gradient(to bottom, #8c6d2e 0%, #c9a45b 100%);
+      }
+    }
+  }
+}
+
+.register-footer {
+  text-align: center;
+  margin-top: 25px;
+  border-top: 1px solid rgba(201, 164, 91, 0.3);
+  padding-top: 20px;
+  
+  p {
+    color: #a7a7a7;
+    font-size: 0.9rem;
+    
+    a {
+      color: #c9a45b;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s;
+      
+      &:hover {
+        color: #deb978;
+        text-decoration: underline;
+      }
+    }
+  }
+}
