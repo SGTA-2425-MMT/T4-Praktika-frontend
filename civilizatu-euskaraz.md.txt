@@ -141,6 +141,7 @@ Proiektua 3 pertsonako talde batek garatzeko diseinatuta dago, bakoitzak rol esp
 
 ## Angular: Estructura de Componentes Recomendada
 
+- **main-menu/**: Menú principal de la aplicación (pantalla tras login, permite crear nueva partida, cargar partida, acceder a configuración o hacer logout)
 - **core/**: Servicios globales (auth, api, game-state, ia, etc.)
 - **shared/**: Componentes reutilizables (botones, modales, iconos, etc.)
 - **auth/**: Registro, login, perfil de usuario
@@ -163,6 +164,11 @@ app/
     login/
     register/
     profile/
+  main-menu/
+    main-menu/
+    load-game/
+    new-game/
+    settings/
   game/
     map/
       map-view/

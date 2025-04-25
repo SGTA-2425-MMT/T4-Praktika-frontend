@@ -35,10 +35,16 @@ export class LoginComponent {
     this.isSubmitting = true;
     this.errorMessage = null;
     
+    // Redirigir siempre al main-menu, sin esperar a la respuesta del servicio
+    this.router.navigate(['/main-menu']);
+    this.isSubmitting = false;
+
+    // Si quieres mantener la lógica original para el futuro, puedes comentarla:
+    /*
     this.authService.login(this.loginForm.value)
       .subscribe({
         next: () => {
-          this.router.navigate(['/game']);
+          this.router.navigate(['/main-menu']);
         },
         error: (error) => {
           this.errorMessage = 'Credenciales incorrectas. Por favor, inténtalo de nuevo.';
@@ -48,6 +54,7 @@ export class LoginComponent {
           this.isSubmitting = false;
         }
       });
+    */
   }
 
   goToRegister(): void {

@@ -15,7 +15,7 @@ export class RegisterComponent {
   registerForm: FormGroup;
   isSubmitting = false;
   errorMessage: string | null = null;
-  
+
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
@@ -32,12 +32,12 @@ export class RegisterComponent {
   passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
     const password = control.get('password');
     const confirmPassword = control.get('confirmPassword');
-  
+
     if (password && confirmPassword && password.value !== confirmPassword.value) {
       confirmPassword.setErrors({ passwordMismatch: true });
       return { passwordMismatch: true };
     }
-  
+
     return null;
   }
 
@@ -45,20 +45,26 @@ export class RegisterComponent {
     if (this.registerForm.invalid) {
       return;
     }
-    
+
     this.isSubmitting = true;
     this.errorMessage = null;
-    
+
+    // Redirigir siempre al main-menu, sin esperar a la respuesta del servicio
+    this.router.navigate(['/main-menu']);
+    this.isSubmitting = false;
+
+    // Si quieres mantener la lógica original para el futuro, puedes comentarla:
+    /*
     const registerData = {
       username: this.registerForm.value.username,
       email: this.registerForm.value.email,
       password: this.registerForm.value.password
     };
-    
+
     this.authService.register(registerData)
       .subscribe({
         next: () => {
-          this.router.navigate(['/game']);
+          this.router.navigate(['/main-menu']);
         },
         error: (error) => {
           this.errorMessage = 'Ha ocurrido un error durante el registro. Por favor, inténtalo de nuevo.';
@@ -68,6 +74,7 @@ export class RegisterComponent {
           this.isSubmitting = false;
         }
       });
+    */
   }
 
   goToLogin(): void {

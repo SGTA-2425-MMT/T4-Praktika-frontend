@@ -4,14 +4,14 @@ import { AppComponent } from './app.component';
 
 @NgModule({
   declarations: [
-    AppComponent
     // ...otros componentes principales...
   ],
   imports: [
     BrowserModule
     // ...otros módulos como AuthModule, GameModule, etc...
+    // AppComponent is standalone and should not be imported here
   ],
-  providers: [],
-  bootstrap: [AppComponent]
+  providers: []
+  // Standalone components are bootstrapped using bootstrapApplication, not the bootstrap array
 })
 export class AppModule { }
