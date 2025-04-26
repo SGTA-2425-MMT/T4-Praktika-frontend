@@ -17,7 +17,7 @@ export class MainMenuComponent {
   ) {}
 
   newGame() {
-    // Navegar a la pantalla de nueva partida (ajusta la ruta según tu app)
+    // Navegar a la pantalla de nueva partida
     this.router.navigate(['/game/new']);
   }
 

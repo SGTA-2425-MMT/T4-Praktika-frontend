@@ -1,0 +1,50 @@
+<div class="game-wrapper">
+  @if (loading) {
+    <div class="loading-screen">
+      <div class="spinner"></div>
+      <p>Cargando partida...</p>
+    </div>
+  } @else if (error) {
+    <div class="error-message">
+      {{ error }}
+      <p>Redirigiendo al menú principal...</p>
+    </div>
+  } @else if (gameSession) {
+    <div class="game-ui">
+      <!-- Cabecera del juego -->
+      <header class="game-header">
+        <div class="game-info">
+          <h2>{{ gameSession.name }}</h2>
+          <span class="civilization-name">{{ gameSession.playerCivilization }}</span>
+        </div>
+        <div class="game-stats">
+          <div class="stat-item">Turno: {{ gameSession.turn }}</div>
+          <div class="stat-item">Dificultad: {{ gameSession.difficulty }}</div>
+        </div>
+        <div class="game-actions">
+          <button class="btn-save" (click)="saveGame()">Guardar Partida</button>
+          <button class="btn-exit" (click)="exitToMenu()">Salir</button>
+        </div>
+      </header>
+      
+      <!-- Contenedor principal del juego -->
+      <main class="game-content">
+        <!-- Vista del mapa -->
+        <app-map-view
+          [gameSession]="gameSession"
+          (endTurn)="endTurn()"
+        ></app-map-view>
+      </main>
+      
+      <!-- Panel inferior de acciones -->
+      <footer class="game-footer">
+        <button class="btn-end-turn" (click)="endTurn()">Fin del Turno</button>
+      </footer>
+    </div>
+  } @else {
+    <div class="error-message">
+      <p>Ninguna partida cargada.</p>
+      <button (click)="returnToMainMenu()">Volver al menú principal</button>
+    </div>
+  }
+</div>

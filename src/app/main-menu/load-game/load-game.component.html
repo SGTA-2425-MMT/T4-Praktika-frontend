@@ -1,1 +1,48 @@
-<p>load-game works!</p>
+<div class="load-game-container">
+  <div class="load-game-card">
+    <div class="load-game-header">
+      <h1>Cargar Partida</h1>
+      <p>Continúa tu expansión imperial</p>
+    </div>
+
+    <div class="saved-games-container">
+      @if (savedGames.length) {
+        <div class="saved-games-list">
+          @for (game of savedGames; track game.id) {
+            <div class="saved-game-item" 
+                [class.selected]="selectedGame?.id === game.id"
+                (click)="selectGame(game)">
+              <div class="saved-game-thumbnail">
+                <img src="assets/images/placeholder.png" alt="Miniatura de partida guardada">
+              </div>
+              <div class="saved-game-info">
+                <h3>{{ game.name }}</h3>
+                <div class="saved-game-details">
+                  <span>Fecha: {{ getFormattedDate(game.lastSaved || game.createdAt) }}</span>
+                  <span>Tiempo: {{ getPlayTime(game) }}</span>
+                  <span>Civ: {{ game.playerCivilization }}</span>
+                  <span>Turno: {{ game.turn }}</span>
+                  <span>Dificultad: {{ game.difficulty }}</span>
+                </div>
+              </div>
+              <button class="btn-danger delete-btn" (click)="deleteGame(game, $event)">
+                <i class="fas fa-trash"></i> Eliminar
+              </button>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="no-games-message">
+          <p>No hay partidas guardadas disponibles</p>
+        </div>
+      }
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn-secondary" (click)="returnToMainMenu()">Volver</button>
+      <button type="button" class="btn-primary" [disabled]="!selectedGame" (click)="loadGame()">
+        Cargar Partida
+      </button>
+    </div>
+  </div>
+</div>

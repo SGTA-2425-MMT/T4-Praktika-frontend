@@ -1,0 +1,180 @@
+.load-game-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  background: url('/assets/images/background.jpg') no-repeat center center;
+  background-size: cover;
+}
+
+.load-game-card {
+  width: 90%;
+  max-width: 800px;
+  background-color: rgba(0, 0, 0, 0.8);
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.load-game-header {
+  padding: 20px 30px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+
+  h1 {
+    font-size: 28px;
+    color: #f1c40f;
+    margin-bottom: 8px;
+  }
+
+  p {
+    font-size: 16px;
+    color: #95a5a6;
+    margin: 0;
+  }
+}
+
+.saved-games-container {
+  padding: 30px;
+}
+
+.saved-games-list {
+  max-height: 450px;
+  overflow-y: auto;
+  
+  &::-webkit-scrollbar {
+    width: 8px;
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(241, 196, 15, 0.3);
+    border-radius: 4px;
+    
+    &:hover {
+      background-color: rgba(241, 196, 15, 0.5);
+    }
+  }
+}
+
+.saved-game-item {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  margin-bottom: 10px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  &.selected {
+    border-color: #f1c40f;
+    background-color: rgba(241, 196, 15, 0.1);
+  }
+  
+  .saved-game-thumbnail {
+    width: 80px;
+    height: 60px;
+    margin-right: 15px;
+    overflow: hidden;
+    border-radius: 3px;
+    
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+  
+  .saved-game-info {
+    flex: 1;
+    
+    h3 {
+      color: #f1c40f;
+      margin: 0 0 8px 0;
+      font-size: 18px;
+    }
+    
+    .saved-game-details {
+      display: flex;
+      flex-wrap: wrap;
+      
+      span {
+        color: #bdc3c7;
+        font-size: 14px;
+        margin-right: 20px;
+        margin-bottom: 5px;
+      }
+    }
+  }
+  
+  .delete-btn {
+    background-color: transparent;
+    border: none;
+    color: #e74c3c;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      color: #c0392b;
+    }
+  }
+}
+
+.no-games-message {
+  padding: 30px;
+  text-align: center;
+  color: #bdc3c7;
+  font-style: italic;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+  padding: 0 30px 30px;
+  
+  button {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &.btn-primary {
+      background-color: #f1c40f;
+      color: #000;
+      
+      &:hover {
+        background-color: #f39c12;
+      }
+      
+      &:disabled {
+        background-color: #7f8c8d;
+        cursor: not-allowed;
+      }
+    }
+    
+    &.btn-secondary {
+      background-color: transparent;
+      border: 1px solid #7f8c8d;
+      color: #7f8c8d;
+      
+      &:hover {
+        background-color: rgba(127, 140, 141, 0.1);
+      }
+    }
+  }
+}
+
+.btn-danger {
+  color: #e74c3c;
+}

@@ -1,24 +1,112 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
-import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../../core/services/auth.service';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-register',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './register.component.html',
-  styleUrl: './register.component.scss'
+  template: `
+    <div class="register-container">
+      <div class="register-card">
+        <h1>Crear Cuenta</h1>
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+          <div class="form-group">
+            <label for="username">Usuario</label>
+            <input type="text" id="username" formControlName="username" placeholder="Elije un nombre de usuario">
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" formControlName="email" placeholder="Introduce tu email">
+          </div>
+          <div class="form-group">
+            <label for="password">Contraseña</label>
+            <input type="password" id="password" formControlName="password" placeholder="Crea una contraseña">
+          </div>
+          <div class="form-group">
+            <label for="confirmPassword">Confirmar Contraseña</label>
+            <input type="password" id="confirmPassword" formControlName="confirmPassword" placeholder="Confirma tu contraseña">
+          </div>
+          <div class="actions">
+            <button type="button" class="btn-secondary" routerLink="/auth/login">Volver</button>
+            <button type="submit" [disabled]="registerForm.invalid">Registrarse</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .register-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: url('/assets/images/background.jpg') no-repeat center center;
+      background-size: cover;
+    }
+    .register-card {
+      background-color: rgba(0, 0, 0, 0.8);
+      padding: 2rem;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 400px;
+      color: white;
+    }
+    h1 {
+      text-align: center;
+      color: #f1c40f;
+      margin-bottom: 2rem;
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #bdc3c7;
+    }
+    input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #34495e;
+      border-radius: 4px;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+    }
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    button {
+      flex: 1;
+      padding: 0.75rem;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button[type="submit"] {
+      background-color: #f1c40f;
+      color: black;
+    }
+    button.btn-secondary {
+      background-color: transparent;
+      border: 1px solid #7f8c8d;
+      color: #7f8c8d;
+    }
+    button:disabled {
+      background-color: #7f8c8d;
+      cursor: not-allowed;
+    }
+  `]
 })
 export class RegisterComponent {
   registerForm: FormGroup;
-  isSubmitting = false;
-  errorMessage: string | null = null;
-
+  
   constructor(
     private fb: FormBuilder,
-    private authService: AuthService,
     private router: Router
   ) {
     this.registerForm = this.fb.group({
@@ -26,62 +114,25 @@ export class RegisterComponent {
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required]]
-    }, { validators: this.passwordMatchValidator });
+    }, {
+      validators: this.passwordMatchValidator
+    });
   }
-
-  passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
-    const password = control.get('password');
-    const confirmPassword = control.get('confirmPassword');
-
-    if (password && confirmPassword && password.value !== confirmPassword.value) {
-      confirmPassword.setErrors({ passwordMismatch: true });
-      return { passwordMismatch: true };
-    }
-
-    return null;
+  
+  passwordMatchValidator(g: FormGroup) {
+    const password = g.get('password')?.value;
+    const confirmPassword = g.get('confirmPassword')?.value;
+    
+    return password === confirmPassword ? null : { mismatch: true };
   }
-
-  onSubmit(): void {
+  
+  onSubmit() {
     if (this.registerForm.invalid) {
       return;
     }
-
-    this.isSubmitting = true;
-    this.errorMessage = null;
-
-    // Redirigir siempre al main-menu, sin esperar a la respuesta del servicio
-    this.router.navigate(['/main-menu']);
-    this.isSubmitting = false;
-
-    // Si quieres mantener la lógica original para el futuro, puedes comentarla:
-    /*
-    const registerData = {
-      username: this.registerForm.value.username,
-      email: this.registerForm.value.email,
-      password: this.registerForm.value.password
-    };
-
-    this.authService.register(registerData)
-      .subscribe({
-        next: () => {
-          this.router.navigate(['/main-menu']);
-        },
-        error: (error) => {
-          this.errorMessage = 'Ha ocurrido un error durante el registro. Por favor, inténtalo de nuevo.';
-          this.isSubmitting = false;
-        },
-        complete: () => {
-          this.isSubmitting = false;
-        }
-      });
-    */
+    
+    // En una implementación real, se haría una petición al backend
+    alert('¡Registro completado! Por favor inicia sesión.');
+    this.router.navigate(['/auth/login']);
   }
-
-  goToLogin(): void {
-    this.router.navigate(['/login']);
-  }
-  get username() { return this.registerForm.get('username'); }
-  get email() { return this.registerForm.get('email'); }
-  get password() { return this.registerForm.get('password'); }
-  get confirmPassword() { return this.registerForm.get('confirmPassword'); }
 }

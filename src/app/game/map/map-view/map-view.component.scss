@@ -1,0 +1,166 @@
+.game-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  background-color: #000;
+}
+
+.map-viewport {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  cursor: move; // Indicar que se puede arrastrar
+}
+
+.map-content {
+  position: absolute;
+  will-change: transform; // Optimización para transformaciones
+}
+
+.unit {
+  position: absolute;
+  z-index: 50;
+  pointer-events: none; // Para que los clics pasen a través al tile
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  &.unit-selected {
+    animation: pulse 1.5s infinite;
+  }
+}
+
+.unit-image {
+  width: 80%;
+  height: 80%;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  position: relative;
+}
+
+.movement-indicator {
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 2px;
+}
+
+.movement-point {
+  width: 6px;
+  height: 6px;
+  background-color: #3498db;
+  border-radius: 50%;
+}
+
+.fortified-indicator {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 16px;
+  height: 16px;
+  background-color: #e74c3c;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.mini-map {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 200px;
+  height: 150px;
+  background-color: rgba(0, 0, 0, 0.7);
+  border: 1px solid #3498db;
+  border-radius: 4px;
+  z-index: 100;
+}
+
+.info-panel {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  width: 250px;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  border: 1px solid #f1c40f;
+  border-radius: 4px;
+  padding: 10px;
+  z-index: 100;
+  
+  h3 {
+    color: #f1c40f;
+    margin-top: 0;
+    margin-bottom: 10px;
+  }
+  
+  p {
+    margin: 5px 0;
+  }
+}
+
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 10px;
+  
+  button {
+    padding: 8px 12px;
+    background-color: #34495e;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    
+    &:hover {
+      background-color: #2c3e50;
+    }
+  }
+}
+
+.game-controls {
+  position: absolute;
+  bottom: 10px;
+  right: 220px;
+  z-index: 100;
+}
+
+.end-turn-button {
+  padding: 10px 20px;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  
+  &:hover {
+    background-color: #c0392b;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7);
+  }
+  
+  70% {
+    box-shadow: 0 0 0 10px rgba(52, 152, 219, 0);
+  }
+  
+  100% {
+    box-shadow: 0 0 0 0 rgba(52, 152, 219, 0);
+  }
+}

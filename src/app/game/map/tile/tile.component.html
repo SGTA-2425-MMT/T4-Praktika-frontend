@@ -1,1 +1,36 @@
-<p>tile works!</p>
+<div 
+  [ngClass]="getTileClass()" 
+  [style.width.px]="tileSize" 
+  [style.height.px]="tileSize"
+  (click)="onClick()">
+  
+  <!-- Terreno base -->
+  <img 
+    *ngIf="tile.isExplored"
+    [src]="tileImagePath" 
+    [alt]="tile.terrain"
+    class="tile-image"
+    [style.opacity]="tile.isVisible ? '1' : '0.7'"/>
+  
+  <!-- Características adicionales (bosques, junglas, etc) -->
+  <img 
+    *ngIf="tile.isExplored && getFeatureImagePath()"
+    [src]="getFeatureImagePath()" 
+    class="feature-image"
+    [style.opacity]="tile.isVisible ? '1' : '0.7'"/>
+  
+  <!-- Recursos -->
+  <img 
+    *ngIf="tile.isExplored && tile.isVisible && getResourceImagePath()"
+    [src]="getResourceImagePath()" 
+    class="resource-image"/>
+  
+  <!-- Niebla de guerra para casillas no exploradas -->
+  <div *ngIf="!tile.isExplored" class="fog-of-war"></div>
+  
+  <!-- Overlay para casillas exploradas pero no visibles actualmente -->
+  <div *ngIf="tile.isExplored && !tile.isVisible" class="fog-overlay"></div>
+  
+  <!-- Coordenadas para depuración -->
+  <div class="debug-coords" *ngIf="tile.isExplored">{{tile.x}},{{tile.y}}</div>
+</div>
