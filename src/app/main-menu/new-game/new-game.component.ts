@@ -73,7 +73,7 @@ export class NewGameComponent {
       label: 'Rusia', 
       description: 'Un vasto imperio con ventajas en recursos estratégicos y resistencia al frío.', 
       flagImage: 'assets/images/civilizations/russia_flag.png',
-      leaderImage: 'assets/images/leaders/catherine.png'
+      leaderImage: 'assets/images/leaders/stalin.png'
     },
     { 
       value: 'france', 
