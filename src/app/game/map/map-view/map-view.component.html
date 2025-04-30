@@ -3,70 +3,57 @@
     <div class="loading-message">Cargando mapa...</div>
   } @else {
     <div class="map-viewport" #mapContainer>
-      <div class="map-content" 
-           [style.width.px]="gameSession.map.width * tileSize" 
-           [style.height.px]="gameSession.map.height * tileSize"
-           [style.transform]="'translate(' + -viewportX + 'px, ' + -viewportY + 'px)'">
-        
-        <!-- Renderizar solo las casillas visibles en el viewport -->
-        <ng-container *ngFor="let tile of getVisibleTiles()">
-          <app-tile
-            [tile]="tile"
-            [tileSize]="tileSize"
-            [isHighlighted]="highlightedTile === tile"
-            [isPathTile]="isInPath(tile.x, tile.y)"
-            [isUnitSelected]="!!selectedUnit && selectedUnit.position.x === tile.x && selectedUnit.position.y === tile.y"
-            (tileClick)="onTileClick(tile)"
-            [style.position]="'absolute'"
-            [style.left.px]="tile.x * tileSize"
-            [style.top.px]="tile.y * tileSize">
-          </app-tile>
-        </ng-container>
-        
-        <!-- Renderizar unidades -->
-        <div *ngFor="let unit of getVisibleUnits()" 
-             class="unit"
-             [class.unit-selected]="selectedUnit?.id === unit.id"
-             [style.left.px]="unit.position.x * tileSize"
-             [style.top.px]="unit.position.y * tileSize"
-             [style.width.px]="tileSize"
-             [style.height.px]="tileSize">
-          <div class="unit-image" 
-               [style.backgroundImage]="'url(assets/images/units/' + unit.type + '.png)'">
-            <!-- Indicador de movimientos restantes -->
-            <div *ngIf="gameSession && unit.owner === gameSession.currentPlayerId" class="movement-indicator">
-              <span *ngFor="let _ of [].constructor(unit.movementPoints); let i = index" class="movement-point"></span>
-            </div>
-            
-            <!-- Indicador de fortified -->
-            <div *ngIf="unit.isFortified" class="fortified-indicator">F</div>
+      <!-- Simple grid layout for the map -->
+      <div class="map-grid">
+        @for (row of gameSession.map.tiles; track $index) {
+          <div class="map-row">
+            @for (tile of row; track $index) {
+              <app-tile
+                [tile]="tile"
+                [isHighlighted]="highlightedTile === tile"
+                [isPathTile]="isInPath(tile.x, tile.y)"
+                [isUnitSelected]="!!selectedUnit && selectedUnit.position.x === tile.x && selectedUnit.position.y === tile.y"
+                (tileClick)="onTileClick(tile)">
+              </app-tile>
+            }
           </div>
-        </div>
-        
+        }
       </div>
+
+      <!-- Units (displayed as text for simplicity) -->
+      @for (unit of gameSession.units; track unit.id) {
+        @if (isTileVisible(unit.position.x, unit.position.y)) {
+          <div class="map-unit"
+               [style.top.px]="(unit.position.y * 54) + 2"
+               [style.left.px]="(unit.position.x * 54) + 2"
+               [class.selected]="selectedUnit?.id === unit.id">
+            <span class="unit-icon">
+              @if (unit.type === 'settler') { 👨‍🌾 }
+              @else if (unit.type === 'warrior') { ⚔️ }
+              @else { 🧍 }
+            </span>
+          </div>
+        }
+      }
     </div>
-    
-    <!-- Mini-mapa (opcional) -->
-    <div class="mini-map">
-      <!-- Contenido del mini-mapa -->
-    </div>
-    
-    <!-- Información sobre la selección actual -->
+
+    <!-- Info panel if a unit is selected -->
     <div class="info-panel" *ngIf="selectedUnit">
       <h3>{{ selectedUnit.name }}</h3>
+      <p>Tipo: {{ selectedUnit.type }}</p>
       <p>Movimiento: {{ selectedUnit.movementPoints }}/{{ selectedUnit.maxMovementPoints }}</p>
-      <p>Fuerza: {{ selectedUnit.strength }}</p>
-      
+      @if (selectedUnit.strength) {
+        <p>Fuerza: {{ selectedUnit.strength }}</p>
+      }
+
       <div class="action-buttons">
-        <button *ngIf="selectedUnit.movementPoints > 0" (click)="clearSelection()">Cancelar Movimiento</button>
-        <button *ngIf="!selectedUnit.isFortified" (click)="selectedUnit.isFortified = true; selectedUnit.movementPoints = 0; clearSelection()">Fortificar</button>
-        <button (click)="selectedUnit.movementPoints = 0; clearSelection()">Esperar</button>
+        <button *ngIf="selectedUnit.movementPoints > 0" (click)="clearSelection()">Cancelar</button>
+        <button *ngIf="!selectedUnit.isFortified" (click)="fortifyUnit()">Fortificar</button>
+        <button (click)="waitUnit()">Esperar</button>
       </div>
     </div>
-    
-    <!-- Botón para finalizar el turno -->
-    <div class="game-controls">
-      <button class="end-turn-button" (click)="finishTurn()">Terminar Turno</button>
-    </div>
+
+    <!-- End turn button -->
+    <button class="end-turn-button" (click)="finishTurn()">Terminar Turno</button>
   }
 </div>

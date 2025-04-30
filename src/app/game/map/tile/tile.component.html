@@ -1,36 +1,33 @@
-<div 
-  [ngClass]="getTileClass()" 
-  [style.width.px]="tileSize" 
-  [style.height.px]="tileSize"
+<div
+  [ngClass]="[
+    'tile',
+    tile.terrain,
+    getTileClass()
+  ]"
   (click)="onClick()">
-  
-  <!-- Terreno base -->
-  <img 
-    *ngIf="tile.isExplored"
-    [src]="tileImagePath" 
-    [alt]="tile.terrain"
-    class="tile-image"
-    [style.opacity]="tile.isVisible ? '1' : '0.7'"/>
-  
-  <!-- Características adicionales (bosques, junglas, etc) -->
-  <img 
-    *ngIf="tile.isExplored && getFeatureImagePath()"
-    [src]="getFeatureImagePath()" 
-    class="feature-image"
-    [style.opacity]="tile.isVisible ? '1' : '0.7'"/>
-  
-  <!-- Recursos -->
-  <img 
-    *ngIf="tile.isExplored && tile.isVisible && getResourceImagePath()"
-    [src]="getResourceImagePath()" 
-    class="resource-image"/>
-  
-  <!-- Niebla de guerra para casillas no exploradas -->
-  <div *ngIf="!tile.isExplored" class="fog-of-war"></div>
-  
-  <!-- Overlay para casillas exploradas pero no visibles actualmente -->
-  <div *ngIf="tile.isExplored && !tile.isVisible" class="fog-overlay"></div>
-  
+
   <!-- Coordenadas para depuración -->
   <div class="debug-coords" *ngIf="tile.isExplored">{{tile.x}},{{tile.y}}</div>
+
+  <!-- Características adicionales usando emojis -->
+  <div *ngIf="tile.isExplored && tile.featureType"
+       class="feature-image feature-{{tile.featureType}}"
+       [style.opacity]="tile.isVisible ? '1' : '0.7'"></div>
+
+  <!-- Recursos con emojis -->
+  <div *ngIf="tile.isExplored && tile.isVisible && tile.resource"
+       class="resource-image resource-{{tile.resource}}">
+    <!-- Recursos estratégicos -->
+    <span *ngIf="isStrategicResource(tile.resource)">⚔️</span>
+    <!-- Recursos de alimento -->
+    <span *ngIf="isFoodResource(tile.resource)">🍎</span>
+    <!-- Recursos de lujo -->
+    <span *ngIf="isLuxuryResource(tile.resource)">💎</span>
+  </div>
+
+  <!-- Niebla de guerra para casillas no exploradas -->
+  <div *ngIf="!tile.isExplored" class="fog-of-war"></div>
+
+  <!-- Overlay para casillas exploradas pero no visibles actualmente -->
+  <div *ngIf="tile.isExplored && !tile.isVisible" class="fog-overlay"></div>
 </div>
