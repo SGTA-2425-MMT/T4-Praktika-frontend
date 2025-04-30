@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, Input, Output, EventEmitter, OnChanges, SimpleChanges, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MovementService } from '../../../core/services/movement.service';
 import { FogOfWarService } from '../../../core/services/fog-of-war.service';
@@ -14,7 +14,7 @@ import { GameSession } from '../../../core/services/game.service';
   templateUrl: './map-view.component.html',
   styleUrl: './map-view.component.scss'
 })
-export class MapViewComponent implements OnInit, OnChanges {
+export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
   @ViewChild('mapContainer') mapContainer!: ElementRef;
   @Input() gameSession: GameSession | null = null;
   @Output() endTurn = new EventEmitter<void>();
@@ -35,6 +35,13 @@ export class MapViewComponent implements OnInit, OnChanges {
     });
   }
 
+  ngAfterViewInit(): void {
+    // Asegurarse de que el contenedor del mapa puede recibir el foco
+    if (this.mapContainer && this.mapContainer.nativeElement) {
+      this.mapContainer.nativeElement.focus();
+    }
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['gameSession'] && this.gameSession) {
       // Inicializar el mapa cuando se carga el juego
@@ -48,26 +55,22 @@ export class MapViewComponent implements OnInit, OnChanges {
       return;
     }
 
-    // Si hay una unidad seleccionada y la casilla es visible
-    if (this.selectedUnit && tile.isVisible) {
-      // Intentar mover la unidad seleccionada a la casilla
-      if (this.selectedUnit.movementPoints > 0) {
-        this.moveSelectedUnit(tile);
-      } else {
-        alert('Esta unidad no tiene más puntos de movimiento');
-      }
+    // Si no hay unidad seleccionada o si se hace clic en otra casilla con unidad
+    const unitOnTile = this.findUnitAt(tile.x, tile.y);
+    
+    if (unitOnTile && unitOnTile.owner === this.gameSession.currentPlayerId) {
+      // Si hay una unidad del jugador actual en esta casilla, seleccionarla
+      this.selectUnit(unitOnTile);
+      this.highlightedTile = tile; // Mantenemos el seguimiento interno
+    } else if (this.selectedUnit) {
+      // Si ya hay una unidad seleccionada pero se hace clic en otra casilla
+      // sin unidad o con unidad enemiga, no hacer nada (el movimiento es con flechas)
     } else {
-      // Seleccionar unidad si hay una en esta casilla
-      const unitOnTile = this.findUnitAt(tile.x, tile.y);
-      if (unitOnTile && unitOnTile.owner === this.gameSession.currentPlayerId) {
-        this.selectUnit(unitOnTile);
-      } else {
-        this.clearSelection();
-      }
+      // Si no hay unidad seleccionada y se hace clic en una casilla
+      // sin unidad, limpiar la selección
+      this.clearSelection();
+      this.highlightedTile = null;
     }
-
-    // Destacar la casilla seleccionada
-    this.highlightedTile = tile;
   }
 
   // Mueve la unidad seleccionada a una casilla
@@ -80,6 +83,10 @@ export class MapViewComponent implements OnInit, OnChanges {
       return;
     }
 
+    // Guardar la posición original antes del movimiento
+    const originalX = this.selectedUnit.position.x;
+    const originalY = this.selectedUnit.position.y;
+
     const success = this.movementService.moveUnit(
       this.selectedUnit,
       { x: targetTile.x, y: targetTile.y },
@@ -88,6 +95,9 @@ export class MapViewComponent implements OnInit, OnChanges {
     );
 
     if (success) {
+      // Actualizar el resaltado para seguir a la unidad
+      this.highlightedTile = targetTile;
+      
       // Actualizar la niebla de guerra después del movimiento
       this.updateAllUnitsVisibility();
 
@@ -118,6 +128,7 @@ export class MapViewComponent implements OnInit, OnChanges {
   // Limpia la selección actual
   clearSelection(): void {
     this.selectedUnit = null;
+    this.highlightedTile = null;
     this.movementService.setCurrentPath([]);
   }
 
@@ -143,6 +154,28 @@ export class MapViewComponent implements OnInit, OnChanges {
     return this.gameSession.units.find(unit =>
       unit.position.x === x && unit.position.y === y
     ) || null;
+  }
+
+  // Verifica si hay una unidad en las coordenadas dadas
+  hasUnitAt(x: number, y: number): boolean {
+    if (!this.gameSession) return false;
+    
+    return this.gameSession.units.some(unit => 
+      unit.position.x === x && 
+      unit.position.y === y
+    );
+  }
+
+  // Verifica si hay una unidad que se puede mover en las coordenadas dadas
+  canUnitAtTileMove(x: number, y: number): boolean {
+    if (!this.gameSession) return false;
+    
+    const unit = this.gameSession.units.find(unit => 
+      unit.position.x === x && 
+      unit.position.y === y
+    );
+    
+    return !!unit && unit.owner === this.gameSession.currentPlayerId && unit.movementPoints > 0;
   }
 
   // Chequea si una casilla está en la ruta calculada
@@ -185,6 +218,55 @@ export class MapViewComponent implements OnInit, OnChanges {
       return map.tiles[y][x].isVisible;
     }
     return false;
+  }
+
+  // Maneja las teclas de dirección
+  @HostListener('window:keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent): void {
+    if (!this.selectedUnit || !this.gameSession) {
+      return;
+    }
+
+    // Si la unidad no tiene puntos de movimiento, no hacer nada
+    if (this.selectedUnit.movementPoints <= 0) {
+      return;
+    }
+
+    let targetX = this.selectedUnit.position.x;
+    let targetY = this.selectedUnit.position.y;
+
+    // Determinar dirección según tecla pulsada
+    switch (event.key) {
+      case 'ArrowUp':
+        targetY--;
+        break;
+      case 'ArrowDown':
+        targetY++;
+        break;
+      case 'ArrowLeft':
+        targetX--;
+        break;
+      case 'ArrowRight':
+        targetX++;
+        break;
+      default:
+        return;
+    }
+
+    // Comprobar si las coordenadas están dentro de los límites del mapa
+    if (targetX < 0 || targetX >= this.gameSession.map.width || 
+        targetY < 0 || targetY >= this.gameSession.map.height) {
+      return;
+    }
+
+    // Obtener la casilla destino
+    const targetTile = this.gameSession.map.tiles[targetY][targetX];
+    
+    // Intentar mover la unidad
+    this.moveSelectedUnit(targetTile);
+    
+    // Evitar que el evento se propague (evitar scroll)
+    event.preventDefault();
   }
 
   // Terminar el turno

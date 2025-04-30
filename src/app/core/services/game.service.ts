@@ -185,7 +185,7 @@ export class GameService {
   }
 
   private createStartingUnits(civilization: string, position: {x: number, y: number}): Unit[] {
-    // Unidades iniciales: un colono y un guerrero
+    // Solo crear un colono como unidad inicial para pruebas
     return [
       {
         id: 'settler_1',
@@ -196,26 +196,6 @@ export class GameService {
         movementPoints: 2,
         maxMovementPoints: 2,
         strength: 0,
-        health: 100,
-        maxHealth: 100,
-        isRanged: false,
-        experience: 0,
-        abilities: [],
-        canMove: true,
-        isFortified: false
-      },
-      {
-        id: 'warrior_1',
-        name: 'Guerrero',
-        type: 'warrior',
-        owner: 'player1',
-        position: {
-          x: position.x + 1 < 0 ? position.x : position.x + 1,
-          y: position.y
-        },
-        movementPoints: 2,
-        maxMovementPoints: 2,
-        strength: 5,
         health: 100,
         maxHealth: 100,
         isRanged: false,

@@ -2,7 +2,7 @@
   @if (!gameSession) {
     <div class="loading-message">Cargando mapa...</div>
   } @else {
-    <div class="map-viewport" #mapContainer>
+    <div class="map-viewport" #mapContainer tabindex="0" (keydown)="onKeyDown($event)">
       <!-- Simple grid layout for the map -->
       <div class="map-grid">
         @for (row of gameSession.map.tiles; track $index) {
@@ -13,28 +13,14 @@
                 [isHighlighted]="highlightedTile === tile"
                 [isPathTile]="isInPath(tile.x, tile.y)"
                 [isUnitSelected]="!!selectedUnit && selectedUnit.position.x === tile.x && selectedUnit.position.y === tile.y"
+                [hasUnit]="hasUnitAt(tile.x, tile.y)"
+                [unitCanMove]="canUnitAtTileMove(tile.x, tile.y)"
                 (tileClick)="onTileClick(tile)">
               </app-tile>
             }
           </div>
         }
       </div>
-
-      <!-- Units (displayed as text for simplicity) -->
-      @for (unit of gameSession.units; track unit.id) {
-        @if (isTileVisible(unit.position.x, unit.position.y)) {
-          <div class="map-unit"
-               [style.top.px]="(unit.position.y * 54) + 2"
-               [style.left.px]="(unit.position.x * 54) + 2"
-               [class.selected]="selectedUnit?.id === unit.id">
-            <span class="unit-icon">
-              @if (unit.type === 'settler') { 👨‍🌾 }
-              @else if (unit.type === 'warrior') { ⚔️ }
-              @else { 🧍 }
-            </span>
-          </div>
-        }
-      }
     </div>
 
     <!-- Info panel if a unit is selected -->
