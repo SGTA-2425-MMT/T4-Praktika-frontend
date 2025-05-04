@@ -1,5 +1,4 @@
-export type UnitType = 'warrior' | 'archer' | 'scout' | 'settler' | 'worker' | 'swordsman' | 'horseman' | 'catapult';
-export type UnitAbility = 'woodsmanship' | 'amphibious' | 'drill' | 'medic' | 'sentry';
+export type UnitType = 'settler' | 'warrior' | 'archer' | 'horseman' | 'swordsman' | 'worker' | 'scout';
 
 export interface Unit {
   id: string;
@@ -15,10 +14,9 @@ export interface Unit {
   strength: number;
   health: number;
   maxHealth: number;
-  range?: number; // Para unidades a distancia
   isRanged: boolean;
   experience: number;
-  abilities: UnitAbility[];
+  abilities: string[];
   canMove: boolean;
   isFortified: boolean;
 }

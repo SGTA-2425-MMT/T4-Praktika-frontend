@@ -2,19 +2,18 @@
   @if (!gameSession) {
     <div class="loading-message">Cargando mapa...</div>
   } @else {
-    <div class="map-viewport" #mapContainer tabindex="0" (keydown)="onKeyDown($event)">
-      <!-- Simple grid layout for the map -->
+    <div class="map-viewport" tabindex="0" #mapContainer>
       <div class="map-grid">
         @for (row of gameSession.map.tiles; track $index) {
           <div class="map-row">
-            @for (tile of row; track $index) {
-              <app-tile
+            @for (tile of row; track tile.id) {
+              <app-tile 
                 [tile]="tile"
-                [isHighlighted]="highlightedTile === tile"
-                [isPathTile]="isInPath(tile.x, tile.y)"
                 [isUnitSelected]="!!selectedUnit && selectedUnit.position.x === tile.x && selectedUnit.position.y === tile.y"
+                [isPathTile]="isInPath(tile.x, tile.y)"
                 [hasUnit]="hasUnitAt(tile.x, tile.y)"
                 [unitCanMove]="canUnitAtTileMove(tile.x, tile.y)"
+                [unitType]="getUnitTypeAt(tile.x, tile.y)"
                 (tileClick)="onTileClick(tile)">
               </app-tile>
             }
@@ -23,23 +22,61 @@
       </div>
     </div>
 
-    <!-- Info panel if a unit is selected -->
-    <div class="info-panel" *ngIf="selectedUnit">
-      <h3>{{ selectedUnit.name }}</h3>
-      <p>Tipo: {{ selectedUnit.type }}</p>
-      <p>Movimiento: {{ selectedUnit.movementPoints }}/{{ selectedUnit.maxMovementPoints }}</p>
-      @if (selectedUnit.strength) {
-        <p>Fuerza: {{ selectedUnit.strength }}</p>
-      }
+    <!-- Panel de información de unidad seleccionada -->
+    @if (selectedUnit) {
+      <div class="info-panel">
+        <h3>{{ selectedUnit.name }}</h3>
+        <p>Tipo: {{ selectedUnit.type }}</p>
+        <p>Salud: {{ selectedUnit.health }}/{{ selectedUnit.maxHealth }}</p>
+        <p>Movimiento: {{ selectedUnit.movementPoints }}/{{ selectedUnit.maxMovementPoints }}</p>
 
-      <div class="action-buttons">
-        <button *ngIf="selectedUnit.movementPoints > 0" (click)="clearSelection()">Cancelar</button>
-        <button *ngIf="!selectedUnit.isFortified" (click)="fortifyUnit()">Fortificar</button>
-        <button (click)="waitUnit()">Esperar</button>
+        <!-- Acciones específicas por tipo de unidad -->
+        @if (isSettlerSelected()) {
+          <div class="action-buttons">
+            <button (click)="foundCity()" [disabled]="selectedUnit.movementPoints === 0">
+              Fundar Ciudad
+            </button>
+          </div>
+        }
+
+        <!-- Acciones comunes para todas las unidades -->
+        <div class="action-buttons">
+          <button (click)="fortifyUnit()" [disabled]="selectedUnit.movementPoints === 0">
+            Fortificar
+          </button>
+          <button (click)="waitUnit()" [disabled]="selectedUnit.movementPoints === 0">
+            Esperar
+          </button>
+        </div>
       </div>
-    </div>
+    }
 
-    <!-- End turn button -->
-    <button class="end-turn-button" (click)="finishTurn()">Terminar Turno</button>
+    <!-- Vista de la ciudad al seleccionarla -->
+    @if (selectedCity) {
+      <app-city-view
+        [city]="selectedCity"
+        (close)="closeCity()"
+        (production)="onCityProduction($event)">
+      </app-city-view>
+    }
+
+    <!-- Diálogo para nombrar la ciudad -->
+    @if (showFoundCityDialog) {
+      <div class="city-dialog-overlay">
+        <div class="city-dialog">
+          <h3>Nombra tu nueva ciudad</h3>
+          <input type="text" [(ngModel)]="cityName" placeholder="Nombre de la ciudad">
+          <div class="dialog-buttons">
+            <button (click)="cancelFoundCity()">Cancelar</button>
+            <button (click)="confirmFoundCity()" [disabled]="!cityName">Fundar</button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Botón de fin de turno -->
+    <button class="end-turn-button" (click)="finishTurn()">
+      Fin de Turno
+    </button>
   }
 </div>

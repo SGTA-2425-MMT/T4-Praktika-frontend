@@ -101,6 +101,22 @@ export class GameComponent implements OnInit, OnDestroy {
 
   endTurn(): void {
     this.gameService.endTurn();
+    
+    // Recargar la sesión de juego con los datos actualizados
+    this.gameSession = this.gameService.currentGame;
+    
+    // Mostrar un mensaje de turno nuevo
+    this.showNewTurnNotification();
+  }
+
+  private showNewTurnNotification(): void {
+    if (!this.gameSession) return;
+    
+    // Aquí podrías implementar una notificación visual
+    console.log(`Comenzando turno ${this.gameSession.turn}`);
+    
+    // Verificar si hay nuevas unidades o ciudades que crecieron
+    // (Funcionalidad que se puede añadir más adelante)
   }
 
   returnToMainMenu(): void {

@@ -12,6 +12,14 @@ import { MapTile } from '../../../core/models/map.model';
       (click)="onClick()">
       <!-- Coordenadas para depuración -->
       <div class="coordinates" *ngIf="tile.isExplored">{{tile.x}},{{tile.y}}</div>
+      
+      <!-- Indicador de ciudad -->
+      <div class="city-indicator" *ngIf="tile.hasCityOnTile">🏙️</div>
+      
+      <!-- Indicador de unidad -->
+      <div class="unit-indicator" *ngIf="hasUnit && unitType" [ngClass]="unitType">
+        {{ getUnitSymbol() }}
+      </div>
     </div>
   `,
   styles: [`
@@ -47,20 +55,53 @@ import { MapTile } from '../../../core/models/map.model';
     .selected { border: 2px solid red; }
     .path-tile { border: 2px dashed #ecd613; }
     .has-unit { position: relative; }
-    .has-unit:after {
-      content: '';
+    .unit-can-move { border: 2px solid yellow; }
+    .unexplored { background-color: #1a1a1a; }
+    
+    /* Indicadores de unidades */
+    .unit-indicator {
       position: absolute;
-      width: 20px;
-      height: 20px;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       background-color: white;
       border-radius: 50%;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      z-index: 2;
+      font-weight: bold;
+      z-index: 10;
+      border: 2px solid #333;
+      font-size: 14px;
     }
-    .unit-can-move { border: 2px solid yellow; }
-    .unexplored { background-color: #1a1a1a; }
+    
+    .settler {
+      background-color: #ff9900;
+      color: white;
+    }
+    
+    .warrior {
+      background-color: #cc0000;
+      color: white;
+    }
+    
+    .worker {
+      background-color: #3366cc;
+      color: white;
+    }
+    
+    /* Indicador de ciudad */
+    .city-indicator {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 24px;
+      z-index: 20;
+      cursor: pointer;
+    }
 
     /* Coordenadas para depuración */
     .coordinates {
@@ -83,10 +124,21 @@ export class TileComponent {
   @Input() isUnitSelected: boolean = false;
   @Input() hasUnit: boolean = false;
   @Input() unitCanMove: boolean = false;
+  @Input() unitType: string = '';
   @Output() tileClick = new EventEmitter<void>();
 
   onClick(): void {
     this.tileClick.emit();
+  }
+  
+  getUnitSymbol(): string {
+    // Devuelve un símbolo según el tipo de unidad
+    switch(this.unitType) {
+      case 'settler': return 'S';
+      case 'warrior': return 'W';
+      case 'worker': return 'T';
+      default: return '•';
+    }
   }
 
   getTileClasses(): any {

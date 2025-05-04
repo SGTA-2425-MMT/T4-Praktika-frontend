@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { GameMap, MapTile } from '../models/map.model';
-import { Unit } from '../models/unit.model';
+import { Unit, UnitType } from '../models/unit.model';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +11,7 @@ export class FogOfWarService {
   // Actualiza la visibilidad basada en la posición de una unidad
   updateVisibility(map: GameMap, unit: Unit, playerId: string): void {
     const { x, y } = unit.position;
-    const visionRange = this.getUnitVisionRange(unit);
+    const visionRange = this.getVisionRange(unit);
     
     // Visibilidad por la posición de la unidad
     for (let dy = -visionRange; dy <= visionRange; dy++) {
@@ -38,20 +38,21 @@ export class FogOfWarService {
     }
   }
   
-  // Devuelve el rango de visión de una unidad
-  private getUnitVisionRange(unit: Unit): number {
-    switch (unit.type) {
+  // Determinar el rango de visión según el tipo de unidad
+  private getVisionRange(unit: Unit): number {
+    switch(unit.type as UnitType) {
       case 'scout':
-        return 3;
+        return 3; // Exploradores tienen mejor visión
       case 'warrior':
       case 'archer':
-      case 'swordsman':
       case 'horseman':
-        return 2;
+      case 'swordsman':
+        return 2; // Unidades militares tienen visión estándar
       case 'settler':
       case 'worker':
+        return 2; // Unidades civiles tienen visión estándar también
       default:
-        return 2;
+        return 2; // Valor por defecto
     }
   }
   

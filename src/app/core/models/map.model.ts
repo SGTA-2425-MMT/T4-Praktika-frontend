@@ -8,15 +8,19 @@ export interface MapTile {
   x: number;
   y: number;
   terrain: TerrainType;
+  featureType?: FeatureType;
+  resource?: ResourceType;
   movementCost: number;
   defense: number;
   isVisible: boolean;
   isExplored: boolean;
-  resource?: ResourceType;
-  improvement?: ImprovementType;
-  unit?: string; // ID de la unidad en esta casilla
-  yields: TileYield;
-  featureType?: FeatureType;
+  yields: {
+    food: number;
+    production: number;
+    gold: number;
+  };
+  hasCityOnTile?: boolean;  // Indica si hay una ciudad en esta casilla
+  cityId?: string;          // ID de la ciudad en esta casilla, si existe
 }
 
 export interface TileYield {

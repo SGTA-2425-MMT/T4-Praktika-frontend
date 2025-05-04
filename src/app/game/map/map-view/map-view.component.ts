@@ -1,16 +1,20 @@
 import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, Input, Output, EventEmitter, OnChanges, SimpleChanges, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { MovementService } from '../../../core/services/movement.service';
 import { FogOfWarService } from '../../../core/services/fog-of-war.service';
+import { GameService } from '../../../core/services/game.service';
 import { TileComponent } from '../tile/tile.component';
 import { GameMap, MapTile, MapCoordinate } from '../../../core/models/map.model';
 import { Unit } from '../../../core/models/unit.model';
 import { GameSession } from '../../../core/services/game.service';
+import { City } from '../../../core/models/city.model';
+import { CityViewComponent } from '../../city/city-view/city-view.component';
 
 @Component({
   selector: 'app-map-view',
   standalone: true,
-  imports: [CommonModule, TileComponent],
+  imports: [CommonModule, TileComponent, FormsModule, CityViewComponent],
   templateUrl: './map-view.component.html',
   styleUrl: './map-view.component.scss'
 })
@@ -22,10 +26,14 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
   selectedUnit: Unit | null = null;
   highlightedTile: MapTile | null = null;
   currentPath: MapCoordinate[] = [];
+  showFoundCityDialog = false;
+  cityName = '';
+  selectedCity: City | null = null;
 
   constructor(
     private movementService: MovementService,
-    private fogOfWarService: FogOfWarService
+    private fogOfWarService: FogOfWarService,
+    private gameService: GameService
   ) {}
 
   ngOnInit(): void {
@@ -55,22 +63,43 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
       return;
     }
 
-    // Si no hay unidad seleccionada o si se hace clic en otra casilla con unidad
+    // Comprobar si hay una ciudad en la casilla
+    if (tile.hasCityOnTile) {
+      const cityOnTile = this.findCityAt(tile.x, tile.y);
+      if (cityOnTile && cityOnTile.ownerId === this.gameSession.currentPlayerId) {
+        this.selectedCity = cityOnTile;
+        this.clearSelection(); // Limpiar cualquier selección de unidades
+        return;
+      }
+    }
+
+    // Si no hay una ciudad del jugador, continuar con la lógica de unidades
     const unitOnTile = this.findUnitAt(tile.x, tile.y);
     
     if (unitOnTile && unitOnTile.owner === this.gameSession.currentPlayerId) {
       // Si hay una unidad del jugador actual en esta casilla, seleccionarla
       this.selectUnit(unitOnTile);
       this.highlightedTile = tile; // Mantenemos el seguimiento interno
-    } else if (this.selectedUnit) {
-      // Si ya hay una unidad seleccionada pero se hace clic en otra casilla
-      // sin unidad o con unidad enemiga, no hacer nada (el movimiento es con flechas)
     } else {
       // Si no hay unidad seleccionada y se hace clic en una casilla
       // sin unidad, limpiar la selección
       this.clearSelection();
       this.highlightedTile = null;
     }
+  }
+
+  // Método para cerrar la vista de la ciudad
+  closeCity(): void {
+    this.selectedCity = null;
+  }
+
+  // Encuentra una ciudad en unas coordenadas determinadas
+  findCityAt(x: number, y: number): City | null {
+    if (!this.gameSession) return null;
+
+    return this.gameSession.cities.find(city =>
+      city.position.x === x && city.position.y === y
+    ) || null;
   }
 
   // Mueve la unidad seleccionada a una casilla
@@ -147,6 +176,49 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
     this.clearSelection();
   }
 
+  // Fundar una ciudad con el colono seleccionado
+  foundCity(): void {
+    if (!this.selectedUnit || !this.gameSession || this.selectedUnit.type !== 'settler') {
+      return;
+    }
+
+    // Mostrar el diálogo para nombrar la ciudad
+    this.showFoundCityDialog = true;
+  }
+
+  // Confirmar la fundación de la ciudad con el nombre elegido
+  confirmFoundCity(): void {
+    if (!this.selectedUnit || !this.gameSession || !this.cityName) {
+      this.showFoundCityDialog = false;
+      return;
+    }
+
+    // Llamar al servicio para fundar la ciudad
+    const newCity = this.gameService.foundCity(this.selectedUnit, this.cityName);
+    
+    if (newCity) {
+      // La ciudad fue fundada exitosamente
+      console.log(`Ciudad ${this.cityName} fundada en (${newCity.position.x}, ${newCity.position.y})`);
+      
+      // Limpiar selección y resetear estados
+      this.clearSelection();
+      this.cityName = '';
+    }
+    
+    this.showFoundCityDialog = false;
+  }
+
+  // Cancelar la fundación de ciudad
+  cancelFoundCity(): void {
+    this.showFoundCityDialog = false;
+    this.cityName = '';
+  }
+
+  // Verificar si la unidad seleccionada es un colono
+  isSettlerSelected(): boolean {
+    return !!this.selectedUnit && this.selectedUnit.type === 'settler';
+  }
+
   // Encuentra una unidad en unas coordenadas determinadas
   findUnitAt(x: number, y: number): Unit | null {
     if (!this.gameSession) return null;
@@ -181,6 +253,17 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
   // Chequea si una casilla está en la ruta calculada
   isInPath(x: number, y: number): boolean {
     return this.currentPath.some(pos => pos.x === x && pos.y === y);
+  }
+
+  // Encuentra el tipo de unidad en unas coordenadas específicas
+  getUnitTypeAt(x: number, y: number): string {
+    if (!this.gameSession) return '';
+    
+    const unit = this.gameSession.units.find(unit =>
+      unit.position.x === x && unit.position.y === y
+    );
+    
+    return unit ? unit.type : '';
   }
 
   // Actualiza la visibilidad para una unidad
@@ -273,5 +356,45 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
   finishTurn(): void {
     this.endTurn.emit();
     this.clearSelection();
+  }
+
+  // Actualizar el método que maneja la producción de la ciudad
+  onCityProduction(productionDetails: {type: string, name: string}): void {
+    if (!this.selectedCity || !this.gameSession) return;
+    
+    // Buscar la ciudad en el arreglo de ciudades del juego
+    const cityIndex = this.gameSession.cities.findIndex(c => c.id === this.selectedCity!.id);
+    if (cityIndex === -1) return;
+    
+    // Obtener el costo y los turnos según el tipo de unidad
+    let cost = 0;
+    
+    switch (productionDetails.type) {
+      case 'warrior':
+        cost = 40;
+        break;
+      case 'settler':
+        cost = 80;
+        break;
+      case 'worker':
+        cost = 60;
+        break;
+    }
+    
+    // Calcular los turnos restantes basado en la producción por turno
+    const turnsLeft = Math.ceil(cost / this.selectedCity.productionPerTurn);
+    
+    // Actualizar la producción actual de la ciudad
+    this.gameSession.cities[cityIndex].currentProduction = {
+      id: `${productionDetails.type}_${Date.now()}`,
+      name: productionDetails.name,
+      type: 'unit',
+      cost: cost,
+      progress: 0,
+      turnsLeft: turnsLeft
+    };
+    
+    // Actualizar la ciudad seleccionada para reflejar los cambios
+    this.selectedCity = this.gameSession.cities[cityIndex];
   }
 }
