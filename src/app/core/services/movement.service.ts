@@ -125,15 +125,9 @@ export class MovementService {
   // Verifica si una unidad puede moverse a una casilla
   canMoveTo(tile: MapTile, unit: Unit): boolean {
     // Unidades terrestres no pueden moverse al océano
-    if ((unit.type !== 'worker' && unit.type !== 'settler') &&
-        (tile.terrain === 'ocean' || tile.terrain === 'coast')) {
-      return false;
-    }
 
-    // Nadie puede moverse a las montañas
-    if (tile.terrain === 'mountains') {
-      return false;
-    }
+
+
 
     // Verificar si hay otra unidad del mismo tipo (terrestre/naval)
     return true; // Simplificado, en un caso real habría que verificar las unidades en la casilla

@@ -49,14 +49,14 @@ export class GameService {
   createNewGame(settings: GameSettings): GameSession {
     // Generar dimensiones del mapa según el tamaño seleccionado
     const mapDimensions = this.getMapDimensions(settings.mapSize);
-    
+
     // Generar mapa
     const map = this.mapGeneratorService.generateMap(mapDimensions.width, mapDimensions.height);
-    
+
     // Crear unidades iniciales para el jugador
     const startingPosition = this.findSuitableStartingPosition(map);
     const units = this.createStartingUnits(settings.civilization, startingPosition);
-    
+
     // Crear sesión de juego
     const gameSession: GameSession = {
       id: 'game_' + Date.now(),
@@ -69,13 +69,13 @@ export class GameService {
       difficulty: settings.difficulty,
       createdAt: new Date()
     };
-    
+
     // Actualizar el estado y guardarlo
     this.currentGameSubject.next(gameSession);
-    
+
     // Revelar las áreas iniciales del mapa
     this.revealInitialMap(gameSession);
-    
+
     return gameSession;
   }
 
@@ -93,10 +93,10 @@ export class GameService {
   saveGame(): boolean {
     const game = this.currentGame;
     if (!game) return false;
-    
+
     // Actualizar la fecha de guardado
     game.lastSaved = new Date();
-    
+
     // Buscar si ya existe una partida con el mismo ID
     const existingIndex = this.savedGames.findIndex(g => g.id === game.id);
     if (existingIndex >= 0) {
@@ -104,7 +104,7 @@ export class GameService {
     } else {
       this.savedGames.push(game);
     }
-    
+
     // Guardar en localStorage
     this.persistSavedGames();
     return true;
@@ -119,7 +119,7 @@ export class GameService {
   deleteGame(gameId: string): boolean {
     const initialLength = this.savedGames.length;
     this.savedGames = this.savedGames.filter(game => game.id !== gameId);
-    
+
     // Si se eliminó alguna partida
     if (this.savedGames.length < initialLength) {
       this.persistSavedGames();
@@ -132,10 +132,10 @@ export class GameService {
   endTurn() {
     const game = this.currentGame;
     if (!game) return;
-    
+
     // Incrementar el turno
     game.turn++;
-    
+
     // Restaurar movimientos de las unidades
     game.units.forEach(unit => {
       if (unit.owner === game.currentPlayerId) {
@@ -143,7 +143,7 @@ export class GameService {
         unit.canMove = true;
       }
     });
-    
+
     // Actualizar el estado del juego
     this.currentGameSubject.next({...game});
   }
@@ -157,11 +157,12 @@ export class GameService {
 
   private getMapDimensions(size: string): {width: number, height: number} {
     switch(size) {
+      /*
       case 'small': return { width: 32, height: 24 };
       case 'medium': return { width: 48, height: 36 };
       case 'large': return { width: 64, height: 48 };
-      case 'huge': return { width: 80, height: 60 };
-      default: return { width: 48, height: 36 };
+      case 'huge': return { width: 80, height: 60 };*/
+      default: return { width: 50, height: 50 };
     }
   }
 
@@ -170,17 +171,17 @@ export class GameService {
     for (let attempt = 0; attempt < 100; attempt++) {
       const x = Math.floor(Math.random() * map.width);
       const y = Math.floor(Math.random() * map.height);
-      
+
       const tile = map.tiles[y][x];
       if (tile.terrain === 'grassland' || tile.terrain === 'plains') {
         return { x, y };
       }
     }
-    
+
     // Si no encontramos un lugar ideal, devolvemos una posición central
-    return { 
-      x: Math.floor(map.width / 2), 
-      y: Math.floor(map.height / 2) 
+    return {
+      x: Math.floor(map.width / 2),
+      y: Math.floor(map.height / 2)
     };
   }
 
@@ -221,7 +222,7 @@ export class GameService {
       for (let dx = -radius; dx <= radius; dx++) {
         const x = position.x + dx;
         const y = position.y + dy;
-        
+
         if (x >= 0 && x < map.width && y >= 0 && y < map.height) {
           // Verificar si está dentro de un círculo aproximado
           if (Math.sqrt(dx*dx + dy*dy) <= radius) {

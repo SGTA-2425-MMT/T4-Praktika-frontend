@@ -1,33 +1,24 @@
 <div
-  [ngClass]="[
-    'tile',
-    tile.terrain,
-    getTileClass()
-  ]"
-  (click)="onClick()">
-
+  class="tile"
+  [ngClass]="getTileClasses()"
+  (click)="onClick()"
+>
   <!-- Coordenadas para depuración -->
   <div class="debug-coords" *ngIf="tile.isExplored">{{tile.x}},{{tile.y}}</div>
 
   <!-- Características adicionales usando emojis -->
-  <div *ngIf="tile.isExplored && tile.featureType"
+  <div *ngIf="tile.isExplored && tile.featureType && tile.featureType !== 'none'"
        class="feature-image feature-{{tile.featureType}}"
        [style.opacity]="tile.isVisible ? '1' : '0.7'"></div>
 
   <!-- Recursos con emojis -->
   <div *ngIf="tile.isExplored && tile.isVisible && tile.resource"
        class="resource-image resource-{{tile.resource}}">
-    <!-- Recursos estratégicos -->
     <span *ngIf="isStrategicResource(tile.resource)">⚔️</span>
-    <!-- Recursos de alimento -->
     <span *ngIf="isFoodResource(tile.resource)">🍎</span>
-    <!-- Recursos de lujo -->
     <span *ngIf="isLuxuryResource(tile.resource)">💎</span>
   </div>
 
-  <!-- Niebla de guerra para casillas no exploradas -->
   <div *ngIf="!tile.isExplored" class="fog-of-war"></div>
-
-  <!-- Overlay para casillas exploradas pero no visibles actualmente -->
   <div *ngIf="tile.isExplored && !tile.isVisible" class="fog-overlay"></div>
 </div>
