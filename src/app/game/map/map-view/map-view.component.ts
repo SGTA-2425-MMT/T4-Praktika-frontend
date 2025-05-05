@@ -6,7 +6,7 @@ import { FogOfWarService } from '../../../core/services/fog-of-war.service';
 import { GameService } from '../../../core/services/game.service';
 import { TileComponent } from '../tile/tile.component';
 import { GameMap, MapTile, MapCoordinate } from '../../../core/models/map.model';
-import { Unit } from '../../../core/models/unit.model';
+import { Unit, UnitAction } from '../../../core/models/unit.model';
 import { GameSession } from '../../../core/services/game.service';
 import { City } from '../../../core/models/city.model';
 import { CityViewComponent } from '../../city/city-view/city-view.component';
@@ -373,12 +373,35 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
       case 'warrior':
         cost = 40;
         break;
+      case 'archer':
+        cost = 50;
+        break;
+      case 'horseman':
+        cost = 70;
+        break;
+      case 'swordsman':
+        cost = 75;
+        break;
+      case 'catapult':
+        cost = 90;
+        break;
+      case 'galley':
+        cost = 65;
+        break;
+      case 'warship':
+        cost = 85;
+        break;
+      case 'scout':
+        cost = 35;
+        break;
       case 'settler':
         cost = 80;
         break;
       case 'worker':
         cost = 60;
         break;
+      default:
+        cost = 50;
     }
     
     // Calcular los turnos restantes basado en la producción por turno
@@ -396,5 +419,71 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
     
     // Actualizar la ciudad seleccionada para reflejar los cambios
     this.selectedCity = this.gameSession.cities[cityIndex];
+  }
+
+  // Verificar si la unidad puede realizar una acción específica
+  canUnitPerformAction(unit: Unit, action: UnitAction): boolean {
+    if (!unit || !unit.availableActions) return false;
+    return unit.availableActions.includes(action);
+  }
+
+  // Realizar una acción con la unidad seleccionada
+  performUnitAction(action: UnitAction): void {
+    if (!this.selectedUnit || !this.gameSession) return;
+    
+    switch(action) {
+      case 'fortify':
+        this.fortifyUnit();
+        break;
+      case 'found_city':
+        this.foundCity();
+        break;
+      case 'build_improvement':
+        this.buildImprovement();
+        break;
+      case 'sleep':
+        this.sleepUnit();
+        break;
+      case 'skip':
+        this.waitUnit();
+        break;
+    }
+  }
+
+  // Método para poner una unidad a dormir (hasta que sea atacada o el jugador la despierte)
+  sleepUnit(): void {
+    if (!this.selectedUnit) return;
+    this.selectedUnit.currentAction = 'sleep';
+    this.clearSelection();
+  }
+
+  // Método para construir una mejora de terreno con un trabajador
+  buildImprovement(): void {
+    if (!this.selectedUnit || !this.gameSession || this.selectedUnit.type !== 'worker') {
+      return;
+    }
+    
+    // Aquí mostraríamos un menú para elegir qué mejora construir
+    // Por ahora, simplemente fingimos que construye algo genérico
+    this.selectedUnit.currentAction = 'build_improvement';
+    this.selectedUnit.turnsToComplete = 3; // Por ejemplo, 3 turnos para construir
+    this.selectedUnit.movementPoints = 0; // Ya no puede moverse este turno
+    
+    console.log(`El trabajador comenzó a construir una mejora en (${this.selectedUnit.position.x}, ${this.selectedUnit.position.y})`);
+    this.clearSelection();
+  }
+
+  // Método para obtener el nombre legible de una acción
+  getActionName(action: UnitAction): string {
+    switch(action) {
+      case 'move': return 'Moviéndose';
+      case 'attack': return 'Atacando';
+      case 'fortify': return 'Fortificado';
+      case 'sleep': return 'Durmiendo';
+      case 'skip': return 'Esperando';
+      case 'found_city': return 'Fundando ciudad';
+      case 'build_improvement': return 'Construyendo mejora';
+      default: return 'Desconocida';
+    }
   }
 }

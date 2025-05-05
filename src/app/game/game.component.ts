@@ -100,12 +100,9 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   endTurn(): void {
+    // Ahora este método simplemente llama a la función en el servicio
     this.gameService.endTurn();
-    
-    // Recargar la sesión de juego con los datos actualizados
     this.gameSession = this.gameService.currentGame;
-    
-    // Mostrar un mensaje de turno nuevo
     this.showNewTurnNotification();
   }
 
@@ -121,5 +118,30 @@ export class GameComponent implements OnInit, OnDestroy {
 
   returnToMainMenu(): void {
     this.router.navigate(['/main-menu']);
+  }
+
+  getCurrentPhaseName(): string {
+    if (!this.gameSession || !this.gameSession.currentPhase) return 'Movimiento';
+    
+    switch(this.gameSession.currentPhase) {
+      case 'movement': return 'Movimiento';
+      case 'action': return 'Acción';
+      case 'diplomacy': return 'Diplomacia';
+      case 'production': return 'Producción';
+      case 'research': return 'Investigación';
+      case 'end': return 'Fin del Turno';
+      default: return 'Desconocida';
+    }
+  }
+
+  nextPhase(): void {
+    this.gameService.nextPhase();
+    this.gameSession = this.gameService.currentGame;
+    this.showPhaseNotification();
+  }
+
+  private showPhaseNotification(): void {
+    // Aquí se podría implementar una animación o notificación visual
+    console.log(`Cambiando a fase: ${this.getCurrentPhaseName()}`);
   }
 }

@@ -24,29 +24,48 @@
 
     <!-- Panel de información de unidad seleccionada -->
     @if (selectedUnit) {
-      <div class="info-panel">
+      <div class="info-panel unit-panel">
         <h3>{{ selectedUnit.name }}</h3>
         <p>Tipo: {{ selectedUnit.type }}</p>
         <p>Salud: {{ selectedUnit.health }}/{{ selectedUnit.maxHealth }}</p>
         <p>Movimiento: {{ selectedUnit.movementPoints }}/{{ selectedUnit.maxMovementPoints }}</p>
 
-        <!-- Acciones específicas por tipo de unidad -->
-        @if (isSettlerSelected()) {
-          <div class="action-buttons">
-            <button (click)="foundCity()" [disabled]="selectedUnit.movementPoints === 0">
-              Fundar Ciudad
-            </button>
+        <!-- Acción actual -->
+        @if (selectedUnit.currentAction) {
+          <div class="current-action">
+            <p><strong>Acción actual:</strong> {{ getActionName(selectedUnit.currentAction) }}</p>
+            @if (selectedUnit.turnsToComplete) {
+              <p>Turnos restantes: {{ selectedUnit.turnsToComplete }}</p>
+            }
           </div>
         }
 
-        <!-- Acciones comunes para todas las unidades -->
+        <!-- Acciones específicas por tipo de unidad -->
         <div class="action-buttons">
-          <button (click)="fortifyUnit()" [disabled]="selectedUnit.movementPoints === 0">
-            Fortificar
-          </button>
-          <button (click)="waitUnit()" [disabled]="selectedUnit.movementPoints === 0">
-            Esperar
-          </button>
+          @if (canUnitPerformAction(selectedUnit, 'found_city')) {
+            <button (click)="performUnitAction('found_city')">
+              Fundar Ciudad
+            </button>
+          }
+          
+          @if (canUnitPerformAction(selectedUnit, 'build_improvement')) {
+            <button (click)="performUnitAction('build_improvement')">
+              Construir Mejora
+            </button>
+          }
+          
+          <!-- Acciones comunes para todas las unidades -->
+          @if (selectedUnit.movementPoints > 0) {
+            <button (click)="performUnitAction('fortify')">
+              Fortificar
+            </button>
+            <button (click)="performUnitAction('sleep')">
+              Dormir
+            </button>
+            <button (click)="performUnitAction('skip')">
+              Esperar
+            </button>
+          }
         </div>
       </div>
     }

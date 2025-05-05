@@ -19,7 +19,7 @@ export class CityService {
     const x = settler.position.x;
     const y = settler.position.y;
     
-    // Crear la estructura de la ciudad
+    // Crear la estructura de la ciudad con todos los campos requeridos
     const city: City = {
       id: `city_${Date.now()}`,
       name: name,
@@ -38,7 +38,22 @@ export class CityService {
       culture: 0,
       culturePerTurn: 1, // Valor inicial básico
       happiness: 0,
-      turnsFounded: currentTurn
+      turnsFounded: currentTurn,
+      
+      // Inicializar los campos requeridos que faltaban
+      buildings: [],
+      workingTiles: [],
+      defense: 5,
+      health: 100,
+      maxHealth: 100,
+      cultureBorder: 1,
+      cultureToExpand: 30,
+      specialists: {
+        scientists: 0,
+        merchants: 0,
+        artists: 0,
+        engineers: 0
+      }
     };
     
     // Marcar la casilla como que tiene una ciudad

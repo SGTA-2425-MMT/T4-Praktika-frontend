@@ -92,6 +92,41 @@ import { MapTile } from '../../../core/models/map.model';
       color: white;
     }
     
+    .archer {
+      background-color: #8b4513;  /* Brown */
+      color: white;
+    }
+    
+    .horseman {
+      background-color: #006400;  /* Dark Green */
+      color: white;
+    }
+    
+    .swordsman {
+      background-color: #8b0000;  /* Dark Red */
+      color: white;
+    }
+    
+    .catapult {
+      background-color: #696969;  /* Dim Gray */
+      color: white;
+    }
+    
+    .galley {
+      background-color: #4682b4;  /* Steel Blue */
+      color: white;
+    }
+    
+    .warship {
+      background-color: #000080;  /* Navy */
+      color: white;
+    }
+    
+    .scout {
+      background-color: #9acd32;  /* Yellow Green */
+      color: white;
+    }
+    
     /* Indicador de ciudad */
     .city-indicator {
       position: absolute;
@@ -137,6 +172,13 @@ export class TileComponent {
       case 'settler': return 'S';
       case 'warrior': return 'W';
       case 'worker': return 'T';
+      case 'archer': return 'A';
+      case 'horseman': return 'H';
+      case 'swordsman': return 'E';
+      case 'catapult': return 'C';
+      case 'galley': return 'G';
+      case 'warship': return 'B';
+      case 'scout': return 'X';
       default: return '•';
     }
   }

@@ -16,6 +16,9 @@ export class CityViewComponent {
   @Output() production = new EventEmitter<{type: string, name: string}>();
   
   activeTab: 'overview' | 'production' | 'buildings' = 'overview';
+  
+  // Exponer Math como propiedad para usarlo en la plantilla
+  Math = Math;
 
   constructor() {}
 
@@ -52,6 +55,27 @@ export class CityViewComponent {
         break;
       case 'worker':
         name = 'Trabajador';
+        break;
+      case 'archer':
+        name = 'Arquero';
+        break;
+      case 'horseman':
+        name = 'Jinete';
+        break;
+      case 'swordsman':
+        name = 'Espadachín';
+        break;
+      case 'catapult':
+        name = 'Catapulta';
+        break;
+      case 'galley':
+        name = 'Galera';
+        break;
+      case 'warship':
+        name = 'Barco de Guerra';
+        break;
+      case 'scout':
+        name = 'Explorador';
         break;
       default:
         name = 'Desconocido';
