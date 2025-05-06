@@ -87,7 +87,6 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
     }
     // Solo permitir seleccionar unidades en fase de acción
     if (!this.canManageUnits) {
-      this.clearSelection();
       return;
     }
 
@@ -96,7 +95,6 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
       const cityOnTile = this.findCityAt(tile.x, tile.y);
       if (cityOnTile && cityOnTile.ownerId === this.gameSession.currentPlayerId) {
         this.selectedCity = cityOnTile;
-        this.clearSelection(); // Limpiar cualquier selección de unidades
         return;
       }
     }
@@ -108,12 +106,12 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
       // Si hay una unidad del jugador actual en esta casilla, seleccionarla
       this.selectUnit(unitOnTile);
       this.highlightedTile = tile; // Mantenemos el seguimiento interno
-    } else {
-      // Si no hay unidad seleccionada y se hace clic en una casilla
-      // sin unidad, limpiar la selección
-      this.clearSelection();
-      this.highlightedTile = null;
+    } else if (this.selectedUnit && this.isTileMovable(tile.x, tile.y)) {
+      // Si hay una unidad seleccionada y el usuario hace clic en una casilla a la que se puede mover
+      this.moveSelectedUnit(tile);
     }
+    // Ya no limpiamos la selección si se hace clic en un espacio vacío
+    // Esto permite que la barra lateral permanezca visible
   }
 
   // Método para cerrar la vista de la ciudad
@@ -203,9 +201,15 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
 
   // Fundar una ciudad con la unidad seleccionada (permite cualquier tipo de unidad)
   foundCity(): void {
+    console.log('Intentando fundar ciudad...');
     if (!this.selectedUnit || !this.gameSession) {
+      console.error('No hay unidad seleccionada o sesión de juego');
       return;
     }
+
+    console.log(`Unidad seleccionada: ${this.selectedUnit.type} en posición (${this.selectedUnit.position.x}, ${this.selectedUnit.position.y})`);
+  // Para depuración: verificar si el botón está llamando a esta función
+    alert('Función foundCity() llamada');
 
     // Mostrar el diálogo para nombrar la ciudad
     this.showFoundCityDialog = true;
@@ -213,21 +217,37 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
 
   // Confirmar la fundación de la ciudad con el nombre elegido
   confirmFoundCity(): void {
+    console.log('Confirmando fundación de ciudad...');
     if (!this.selectedUnit || !this.gameSession || !this.cityName) {
+      console.error('Datos insuficientes para fundar ciudad:', {
+        selectedUnit: !!this.selectedUnit,
+        gameSession: !!this.gameSession,
+        cityName: this.cityName
+      });
       this.showFoundCityDialog = false;
       return;
     }
 
     // Llamar al servicio para fundar la ciudad
+    console.log(`Llamando a gameService.foundCity con nombre: ${this.cityName}`);
     const newCity = this.gameService.foundCity(this.selectedUnit, this.cityName);
 
     if (newCity) {
       // La ciudad fue fundada exitosamente
       console.log(`Ciudad ${this.cityName} fundada en (${newCity.position.x}, ${newCity.position.y})`);
 
+      // Verificar el estado del tile para asegurar que se actualizó correctamente
+      const cityTile = this.gameSession.map.tiles[newCity.position.y][newCity.position.x];
+      console.log('Estado del tile después de fundar ciudad:', {
+        hasCityOnTile: cityTile.hasCityOnTile,
+        cityId: cityTile.cityId
+      });
+
       // Limpiar selección y resetear estados
       this.clearSelection();
       this.cityName = '';
+    } else {
+      console.error('Error al fundar la ciudad');
     }
 
     this.showFoundCityDialog = false;
@@ -454,13 +474,27 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
 
   // Realizar una acción con la unidad seleccionada
   performUnitAction(action: UnitAction): void {
-    if (!this.selectedUnit || !this.gameSession) return;
-    if (!this.canManageUnits) return;
+    console.log(`Intentando realizar acción: ${action}`);
+    if (!this.selectedUnit || !this.gameSession) {
+      console.error('No hay unidad seleccionada o sesión de juego');
+      return;
+    }
+
+    if (!this.canManageUnits) {
+      console.error('No se pueden gestionar unidades en esta fase');
+      return;
+    }
 
     switch(action) {
       case 'found_city':
+        console.log('Llamando a foundCity() desde performUnitAction');
         this.foundCity();
         break;
+      case 'build_improvement':
+        this.buildImprovement();
+        break;
+      default:
+        console.error(`Acción desconocida: ${action}`);
     }
   }
 
@@ -540,4 +574,11 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
   isTileMovable(x: number, y: number): boolean {
     return this.movableTiles.some(t => t.x === x && t.y === y);
   }
+    // Añade este método a la clase MapViewComponent
+    getUnitCssClassAt(x: number, y: number): string {
+      const unit = this.findUnitAt(x, y);
+      if (!unit) return '';
+      if (unit.type === 'settler') return 'settler';
+      return '';
+    }
 }

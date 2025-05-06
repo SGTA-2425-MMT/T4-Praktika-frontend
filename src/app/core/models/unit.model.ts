@@ -1,14 +1,14 @@
-export type UnitType = 
+export type UnitType =
   // Unidades terrestres
   'settler' | 'warrior' | 'archer' | 'horseman' | 'swordsman' | 'catapult' |
   // Unidades navales
-  'galley' | 'warship' | 
+  'galley' | 'warship' |
   // Unidades aéreas (opcionales)
   'fighter' | 'bomber' |
   // Especiales
   'worker' | 'scout';
 
-export type UnitAction = 'move' | 'attack' | 'fortify' | 'sleep' | 'skip' | 'found_city' | 'build_improvement';
+export type UnitAction = 'move' | 'attack' | 'fortify' |'found_city' | 'build_improvement' | 'negotiate';
 
 export interface Unit {
   id: string;
@@ -34,7 +34,7 @@ export interface Unit {
   attacksPerTurn?: number;
   movementType?: 'land' | 'naval' | 'air';
   cost?: number;
-  
+
   // Nuevos campos para mejorar la jugabilidad
   availableActions?: UnitAction[];
   turnsToComplete?: number; // Para acciones como construir mejoras
@@ -68,3 +68,35 @@ export interface TerrainEffect {
   defenseBonus: number;
   attackPenalty: number;
 }
+
+export interface SettlerUnit extends Unit {
+  type: 'settler';
+  movementPoints: 2;
+  maxMovementPoints: 2;
+  strength: 0; // No puede pelear
+  isRanged: false;
+  availableActions: UnitAction[]; // Ej: ['move', 'found_city', 'negotiate']
+  canNegotiate: true;
+}
+
+// Ejemplo de creación de un Settler:
+export const createSettler = (owner: string, x: number, y: number): SettlerUnit => ({
+  id: `settler_${Date.now()}`,
+  name: 'Settler',
+  type: 'settler',
+  owner,
+  position: { x, y },
+  movementPoints: 2,
+  maxMovementPoints: 2,
+  strength: 0,
+  health: 100,
+  maxHealth: 100,
+  isRanged: false,
+  experience: 0,
+  abilities: [],
+  canMove: true,
+  isFortified: false,
+  availableActions: ['move', 'found_city', 'negotiate'],
+  canNegotiate: true
+});
+

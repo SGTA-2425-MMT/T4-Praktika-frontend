@@ -2,6 +2,53 @@
   @if (!gameSession) {
     <div class="loading-message">Cargando mapa...</div>
   } @else {
+    <!-- Añadimos la barra lateral que aparece durante la fase de acción -->
+    <div class="lateral-sidebar" [class.visible]="currentPhase === 'movimiento_accion'">
+      <div class="sidebar-header">
+        <h3>Panel de Control</h3>
+      </div>
+
+      <div class="sidebar-content">
+        @if (selectedUnit) {
+          <div class="unit-info">
+            <h4>{{ selectedUnit.name }}</h4>
+            <p>Tipo: {{ selectedUnit.type }}</p>
+            <p>Salud: {{ selectedUnit.health }}/{{ selectedUnit.maxHealth }}</p>
+            <p>Movimiento: {{ selectedUnit.movementPoints }}/{{ selectedUnit.maxMovementPoints }}</p>
+
+            <!-- Acción actual -->
+            @if (selectedUnit.currentAction) {
+              <div class="current-action">
+                <p><strong>Acción actual:</strong> {{ getActionName(selectedUnit.currentAction) }}</p>
+                @if (selectedUnit.turnsToComplete) {
+                  <p>Turnos restantes: {{ selectedUnit.turnsToComplete }}</p>
+                }
+              </div>
+            }
+
+            <!-- Acciones específicas por tipo de unidad -->
+            <div class="action-buttons">
+              @if (canUnitPerformAction(selectedUnit, 'found_city')) {
+                <button (click)="foundCity()">
+                  Fundar Ciudad
+                </button>
+              }
+
+              @if (canUnitPerformAction(selectedUnit, 'build_improvement')) {
+                <button (click)="performUnitAction('build_improvement')">
+                  Construir Mejora
+                </button>
+              }
+            </div>
+          </div>
+        } @else {
+          <div class="no-selection-message">
+            <p>Selecciona una unidad para ver información y realizar acciones</p>
+          </div>
+        }
+      </div>
+    </div>
+
     <div class="map-viewport" tabindex="0" #mapContainer>
       <div class="map-grid">
         @for (row of gameSession.map.tiles; track $index) {
@@ -16,47 +63,14 @@
                 [unitType]="getUnitTypeAt(tile.x, tile.y)"
                 (tileClick)="onTileClick(tile)">
               </app-tile>
+              @if (findUnitAt(tile.x, tile.y)?.type === 'settler') {
+                <div class="settler-marker"></div>
+              }
             }
           </div>
         }
       </div>
     </div>
-
-    <!-- Panel de información de unidad seleccionada -->
-    @if (selectedUnit) {
-      <div class="info-panel unit-panel">
-        <h3>{{ selectedUnit.name }}</h3>
-        <p>Tipo: {{ selectedUnit.type }}</p>
-        <p>Salud: {{ selectedUnit.health }}/{{ selectedUnit.maxHealth }}</p>
-        <p>Movimiento: {{ selectedUnit.movementPoints }}/{{ selectedUnit.maxMovementPoints }}</p>
-
-        <!-- Acción actual -->
-        @if (selectedUnit.currentAction) {
-          <div class="current-action">
-            <p><strong>Acción actual:</strong> {{ getActionName(selectedUnit.currentAction) }}</p>
-            @if (selectedUnit.turnsToComplete) {
-              <p>Turnos restantes: {{ selectedUnit.turnsToComplete }}</p>
-            }
-          </div>
-        }
-
-        <!-- Acciones específicas por tipo de unidad -->
-        <div class="action-buttons">
-          @if (canUnitPerformAction(selectedUnit, 'found_city')) {
-            <button (click)="performUnitAction('found_city')">
-              Fundar Ciudad
-            </button>
-          }
-
-          @if (canUnitPerformAction(selectedUnit, 'build_improvement')) {
-            <button (click)="performUnitAction('build_improvement')">
-              Construir Mejora
-            </button>
-          }
-
-        </div>
-      </div>
-    }
 
     <!-- Vista de la ciudad al seleccionarla -->
     @if (selectedCity) {
@@ -81,9 +95,6 @@
       </div>
     }
 
-    <!-- Botón de fin de turno -->
-    <button class="end-turn-button" (click)="finishTurn()">
-      Fin de Turno
-    </button>
+    <!-- Se eliminó el botón de fin de turno que estaba aquí -->
   }
 </div>

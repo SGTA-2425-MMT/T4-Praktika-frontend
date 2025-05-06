@@ -22,7 +22,7 @@ export class TileComponent {
   onClick(): void {
     this.tileClick.emit();
   }
-  
+
   getUnitSymbol(): string {
     // Devuelve un símbolo según el tipo de unidad
     switch(this.unitType) {
@@ -61,8 +61,7 @@ export class TileComponent {
       delete classes[this.tile.terrain];
     }
 
-    return classes;
-  }
+    return classes; }
   isStrategicResource(resource: string): boolean {
     // Añade aquí los nombres de tus recursos estratégicos
     return ['iron', 'horses', 'coal', 'oil', 'aluminum', 'uranium'].includes(resource);

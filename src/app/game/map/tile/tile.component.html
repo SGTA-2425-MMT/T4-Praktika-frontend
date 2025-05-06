@@ -3,6 +3,12 @@
   [ngClass]="getTileClasses()"
   (click)="onClick()"
 >
+  @if (hasUnit) {
+    <div class="unit-icon" [class.settler-unit]="unitType === 'settler'" [class.can-move]="unitCanMove">
+      {{ getUnitSymbol() }}
+    </div>
+  }
+
   <!-- Coordenadas para depuración
   <div class="debug-coords" *ngIf="tile.isExplored">{{tile.x}},{{tile.y}}</div>-->
 
@@ -18,6 +24,15 @@
     <span *ngIf="isFoodResource(tile.resource)">🍎</span>
     <span *ngIf="isLuxuryResource(tile.resource)">💎</span>
   </div>
+
+  @if (tile.resource) {
+    <div class="resource-icon"
+         [class.strategic]="isStrategicResource(tile.resource)"
+         [class.food]="isFoodResource(tile.resource)"
+         [class.luxury]="isLuxuryResource(tile.resource)">
+      R
+    </div>
+  }
 
   <div *ngIf="!tile.isExplored" class="fog-of-war"></div>
   <div *ngIf="tile.isExplored && !tile.isVisible" class="fog-overlay"></div>

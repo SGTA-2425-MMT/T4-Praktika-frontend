@@ -1,3 +1,4 @@
+import { createSettler, SettlerUnit } from './../models/unit.model';
 import { Injectable } from '@angular/core';
 import { GameMap, MapTile, TerrainType, ResourceType, FeatureType } from '../models/map.model';
 
@@ -37,6 +38,9 @@ export class MapGeneratorService {
         const tileId = `tile_${x}_${y}`;
         const terrain = this.getTerrainType(mapData.map[y][x]); // Obtener el terreno del JSON
 
+
+
+
         tiles[y][x] = {
           id: tileId,
           x,
@@ -52,6 +56,7 @@ export class MapGeneratorService {
       }
     }
 
+
     // Añadir recursos al mapa
     this.distributeResources(tiles, width, height);
 
@@ -59,7 +64,7 @@ export class MapGeneratorService {
       width,
       height,
       tiles
-    };
+    }; // Devolver el mapa y el settler
   }
 
   // Add this helper function to your MapGeneratorService class

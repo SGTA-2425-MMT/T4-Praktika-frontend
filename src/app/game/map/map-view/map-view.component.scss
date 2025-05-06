@@ -2,10 +2,17 @@
   position: relative;
   width: 100%;
   height: 100vh;
-  background-color: #f0f0f0;
   overflow: auto;
   padding: 20px;
   box-sizing: border-box;
+
+  /* Hide scrollbars but keep scrolling functionality */
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+
+  &::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
 }
 
 .loading-message {
@@ -24,9 +31,20 @@
   overflow: auto;
   outline: none; /* Evita el recuadro de foco predeterminado */
 
+  /* Hide scrollbars but keep scrolling functionality */
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+
+  &::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
+
   &:focus {
     outline: 2px solid rgba(0, 123, 255, 0.5); /* Un indicador sutil de foco */
   }
+
+  transition: margin-left 0.3s ease-in-out;
+  transition: margin-right 0.3s ease-in-out; /* Transición para margen derecho */
 }
 
 .map-grid {
@@ -44,6 +62,10 @@
 app-tile {
   display: table-cell;
   position: relative;
+  vertical-align: middle; // Asegura el centrado vertical
+  width: 48px; // Ajusta al tamaño real de tu tile
+  height: 48px;
+  overflow: visible; // Permite que el punto se muestre correctamente
 }
 
 .map-unit {
@@ -59,6 +81,37 @@ app-tile {
 
   &.selected {
   }
+}
+
+.settler-marker {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  background: #0066ff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  border: 2px solid #fff;
+  box-shadow: 0 0 6px #0066ff;
+  z-index: 10;
+  pointer-events: none;
+  margin: 0; // Asegura que no haya desplazamiento extra
+}
+
+.city-marker {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 32px;
+  height: 32px;
+  background-image: url('/assets/images/settlement.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  transform: translate(-50%, -50%);
+  z-index: 15;
+  pointer-events: none;
 }
 
 .info-panel {
@@ -245,4 +298,119 @@ app-tile {
       }
     }
   }
+}
+
+/* Estilos para la barra lateral */
+.lateral-sidebar {
+  position: fixed;
+  top: 0;
+  right: -280px; /* Oculta por defecto - ahora a la derecha */
+  width: 280px;
+  height: 100vh;
+  background: #23243a;
+  z-index: 100;
+  box-shadow: -4px 0 10px rgba(0, 0, 0, 0.2); /* Sombra al lado izquierdo */
+  transition: right 0.3s ease-in-out; /* Transición para right en lugar de left */
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+
+  &.visible {
+    right: 0; /* Visible cuando está activo - ahora desde la derecha */
+  }
+
+  .sidebar-header {
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+    h3 {
+      margin: 0;
+      font-size: 1.4em;
+      color: #fff;
+      text-align: center;
+    }
+  }
+
+  .sidebar-content {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+
+    .unit-info {
+      h4 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-size: 1.2em;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 10px;
+      }
+
+      p {
+        margin: 10px 0;
+        font-size: 0.98em;
+      }
+    }
+
+    .no-selection-message {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 200px;
+      font-style: italic;
+      color: #a0a0a0;
+      text-align: center;
+    }
+  }
+
+  .current-action {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    padding: 12px;
+    margin: 15px 0;
+
+    p {
+      margin: 5px 0 !important;
+    }
+  }
+
+  .action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+
+    button {
+      padding: 12px;
+      font-size: 1em;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(90deg, #4e54c8 0%, #8f94fb 100%);
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(78, 84, 200, 0.18);
+      transition: background 0.18s, transform 0.1s;
+
+      &:hover, &:focus {
+        background: linear-gradient(90deg, #8f94fb 0%, #4e54c8 100%);
+        outline: none;
+        transform: translateY(-2px);
+      }
+
+      &:active {
+        background: #3a3e99;
+      }
+    }
+  }
+}
+
+/* Ajustes para la vista del mapa con la barra lateral */
+.game-container:has(.lateral-sidebar.visible) .map-viewport {
+  margin-right: 280px; /* Desplaza el mapa cuando la barra lateral es visible */
+}
+
+/* Ajustar posición del botón de fin de turno cuando la barra lateral está visible */
+.lateral-sidebar.visible ~ .end-turn-button {
+  right: 300px; /* Mover el botón a la izquierda cuando la barra está visible */
 }

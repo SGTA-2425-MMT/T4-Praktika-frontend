@@ -28,23 +28,20 @@
           <span>Fase actual: {{ getCurrentPhaseName() }}</span>
           <div class="phase-indicators">
             <div class="phase" [class.active]="gameSession.currentPhase === 'recoleccion'">
-              Recolección
+
             </div>
             <div class="phase" [class.active]="gameSession.currentPhase === 'movimiento_accion'">
-              Movimiento y Acción
+
             </div>
             <div class="phase" [class.active]="gameSession.currentPhase === 'diplomacia_investigacion_fortificacion'">
-              Diplomacia/Investigación/Fortificación
+
             </div>
             <div class="phase" [class.active]="gameSession.currentPhase === 'fin_ia'">
-              Fin/IA
+
             </div>
           </div>
         </div>
-        <div class="game-actions">
-          <button class="btn-save" (click)="saveGame()">Guardar Partida</button>
-          <button class="btn-exit" (click)="exitToMenu()">Salir</button>
-        </div>
+        <!-- Se eliminaron los botones de guardar y salir que estaban aquí -->
       </header>
 
       <!-- Contenedor principal del juego -->

@@ -107,10 +107,15 @@ export class GameService {
   }
 
   foundCity(settler: Unit, cityName: string): City | null {
+    console.log(`GameService.foundCity: Intentando fundar ciudad "${cityName}" con colono ${settler.id}`);
     const game = this.currentGame;
-    if (!game) return null;
+    if (!game) {
+      console.error('No hay juego activo');
+      return null;
+    }
 
     if (settler.owner !== game.currentPlayerId || settler.type !== 'settler') {
+      console.error(`Unidad inválida para fundar ciudad: propietario=${settler.owner}, tipo=${settler.type}`);
       return null;
     }
 
@@ -121,9 +126,19 @@ export class GameService {
       game.turn
     );
 
+    console.log(`Ciudad creada: ${newCity.name} (ID: ${newCity.id})`);
     game.cities.push(newCity);
+    console.log(`Ciudades totales: ${game.cities.length}`);
+
+    // Eliminar el colono del juego
     game.units = game.units.filter(u => u.id !== settler.id);
+    console.log(`Colono ${settler.id} eliminado`);
+
+    // Revelar el área alrededor de la ciudad
     this.revealAroundCity(game.map, newCity.position, 3);
+    console.log(`Área alrededor de la ciudad revelada`);
+
+    // Actualizar el estado del juego
     this.currentGameSubject.next({ ...game });
 
     return newCity;
@@ -282,7 +297,7 @@ export class GameService {
         }
 
         if (unit.movementPoints > 0) {
-          availableActions.push('fortify', 'skip');
+          availableActions.push('fortify');
         }
 
         unit.availableActions = availableActions;
