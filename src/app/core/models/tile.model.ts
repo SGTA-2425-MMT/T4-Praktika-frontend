@@ -1,4 +1,4 @@
-export type TerrainType = 'grass' | 'mountain' | 'water' | 'desert' | 'forest' | 'jungle' | 'ice';
+export type TerrainType = 'plains' | 'grassland' | 'desert' | 'snow' | 'rocky' | 'water' | 'waterocean';
 
 export interface Resource {
   id: string;

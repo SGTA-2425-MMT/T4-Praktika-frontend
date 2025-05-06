@@ -31,7 +31,7 @@ export interface TileYield {
   culture?: number;
 }
 
-export type TerrainType = 'plains' | 'grassland' | 'desert' | 'tundra' | 'snow' | 'coast' | 'ocean' | 'mountains' | 'hills';
+export type TerrainType = 'plains' | 'grassland' | 'desert' | 'snow' | 'rocky' | 'water' | 'waterocean';
 export type FeatureType = 'forest' | 'jungle' | 'marsh' | 'oasis' | 'ice' | 'floodplains' | 'none';
 export type ResourceType =
   | 'horses' | 'iron' | 'coal' | 'oil' | 'aluminum' | 'uranium' // estratégicos

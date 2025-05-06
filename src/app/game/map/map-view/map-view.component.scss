@@ -23,7 +23,7 @@
   height: 100%;
   overflow: auto;
   outline: none; /* Evita el recuadro de foco predeterminado */
-  
+
   &:focus {
     outline: 2px solid rgba(0, 123, 255, 0.5); /* Un indicador sutil de foco */
   }
@@ -33,7 +33,6 @@
   display: table;
   border-collapse: separate;
   border-spacing: 0;
-  background-image: url('/assets/img/prado.jpg');
   background-size: 200px 200px; /* Tamaño más pequeño para repetirla */
   background-repeat: repeat;
 }

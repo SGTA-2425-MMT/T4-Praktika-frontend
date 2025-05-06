@@ -70,6 +70,7 @@ export class GameService {
 
   createNewGame(settings: GameSettings): GameSession {
     const mapDimensions = this.getMapDimensions(settings.mapSize);
+
     const map = this.mapGeneratorService.generateMap(mapDimensions.width, mapDimensions.height);
     const startingPosition = this.findSuitableStartingPosition(map);
     const units = this.createStartingUnits(settings.civilization, startingPosition);
@@ -98,7 +99,9 @@ export class GameService {
       era: 'ancient'
     };
 
+
     this.currentGameSubject.next(gameSession);
+
     this.revealInitialMap(gameSession);
 
     return gameSession;
@@ -144,6 +147,7 @@ export class GameService {
     const game = this.currentGame;
     if (!game) return false;
 
+
     game.lastSaved = new Date();
     const existingIndex = this.savedGames.findIndex(g => g.id === game.id);
     if (existingIndex >= 0) {
@@ -151,6 +155,7 @@ export class GameService {
     } else {
       this.savedGames.push(game);
     }
+
 
     this.persistSavedGames();
     return true;
@@ -163,6 +168,7 @@ export class GameService {
   deleteGame(gameId: string): boolean {
     const initialLength = this.savedGames.length;
     this.savedGames = this.savedGames.filter(game => game.id !== gameId);
+
 
     if (this.savedGames.length < initialLength) {
       this.persistSavedGames();
@@ -179,6 +185,7 @@ export class GameService {
     const game = this.currentGame;
     if (!game) return;
 
+
     game.gold += game.goldPerTurn;
     game.science += game.sciencePerTurn;
     game.culture += game.culturePerTurn;
@@ -191,8 +198,10 @@ export class GameService {
       }
     });
 
+
     game.currentPhase = 'movement';
     this.currentGameSubject.next({ ...game });
+
   }
 
   startTurn(): void {
@@ -341,7 +350,6 @@ export class GameService {
 
   private createNewUnit(type: string, position: { x: number, y: number }, owner: string): Unit | null {
     const id = `${type}_${Date.now()}`;
-
     const baseUnit: Unit = {
       id,
       position: { ...position },
@@ -493,11 +501,12 @@ export class GameService {
 
   private getMapDimensions(size: string): { width: number; height: number } {
     switch (size) {
+/*
       case 'small': return { width: 32, height: 24 };
       case 'medium': return { width: 48, height: 36 };
       case 'large': return { width: 64, height: 48 };
-      case 'huge': return { width: 80, height: 60 };
-      default: return { width: 48, height: 36 };
+      case 'huge': return { width: 80, height: 60 };*/
+      default: return { width: 50, height: 50 };
     }
   }
 

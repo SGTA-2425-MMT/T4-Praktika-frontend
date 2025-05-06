@@ -25,7 +25,7 @@ html, body {
 }
 
 body {
-  background: url('/assets/images/background.jpg') no-repeat center center fixed;
+  //background: url('/assets/images/background.jpg') no-repeat center center fixed;
   background-size: cover;
 }
 
@@ -36,7 +36,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Aplica fuente Trajan Pro para títulos si está disponible */
-h1, h2, h3, 
+h1, h2, h3,
 button,
 label {
   font-family: 'Trajan Pro', 'Times New Roman', serif;
@@ -86,17 +86,17 @@ button:hover, .btn:hover {
   border-radius: 4px;
   padding: 12px 15px;
   font-size: 16px;
-  
+
   &:hover:not(:disabled) {
     background-color: #f39c12;
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   }
-  
+
   &:active:not(:disabled) {
     transform: translateY(0);
   }
-  
+
   &:disabled {
     background-color: #7f8c8d;
     cursor: not-allowed;
