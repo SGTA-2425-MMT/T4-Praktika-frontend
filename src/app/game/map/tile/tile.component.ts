@@ -16,10 +16,28 @@ export class TileComponent {
   @Input() isUnitSelected: boolean = false;
   @Input() hasUnit: boolean = false;
   @Input() unitCanMove: boolean = false;
+  @Input() unitType: string = '';
   @Output() tileClick = new EventEmitter<void>();
 
   onClick(): void {
     this.tileClick.emit();
+  }
+  
+  getUnitSymbol(): string {
+    // Devuelve un símbolo según el tipo de unidad
+    switch(this.unitType) {
+      case 'settler': return 'S';
+      case 'warrior': return 'W';
+      case 'worker': return 'T';
+      case 'archer': return 'A';
+      case 'horseman': return 'H';
+      case 'swordsman': return 'E';
+      case 'catapult': return 'C';
+      case 'galley': return 'G';
+      case 'warship': return 'B';
+      case 'scout': return 'X';
+      default: return '•';
+    }
   }
 
   getTileClasses(): any {

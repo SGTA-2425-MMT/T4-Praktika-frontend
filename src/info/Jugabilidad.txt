@@ -1,0 +1,81 @@
+Comienzo de la partida:
+
+Después de elegir la civilización, mapa, dificultad y condiciones de victoria, el jugador comienza con una unidad de colonos (para fundar una ciudad) y una unidad militar básica (como un explorador o guerrero).
+
+El mapa es desconocido al principio, por lo que el jugador debe explorar el territorio a medida que avanza, encontrando recursos, otros pueblos y civilizaciones.
+
+La primer ciudad debe ser fundada en una ubicación estratégica, preferentemente cerca de agua (ríos o mares) y recursos naturales.
+
+La gestión de recursos comienza con una producción inicial baja: el jugador debe optimizar la ubicación de su ciudad y gestionar los recursos disponibles (alimentos, producción, ciencia, oro).
+
+Fases del turno:
+
+Fase de Movimiento:
+
+Cada unidad tiene una cantidad limitada de movimientos por turno. El jugador puede mover unidades por el mapa para explorar, patrullar o atacar.
+
+Las unidades deben ser enviadas a explorar los alrededores de la ciudad, buscando recursos estratégicos, ruinas antiguas, civilizaciones enemigas o ubicaciones para nuevas ciudades.
+
+Fase de Acción:
+
+El jugador puede realizar una acción de construcción en la ciudad (por ejemplo, construir edificios, maravillas, etc.).
+
+Puede investigar nuevas tecnologías en el árbol de ciencia, lo que permite avanzar en el desarrollo de la civilización (por ejemplo, agricultura, minería, filosofía, etc.).
+
+También puede iniciar proyectos de construcción (edificios como fábricas, universidades, cuarteles, etc.) o entrenar unidades (militares, trabajadores, espías).
+
+Si está cerca de recursos estratégicos, puede mejorarlos (por ejemplo, construir minas, granjas, etc.).
+
+Fase Diplomática:
+
+El jugador puede interactuar con otras civilizaciones, por medio de un sistema de diplomacia que incluye opciones como tratar de formar alianzas, comerciar recursos o incluso declarar guerra.
+
+Las decisiones diplomáticas afectan las relaciones con otras civilizaciones, lo que puede tener consecuencias tanto a corto como a largo plazo.
+
+Fase de Producción:
+
+La ciudad genera una cantidad de producción, que es utilizada para construir edificios, entrenar unidades o completar proyectos.
+
+Los ciudadanos de cada ciudad tienen un rol que puede ser asignado: trabajar en minas, granjas, o centros de investigación para generar alimentos, oro, ciencia y cultura.
+
+Las ciudades también tienen un nivel de felicidad, que depende de factores como la cantidad de alimentos, recursos y el nivel de satisfacción de la población (que puede verse afectado por guerras, edificaciones, religión, etc.).
+
+Fase de Comercio:
+
+El jugador puede enviar unidades comerciales o rutas de comercio a otras civilizaciones o ciudades para obtener recursos adicionales o mejorar las relaciones diplomáticas.
+
+Exploración y Expansión:
+
+A medida que se explora el mapa, se descubren nuevas áreas y pueblos que pueden ser conquistados, integrados o colonizados.
+
+El jugador puede fundar nuevas ciudades en lugares estratégicos, pero siempre teniendo en cuenta la cercanía a recursos clave, el acceso a rutas comerciales y la defensibilidad militar.
+
+Las ciudades tienen un radio de influencia que crece a medida que se mejora la producción y la cultura, lo que puede permitir al jugador expandirse en territorio enemigo o expandir la influencia cultural.
+
+Investigación y Tecnología:
+
+La investigación de tecnologías es clave para avanzar en el juego. A medida que se descubren nuevas tecnologías, el jugador puede desbloquear nuevas unidades, edificaciones o mejoras.
+
+El árbol de tecnología debe incluir ramas como militar, ciencia, economía, cultura y política.
+
+A lo largo de la partida, las tecnologías avanzadas permiten a la civilización desarrollar armas más poderosas, edificaciones especializadas (universidades, fábricas, hospitales), y avances científicos que pueden dar lugar a victorias científicas o espaciales.
+
+Interacciones con otras civilizaciones:
+
+El jugador debe interactuar con otras civilizaciones que también están avanzando en el juego. Las interacciones pueden ser pacíficas (alianzas, comercio, acuerdos) o hostiles (guerras, bloqueos).
+
+Durante las guerras, el jugador puede usar sus unidades militares para atacar o defender ciudades. Las batallas se resuelven de manera estratégica, con la posibilidad de usar movimientos tácticos, formaciones militares y unidades especializadas.
+
+La diplomacia permite realizar acuerdos como pactos de no agresión, acuerdos de comercio o incluso influir en otras civilizaciones mediante espionaje o propaganda.
+
+Condiciones de victoria:
+
+Al avanzar en el juego, el jugador se enfrenta a la posibilidad de lograr una victoria por puntos, una victoria científica, militar, cultural o diplomática.
+
+Dependiendo de la civilización y el estilo de juego elegido, el jugador puede optar por enfocar su estrategia en conquistar militarmente a otros rivales, lanzar una misión espacial para llegar a un planeta, o bien aumentar su influencia cultural y política en el mundo.
+
+Avance de la partida:
+
+A medida que el jugador progresa, se avanza por eras históricas (Antigüedad, Edad Media, Renacimiento, Edad Moderna, etc.), lo que desbloquea nuevas opciones tecnológicas, edificios y unidades.
+
+El cambio de era también introduce nuevos desafíos, como la aparición de nuevas civilizaciones, nuevos recursos y el aumento de la complejidad de la diplomacia.

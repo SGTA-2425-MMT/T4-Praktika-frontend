@@ -20,6 +20,29 @@
         <div class="game-stats">
           <div class="stat-item">Turno: {{ gameSession.turn }}</div>
           <div class="stat-item">Dificultad: {{ gameSession.difficulty }}</div>
+          <div class="stat-item">Oro: {{ gameSession.gold || 0 }} (+{{ gameSession.goldPerTurn || 0 }})</div>
+          <div class="stat-item">Ciencia: {{ gameSession.sciencePerTurn || 0 }}</div>
+          <div class="stat-item">Cultura: {{ gameSession.culturePerTurn || 0 }}</div>
+        </div>
+        <div class="game-phases">
+          <span>Fase actual: {{ getCurrentPhaseName() }}</span>
+          <div class="phase-indicators">
+            <div class="phase" [class.active]="gameSession.currentPhase === 'movement'">
+              Movimiento
+            </div>
+            <div class="phase" [class.active]="gameSession.currentPhase === 'action'">
+              Acción
+            </div>
+            <div class="phase" [class.active]="gameSession.currentPhase === 'diplomacy'">
+              Diplomacia
+            </div>
+            <div class="phase" [class.active]="gameSession.currentPhase === 'production'">
+              Producción
+            </div>
+            <div class="phase" [class.active]="gameSession.currentPhase === 'research'">
+              Investigación
+            </div>
+          </div>
         </div>
         <div class="game-actions">
           <button class="btn-save" (click)="saveGame()">Guardar Partida</button>
@@ -38,7 +61,12 @@
       
       <!-- Panel inferior de acciones -->
       <footer class="game-footer">
-        <button class="btn-end-turn" (click)="endTurn()">Fin del Turno</button>
+        <button class="btn-next-phase" (click)="nextPhase()" *ngIf="gameSession.currentPhase !== 'end'">
+          Siguiente Fase
+        </button>
+        <button class="btn-end-turn" (click)="endTurn()">
+          Fin del Turno
+        </button>
       </footer>
     </div>
   } @else {

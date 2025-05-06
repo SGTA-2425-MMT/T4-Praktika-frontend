@@ -1,1 +1,167 @@
-<p>city-view works!</p>
+<div class="city-view-overlay" *ngIf="city">
+  <div class="city-view-container">
+    <div class="city-view-header">
+      <h2>{{ city.name }}</h2>
+      <button class="close-btn" (click)="closeView()">✕</button>
+    </div>
+    
+    <div class="city-tabs">
+      <button [class.active]="activeTab === 'overview'" (click)="changeTab('overview')">General</button>
+      <button [class.active]="activeTab === 'production'" (click)="changeTab('production')">Producción</button>
+      <button [class.active]="activeTab === 'buildings'" (click)="changeTab('buildings')">Edificios</button>
+    </div>
+    
+    <!-- Pestaña de visión general -->
+    <div class="city-content" *ngIf="activeTab === 'overview'">
+      <div class="city-info-panel">
+        <div class="info-section">
+          <h3>Información General</h3>
+          <div class="info-row">
+            <span>Población:</span>
+            <span>{{ city.population }}</span>
+          </div>
+          <div class="info-row">
+            <span>Fundada en el turno:</span>
+            <span>{{ city.turnsFounded }}</span>
+          </div>
+          <div class="info-row">
+            <span>Crecimiento:</span>
+            <span>{{ city.food }} / {{ city.foodToGrow }} ({{ getTurnsToGrow() }} turnos)</span>
+          </div>
+        </div>
+        
+        <div class="resources-section">
+          <h3>Producción por turno</h3>
+          <div class="resource-row">
+            <span class="resource-icon">🌾</span>
+            <span>Alimentos: {{ city.foodPerTurn }}</span>
+          </div>
+          <div class="resource-row">
+            <span class="resource-icon">🔨</span>
+            <span>Producción: {{ city.productionPerTurn }}</span>
+          </div>
+          <div class="resource-row">
+            <span class="resource-icon">💰</span>
+            <span>Oro: {{ city.goldPerTurn }}</span>
+          </div>
+          <div class="resource-row">
+            <span class="resource-icon">📚</span>
+            <span>Ciencia: {{ city.sciencePerTurn }}</span>
+          </div>
+          <div class="resource-row">
+            <span class="resource-icon">🎭</span>
+            <span>Cultura: {{ city.culturePerTurn }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Pestaña de producción -->
+    <div class="city-content" *ngIf="activeTab === 'production'">
+      <div class="production-panel">
+        <h3>Producción actual</h3>
+        <div class="current-production">
+          <p *ngIf="city.currentProduction; else noProduction">
+            <strong>Produciendo: {{ city.currentProduction.name }}</strong>
+            <br>
+            <span>{{ city.currentProduction.progress }} / {{ city.currentProduction.cost }} puntos</span>
+            <br>
+            <span>{{ city.currentProduction.turnsLeft }} turno(s) restante(s)</span>
+          </p>
+          <ng-template #noProduction>
+            <p>No hay producción en curso</p>
+          </ng-template>
+        </div>
+        
+        <h3>Unidades disponibles</h3>
+        <div class="production-options">
+          <div class="production-item" (click)="selectProduction('warrior')">
+            <div class="production-icon warrior-icon">⚔️</div>
+            <div class="production-details">
+              <h4>Guerrero</h4>
+              <p>Coste: 40 producción ({{ city.productionPerTurn > 0 ? Math.ceil(40 / city.productionPerTurn) : '?' }} turnos)</p>
+              <p>Unidad militar básica para defensa</p>
+            </div>
+          </div>
+          
+          <div class="production-item" (click)="selectProduction('archer')">
+            <div class="production-icon archer-icon">🏹</div>
+            <div class="production-details">
+              <h4>Arquero</h4>
+              <p>Coste: 50 producción ({{ city.productionPerTurn > 0 ? Math.ceil(50 / city.productionPerTurn) : '?' }} turnos)</p>
+              <p>Ataque a distancia, buena para defensa</p>
+            </div>
+          </div>
+          
+          <div class="production-item" (click)="selectProduction('horseman')">
+            <div class="production-icon horseman-icon">🐎</div>
+            <div class="production-details">
+              <h4>Jinete</h4>
+              <p>Coste: 70 producción ({{ city.productionPerTurn > 0 ? Math.ceil(70 / city.productionPerTurn) : '?' }} turnos)</p>
+              <p>Unidad rápida para explorar y atacar</p>
+            </div>
+          </div>
+          
+          <div class="production-item" (click)="selectProduction('swordsman')">
+            <div class="production-icon swordsman-icon">🗡️</div>
+            <div class="production-details">
+              <h4>Espadachín</h4>
+              <p>Coste: 75 producción ({{ city.productionPerTurn > 0 ? Math.ceil(75 / city.productionPerTurn) : '?' }} turnos)</p>
+              <p>Unidad terrestre fuerte para combates</p>
+            </div>
+          </div>
+          
+          <div class="production-item" (click)="selectProduction('catapult')">
+            <div class="production-icon catapult-icon">🧱</div>
+            <div class="production-details">
+              <h4>Catapulta</h4>
+              <p>Coste: 90 producción ({{ city.productionPerTurn > 0 ? Math.ceil(90 / city.productionPerTurn) : '?' }} turnos)</p>
+              <p>Ataque a distancia contra ciudades</p>
+            </div>
+          </div>
+          
+          <div class="production-item" (click)="selectProduction('galley')">
+            <div class="production-icon galley-icon">⛵</div>
+            <div class="production-details">
+              <h4>Galera</h4>
+              <p>Coste: 65 producción ({{ city.productionPerTurn > 0 ? Math.ceil(65 / city.productionPerTurn) : '?' }} turnos)</p>
+              <p>Transporte naval para unidades</p>
+            </div>
+          </div>
+          
+          <div class="production-item" (click)="selectProduction('scout')">
+            <div class="production-icon scout-icon">👁️</div>
+            <div class="production-details">
+              <h4>Explorador</h4>
+              <p>Coste: 35 producción ({{ city.productionPerTurn > 0 ? Math.ceil(35 / city.productionPerTurn) : '?' }} turnos)</p>
+              <p>Unidad rápida para exploración</p>
+            </div>
+          </div>
+          
+          <div class="production-item" (click)="selectProduction('settler')">
+            <div class="production-icon settler-icon">🏕️</div>
+            <div class="production-details">
+              <h4>Colono</h4>
+              <p>Coste: 80 producción ({{ city.productionPerTurn > 0 ? Math.ceil(80 / city.productionPerTurn) : '?' }} turnos)</p>
+              <p>Funda nuevas ciudades</p>
+            </div>
+          </div>
+          
+          <div class="production-item" (click)="selectProduction('worker')">
+            <div class="production-icon worker-icon">🔧</div>
+            <div class="production-details">
+              <h4>Trabajador</h4>
+              <p>Coste: 60 producción ({{ city.productionPerTurn > 0 ? Math.ceil(60 / city.productionPerTurn) : '?' }} turnos)</p>
+              <p>Mejora casillas del terreno</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Pestaña de edificios -->
+    <div class="city-content" *ngIf="activeTab === 'buildings'">
+      <app-city-buildings [city]="city"></app-city-buildings>
+    </div>
+  </div>
+</div>

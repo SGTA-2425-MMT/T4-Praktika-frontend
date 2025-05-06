@@ -112,6 +112,67 @@
   position: relative;
 }
 
+.game-phases {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 15px;
+  
+  span {
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: #ddd;
+  }
+  
+  .phase-indicators {
+    display: flex;
+    gap: 5px;
+    
+    .phase {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background-color: #555;
+      transition: all 0.3s ease;
+      position: relative;
+      
+      &.active {
+        background-color: #4a90e2;
+        box-shadow: 0 0 8px rgba(74, 144, 226, 0.8);
+      }
+      
+      &:hover::after {
+        content: attr(data-phase);
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+    }
+  }
+}
+
+.btn-next-phase {
+  padding: 8px 15px;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  margin-right: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  
+  &:hover {
+    background-color: #3a80d2;
+  }
+}
+
 .game-footer {
   display: flex;
   justify-content: flex-end;
