@@ -1,3 +1,4 @@
+
 import { Injectable } from '@angular/core';
 import { GameMap, MapTile } from '../models/map.model';
 import { Unit, UnitType } from '../models/unit.model';
@@ -12,6 +13,7 @@ export class FogOfWarService {
   updateVisibility(map: GameMap, unit: Unit, playerId: string): void {
     const { x, y } = unit.position;
     const visionRange = this.getVisionRange(unit);
+
     // Visibilidad por la posición de la unidad
     for (let dy = -visionRange; dy <= visionRange; dy++) {
       for (let dx = -visionRange; dx <= visionRange; dx++) {
@@ -39,6 +41,7 @@ export class FogOfWarService {
 
   // Determinar el rango de visión según el tipo de unidad
   private getVisionRange(unit: Unit): number {
+    switch(unit.type as UnitType) {
       case 'scout':
         return 3; // Exploradores tienen mejor visión
       case 'warrior':
@@ -56,43 +59,21 @@ export class FogOfWarService {
 
   // Restablece la visibilidad para calcularla de nuevo
   resetVisibility(map: GameMap): void {
-    if (!map) {
-      console.warn('Invalid map provided to resetVisibility');
-      return;
-    }
-
-    // Check if tiles array exists and has the expected structure
-    if (!map.tiles || !Array.isArray(map.tiles)) {
-      console.warn('Map tiles structure is invalid in resetVisibility');
-      return;
-    }
-
-    for (let y = 0; y < map.height && y < map.tiles.length; y++) {
-      if (!map.tiles[y] || !Array.isArray(map.tiles[y])) {
-        continue; // Skip invalid rows
-      }
-
-      for (let x = 0; x < map.width && x < map.tiles[y].length; x++) {
-        if (map.tiles[y][x]) {
-          map.tiles[y][x].isVisible = false;
-        }
+    for (let y = 0; y < map.height; y++) {
+      for (let x = 0; x < map.width; x++) {
+        //map.tiles[y][x].isVisible = false;
       }
     }
   }
 
   // Actualiza todas las unidades para un jugador
   updateFogOfWarForPlayer(map: GameMap, units: Unit[], playerId: string): void {
-    if (!map || !units || !Array.isArray(units)) {
-      console.warn('Invalid map or units data provided to updateFogOfWarForPlayer');
-      return;
-    }
-
     // Primero, resetear toda la visibilidad
     this.resetVisibility(map);
 
     // Luego actualizar la visibilidad con todas las unidades del jugador
     for (const unit of units) {
-      if (unit && unit.owner === playerId) {
+      if (unit.owner === playerId) {
         this.updateVisibility(map, unit, playerId);
       }
     }

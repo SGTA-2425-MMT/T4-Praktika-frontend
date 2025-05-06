@@ -17,7 +17,7 @@ export class GameComponent implements OnInit, OnDestroy {
   loading = true;
   error = '';
   subscription: Subscription = new Subscription();
-  
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -28,7 +28,7 @@ export class GameComponent implements OnInit, OnDestroy {
     // Suscribirse a cambios en la partida actual
     this.subscription = this.gameService.currentGame$.subscribe(game => {
       this.gameSession = game;
-      
+
       // Si no hay partida activa, crear una por defecto
       if (!game) {
         this.createDefaultGame();
@@ -73,7 +73,7 @@ export class GameComponent implements OnInit, OnDestroy {
       difficulty: 'normal' as 'easy' | 'normal' | 'hard' | 'expert',
       numberOfOpponents: 3
     };
-    
+
     this.gameSession = this.gameService.createNewGame(defaultSettings);
     this.loading = false;
   }
@@ -108,10 +108,10 @@ export class GameComponent implements OnInit, OnDestroy {
 
   private showNewTurnNotification(): void {
     if (!this.gameSession) return;
-    
+
     // Aquí podrías implementar una notificación visual
     console.log(`Comenzando turno ${this.gameSession.turn}`);
-    
+
     // Verificar si hay nuevas unidades o ciudades que crecieron
     // (Funcionalidad que se puede añadir más adelante)
   }
@@ -121,15 +121,13 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   getCurrentPhaseName(): string {
-    if (!this.gameSession || !this.gameSession.currentPhase) return 'Movimiento';
-    
+    if (!this.gameSession || !this.gameSession.currentPhase) return 'Movimiento y Acción';
+
     switch(this.gameSession.currentPhase) {
-      case 'movement': return 'Movimiento';
-      case 'action': return 'Acción';
-      case 'diplomacy': return 'Diplomacia';
-      case 'production': return 'Producción';
-      case 'research': return 'Investigación';
-      case 'end': return 'Fin del Turno';
+      case 'recoleccion': return 'Recolección de Recursos';
+      case 'movimiento_accion': return 'Movimiento y Acción';
+      case 'diplomacia_investigacion_fortificacion': return 'Diplomacia, Investigación y Fortificación';
+      case 'fin_ia': return 'Fin de Turno y Movimientos IA';
       default: return 'Desconocida';
     }
   }

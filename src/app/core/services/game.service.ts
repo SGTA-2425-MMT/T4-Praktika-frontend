@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { GameMap } from '../models/map.model';
-import { Unit, UnitAction } from '../models/unit.model';  // Importamos UnitAction
+import { Unit, UnitAction } from '../models/unit.model';
 import { City } from '../models/city.model';
 import { MapGeneratorService } from './map-generator.service';
 import { CityService } from './city.service';
@@ -27,7 +27,7 @@ export interface GameSession {
   createdAt: Date;
   lastSaved?: Date;
 
-  currentPhase: 'movement' | 'action' | 'diplomacy' | 'production' | 'research' | 'end';
+  currentPhase: 'recoleccion' | 'movimiento_accion' | 'diplomacia_investigacion_fortificacion' | 'fin_ia';
   researchProgress?: {
     currentTechnology: string;
     progress: number;
@@ -86,7 +86,7 @@ export class GameService {
       playerCivilization: settings.civilization,
       difficulty: settings.difficulty,
       createdAt: new Date(),
-      currentPhase: 'movement',
+      currentPhase: 'recoleccion',
       discoveredTechnologies: [],
       availableTechnologies: [],
       gold: 0,
@@ -98,7 +98,6 @@ export class GameService {
       happiness: 0,
       era: 'ancient'
     };
-
 
     this.currentGameSubject.next(gameSession);
 
@@ -147,7 +146,6 @@ export class GameService {
     const game = this.currentGame;
     if (!game) return false;
 
-
     game.lastSaved = new Date();
     const existingIndex = this.savedGames.findIndex(g => g.id === game.id);
     if (existingIndex >= 0) {
@@ -155,7 +153,6 @@ export class GameService {
     } else {
       this.savedGames.push(game);
     }
-
 
     this.persistSavedGames();
     return true;
@@ -169,7 +166,6 @@ export class GameService {
     const initialLength = this.savedGames.length;
     this.savedGames = this.savedGames.filter(game => game.id !== gameId);
 
-
     if (this.savedGames.length < initialLength) {
       this.persistSavedGames();
       return true;
@@ -178,50 +174,42 @@ export class GameService {
   }
 
   endTurn(): void {
-    this.changePhase('end');
+    this.changePhase('fin_ia');
   }
 
   private processEndOfTurn(): void {
     const game = this.currentGame;
     if (!game) return;
 
-
-    game.gold += game.goldPerTurn;
-    game.science += game.sciencePerTurn;
-    game.culture += game.culturePerTurn;
     game.turn++;
-
-    game.units.forEach(unit => {
-      if (unit.owner === game.currentPlayerId) {
-        unit.movementPoints = unit.maxMovementPoints;
-        unit.canMove = true;
-      }
-    });
-
-
-    game.currentPhase = 'movement';
+    this.resetUnitMoves();
+    this.calculateResourcesPerTurn();
+    game.currentPhase = 'recoleccion';
     this.currentGameSubject.next({ ...game });
-
   }
 
   startTurn(): void {
     const game = this.currentGame;
     if (!game) return;
-
-    game.currentPhase = 'movement';
-    this.resetUnitMoves();
-    this.calculateResourcesPerTurn();
+    game.currentPhase = 'recoleccion';
     this.currentGameSubject.next({ ...game });
-
-    console.log(`¡Comienza el turno ${game.turn}!`);
   }
 
   nextPhase(): void {
     const game = this.currentGame;
     if (!game) return;
 
-    const phases: ('movement' | 'action' | 'diplomacy' | 'production' | 'research' | 'end')[] =
-      ['movement', 'action', 'diplomacy', 'production', 'research', 'end'];
+    const phases: (
+      'recoleccion' |
+      'movimiento_accion' |
+      'diplomacia_investigacion_fortificacion' |
+      'fin_ia'
+    )[] = [
+      'recoleccion',
+      'movimiento_accion',
+      'diplomacia_investigacion_fortificacion',
+      'fin_ia'
+    ];
 
     const currentIndex = phases.indexOf(game.currentPhase);
 
@@ -233,37 +221,48 @@ export class GameService {
     }
   }
 
-  changePhase(phase: 'movement' | 'action' | 'diplomacy' | 'production' | 'research' | 'end'): void {
+  changePhase(phase: 'recoleccion' | 'movimiento_accion' | 'diplomacia_investigacion_fortificacion' | 'fin_ia'): void {
     const game = this.currentGame;
     if (!game) return;
 
     game.currentPhase = phase;
 
     switch (phase) {
-      case 'movement':
-        break;
+      case 'recoleccion':
+        this.processResourceCollection();
+        this.changePhase('movimiento_accion');
+        return;
 
-      case 'action':
+      case 'movimiento_accion':
+        this.resetUnitMoves();
         this.updateAvailableActions();
         break;
 
-      case 'diplomacy':
-        break;
-
-      case 'production':
+      case 'diplomacia_investigacion_fortificacion':
+        this.updateResearch();
         this.updateCitiesProduction();
         break;
 
-      case 'research':
-        this.updateResearch();
-        break;
-
-      case 'end':
+      case 'fin_ia':
+        this.processAI();
         this.processEndOfTurn();
-        break;
+        this.startTurn();
+        return;
     }
 
     this.currentGameSubject.next({ ...game });
+  }
+
+  private processResourceCollection(): void {
+    const game = this.currentGame;
+    if (!game) return;
+    game.gold += game.goldPerTurn;
+    game.science += game.sciencePerTurn;
+    game.culture += game.culturePerTurn;
+  }
+
+  private processAI(): void {
+    // Placeholder for AI logic
   }
 
   private updateAvailableActions(): void {
@@ -348,7 +347,7 @@ export class GameService {
     city.currentProduction = undefined;
   }
 
-  private createNewUnit(type: string, position: { x: number, y: number }, owner: string): Unit | null {
+  private createNewUnit(type: string, position: { x: number; y: number }, owner: string): Unit | null {
     const id = `${type}_${Date.now()}`;
     const baseUnit: Unit = {
       id,
@@ -501,11 +500,6 @@ export class GameService {
 
   private getMapDimensions(size: string): { width: number; height: number } {
     switch (size) {
-/*
-      case 'small': return { width: 32, height: 24 };
-      case 'medium': return { width: 48, height: 36 };
-      case 'large': return { width: 64, height: 48 };
-      case 'huge': return { width: 80, height: 60 };*/
       default: return { width: 50, height: 50 };
     }
   }

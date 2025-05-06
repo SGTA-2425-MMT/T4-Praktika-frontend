@@ -55,7 +55,7 @@
     margin: 0;
     font-size: 20px;
   }
-  
+
   .civilization-name {
     color: #bdc3c7;
     font-size: 14px;
@@ -65,7 +65,7 @@
 .game-stats {
   display: flex;
   gap: 20px;
-  
+
   .stat-item {
     padding: 5px 10px;
     background-color: rgba(255, 255, 255, 0.1);
@@ -77,7 +77,7 @@
 .game-actions {
   display: flex;
   gap: 10px;
-  
+
   button {
     padding: 8px 15px;
     border: none;
@@ -86,20 +86,20 @@
     font-size: 14px;
     transition: background-color 0.2s ease;
   }
-  
+
   .btn-save {
     background-color: #3498db;
     color: #fff;
-    
+
     &:hover {
       background-color: #2980b9;
     }
   }
-  
+
   .btn-exit {
     background-color: #e74c3c;
     color: #fff;
-    
+
     &:hover {
       background-color: #c0392b;
     }
@@ -117,17 +117,17 @@
   flex-direction: column;
   align-items: center;
   padding: 8px 15px;
-  
+
   span {
     font-size: 14px;
     margin-bottom: 8px;
     color: #ddd;
   }
-  
+
   .phase-indicators {
     display: flex;
     gap: 5px;
-    
+
     .phase {
       width: 12px;
       height: 12px;
@@ -135,12 +135,12 @@
       background-color: #555;
       transition: all 0.3s ease;
       position: relative;
-      
+
       &.active {
         background-color: #4a90e2;
         box-shadow: 0 0 8px rgba(74, 144, 226, 0.8);
       }
-      
+
       &:hover::after {
         content: attr(data-phase);
         position: absolute;
@@ -167,7 +167,7 @@
   margin-right: 10px;
   cursor: pointer;
   font-size: 14px;
-  
+
   &:hover {
     background-color: #3a80d2;
   }
@@ -181,7 +181,7 @@
   padding: 10px 20px;
   border-top: 1px solid #f1c40f;
   height: 50px;
-  
+
   .btn-end-turn {
     padding: 10px 20px;
     background-color: #f1c40f;
@@ -192,7 +192,7 @@
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.2s ease;
-    
+
     &:hover {
       background-color: #f39c12;
     }

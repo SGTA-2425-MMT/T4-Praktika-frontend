@@ -7,7 +7,7 @@
         @for (row of gameSession.map.tiles; track $index) {
           <div class="map-row">
             @for (tile of row; track tile.id) {
-              <app-tile 
+              <app-tile
                 [tile]="tile"
                 [isUnitSelected]="!!selectedUnit && selectedUnit.position.x === tile.x && selectedUnit.position.y === tile.y"
                 [isPathTile]="isInPath(tile.x, tile.y)"
@@ -47,25 +47,13 @@
               Fundar Ciudad
             </button>
           }
-          
+
           @if (canUnitPerformAction(selectedUnit, 'build_improvement')) {
             <button (click)="performUnitAction('build_improvement')">
               Construir Mejora
             </button>
           }
-          
-          <!-- Acciones comunes para todas las unidades -->
-          @if (selectedUnit.movementPoints > 0) {
-            <button (click)="performUnitAction('fortify')">
-              Fortificar
-            </button>
-            <button (click)="performUnitAction('sleep')">
-              Dormir
-            </button>
-            <button (click)="performUnitAction('skip')">
-              Esperar
-            </button>
-          }
+
         </div>
       </div>
     }

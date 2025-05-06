@@ -27,20 +27,17 @@
         <div class="game-phases">
           <span>Fase actual: {{ getCurrentPhaseName() }}</span>
           <div class="phase-indicators">
-            <div class="phase" [class.active]="gameSession.currentPhase === 'movement'">
-              Movimiento
+            <div class="phase" [class.active]="gameSession.currentPhase === 'recoleccion'">
+              Recolección
             </div>
-            <div class="phase" [class.active]="gameSession.currentPhase === 'action'">
-              Acción
+            <div class="phase" [class.active]="gameSession.currentPhase === 'movimiento_accion'">
+              Movimiento y Acción
             </div>
-            <div class="phase" [class.active]="gameSession.currentPhase === 'diplomacy'">
-              Diplomacia
+            <div class="phase" [class.active]="gameSession.currentPhase === 'diplomacia_investigacion_fortificacion'">
+              Diplomacia/Investigación/Fortificación
             </div>
-            <div class="phase" [class.active]="gameSession.currentPhase === 'production'">
-              Producción
-            </div>
-            <div class="phase" [class.active]="gameSession.currentPhase === 'research'">
-              Investigación
+            <div class="phase" [class.active]="gameSession.currentPhase === 'fin_ia'">
+              Fin/IA
             </div>
           </div>
         </div>
@@ -49,22 +46,24 @@
           <button class="btn-exit" (click)="exitToMenu()">Salir</button>
         </div>
       </header>
-      
+
       <!-- Contenedor principal del juego -->
       <main class="game-content">
         <!-- Vista del mapa -->
         <app-map-view
           [gameSession]="gameSession"
           (endTurn)="endTurn()"
+          [canManageUnits]="gameSession.currentPhase === 'movimiento_accion'"
+          [currentPhase]="gameSession.currentPhase"
         ></app-map-view>
       </main>
-      
+
       <!-- Panel inferior de acciones -->
       <footer class="game-footer">
-        <button class="btn-next-phase" (click)="nextPhase()" *ngIf="gameSession.currentPhase !== 'end'">
+        <button class="btn-next-phase" (click)="nextPhase()" *ngIf="gameSession.currentPhase !== 'fin_ia'">
           Siguiente Fase
         </button>
-        <button class="btn-end-turn" (click)="endTurn()">
+        <button class="btn-end-turn" (click)="endTurn()" [disabled]="gameSession.currentPhase !== 'fin_ia'">
           Fin del Turno
         </button>
       </footer>

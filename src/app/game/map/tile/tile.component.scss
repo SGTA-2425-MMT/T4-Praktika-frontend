@@ -130,7 +130,7 @@
 /* Emojis para características */
 .feature-forest:after {
   content: "🌲";
-  background-image: url('/assets/images/tiles/grassland.jpg');
+  background-image: url('/assets/images/tiles/forest.png');
 }
 
 .feature-jungle:after {
@@ -178,3 +178,103 @@
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 2;
 }
+
+    /* Estados de la casilla */
+    .selected { border: 2px solid red; }
+    .path-tile { border: 2px dashed #ecd613; }
+    .has-unit { position: relative; }
+    .unit-can-move { border: 2px solid yellow; }
+    .unexplored { background-color: #1a1a1a; }
+
+    /* Indicadores de unidades */
+    .unit-indicator {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: white;
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-weight: bold;
+      z-index: 10;
+      border: 2px solid #333;
+      font-size: 14px;
+    }
+
+    .settler {
+      background-color: #ff9900;
+      color: white;
+    }
+
+    .warrior {
+      background-color: #cc0000;
+      color: white;
+    }
+
+    .worker {
+      background-color: #3366cc;
+      color: white;
+    }
+
+    .archer {
+      background-color: #8b4513;  /* Brown */
+      color: white;
+    }
+
+    .horseman {
+      background-color: #006400;  /* Dark Green */
+      color: white;
+    }
+
+    .swordsman {
+      background-color: #8b0000;  /* Dark Red */
+      color: white;
+    }
+
+    .catapult {
+      background-color: #696969;  /* Dim Gray */
+      color: white;
+    }
+
+    .galley {
+      background-color: #4682b4;  /* Steel Blue */
+      color: white;
+    }
+
+    .warship {
+      background-color: #000080;  /* Navy */
+      color: white;
+    }
+
+    .scout {
+      background-color: #9acd32;  /* Yellow Green */
+      color: white;
+    }
+
+    /* Indicador de ciudad */
+    .city-indicator {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 24px;
+      z-index: 20;
+      cursor: pointer;
+    }
+
+    /* Coordenadas para depuración */
+    .coordinates {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      font-size: 8px;
+      color: white;
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 1px 2px;
+      border-radius: 2px;
+      z-index: 5;
+    }

@@ -3,8 +3,8 @@
   [ngClass]="getTileClasses()"
   (click)="onClick()"
 >
-  <!-- Coordenadas para depuración -->
-  <div class="debug-coords" *ngIf="tile.isExplored">{{tile.x}},{{tile.y}}</div>
+  <!-- Coordenadas para depuración
+  <div class="debug-coords" *ngIf="tile.isExplored">{{tile.x}},{{tile.y}}</div>-->
 
   <!-- Características adicionales usando emojis -->
   <div *ngIf="tile.isExplored && tile.featureType && tile.featureType !== 'none'"

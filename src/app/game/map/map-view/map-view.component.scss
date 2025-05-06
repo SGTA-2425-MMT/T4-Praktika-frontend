@@ -63,41 +63,63 @@ app-tile {
 
 .info-panel {
   position: fixed;
-  top: 20px;
-  right: 20px;
-  width: 250px;
-  background-color: white;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  padding: 15px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  top: 24px;
+  right: 24px;
+  width: 230px;
+  background: #23243a;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.18);
+  padding: 20px 18px;
+  border: none;
 
   h3 {
-    margin-top: 0;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
+    margin: 0 0 10px 0;
+    font-size: 1.18em;
+    font-weight: 600;
+    color: #fff;
+    border: none;
+    padding-bottom: 0;
   }
 
   p {
-    margin: 8px 0;
+    margin: 7px 0;
+    color: #d3d6e0;
+    font-size: 0.98em;
   }
 
   .action-buttons {
     display: flex;
     flex-direction: column;
-    margin-top: 15px;
-    gap: 8px;
+    gap: 0.5em;
+    margin-top: 18px;
 
     button {
-      padding: 8px;
+      padding: 1.1em 0;
+      font-size: 1.18em;
       border: none;
-      background-color: #4a90e2;
-      color: white;
-      border-radius: 4px;
+      border-radius: 8px;
+      background: linear-gradient(90deg, #4e54c8 0%, #8f94fb 100%);
+      color: #fff;
+      font-weight: 600;
       cursor: pointer;
+      box-shadow: 0 2px 8px rgba(78,84,200,0.18);
+      transition: background 0.18s, transform 0.1s;
 
-      &:hover {
-        background-color: #3a80d2;
+      &:hover, &:focus {
+        background: linear-gradient(90deg, #8f94fb 0%, #4e54c8 100%);
+        outline: none;
+        transform: translateY(-2px) scale(1.04);
+      }
+
+      &:active {
+        background: #3a3e99;
+      }
+
+      &:disabled {
+        background: #44485e;
+        color: #aaa;
+        cursor: not-allowed;
+        box-shadow: none;
       }
     }
   }
@@ -197,12 +219,12 @@ app-tile {
     border-radius: 5px;
     padding: 8px;
     margin: 10px 0;
-    
+
     p {
       margin: 4px 0;
     }
   }
-  
+
   .action-buttons {
     display: grid;
     grid-template-columns: 1fr 1fr;
