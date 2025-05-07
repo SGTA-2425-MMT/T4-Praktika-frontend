@@ -54,10 +54,9 @@ export class TileComponent {
       'unit-can-move': this.unitCanMove && !this.isUnitSelected
     };
 
-    // Si hay una característica de terreno, mostrarla en lugar del terreno base
+    // Si hay una característica de terreno, añadirla como clase (excepto 'none')
     if (this.tile.featureType && this.tile.featureType !== 'none') {
       classes[this.tile.featureType] = true;
-      //delete classes[this.tile.terrain]; // Quitar la clase del terreno base
     }
 
     // Añadir la clase 'city' solo si el tile tiene una ciudad válida

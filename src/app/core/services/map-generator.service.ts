@@ -37,9 +37,7 @@ export class MapGeneratorService {
 
         const tileId = `tile_${x}_${y}`;
         const terrain = this.getTerrainType(mapData.map[y][x]); // Obtener el terreno del JSON
-
-
-
+        const featureType = this.getFeatureType(mapData.featureMap[y][x]); // Obtener la característica del JSON
 
         tiles[y][x] = {
           id: tileId,
@@ -56,8 +54,7 @@ export class MapGeneratorService {
             name: "0",
             level: '0' // Asignar un nivel inicial
           },
-
-          //featureType: this.getRandomFeature(terrain)
+          featureType // Asignar la característica al tile
         };
       }
     }
@@ -83,6 +80,15 @@ export class MapGeneratorService {
     if (code === 5) return 'water';
     if (code === 6) return 'waterocean';
     return 'plains'; // Default fallback
+  }
+
+  private getFeatureType(code: number): FeatureType {
+    if (code === 0) return 'none';
+    if (code === 1) return 'forest';
+    if (code === 2) return 'jungle';
+    if (code === 3) return 'oasis';
+    if (code === 4) return 'mountain';
+    return 'none'; // Default fallback
   }
 
   private getRandomFeature(terrain: TerrainType): FeatureType | undefined {

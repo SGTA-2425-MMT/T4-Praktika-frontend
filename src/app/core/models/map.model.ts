@@ -35,7 +35,7 @@ export interface TileYield {
 }
 
 export type TerrainType = 'plains' | 'grassland' | 'desert' | 'snow' | 'rocky' | 'water' | 'waterocean';
-export type FeatureType = 'forest' | 'jungle' | 'marsh' | 'oasis' | 'ice' | 'floodplains' | 'none';
+export type FeatureType = 'forest' | 'jungle' | 'oasis' |  'mountain' | 'none';
 export type ResourceType =
   | 'horses' | 'iron' | 'coal' | 'oil' | 'aluminum' | 'uranium' // estratégicos
   | 'wheat' | 'cattle' | 'sheep' | 'bananas' | 'deer' | 'fish' // alimentos
