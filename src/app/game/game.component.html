@@ -27,18 +27,10 @@
         <div class="game-phases">
           <span>Fase actual: {{ getCurrentPhaseName() }}</span>
           <div class="phase-indicators">
-            <div class="phase" [class.active]="gameSession.currentPhase === 'recoleccion'">
-
-            </div>
-            <div class="phase" [class.active]="gameSession.currentPhase === 'movimiento_accion'">
-
-            </div>
-            <div class="phase" [class.active]="gameSession.currentPhase === 'diplomacia_investigacion_fortificacion'">
-
-            </div>
-            <div class="phase" [class.active]="gameSession.currentPhase === 'fin_ia'">
-
-            </div>
+            <div class="phase" [class.active]="gameSession.currentPhase === 'diplomacia_decisiones'"></div>
+            <div class="phase" [class.active]="gameSession.currentPhase === 'creacion_investigacion'"></div>
+            <div class="phase" [class.active]="gameSession.currentPhase === 'movimiento_accion'"></div>
+            <div class="phase" [class.active]="gameSession.currentPhase === 'ia'"></div>
           </div>
         </div>
         <!-- Se eliminaron los botones de guardar y salir que estaban aquí -->
@@ -51,16 +43,15 @@
           [gameSession]="gameSession"
           (endTurn)="endTurn()"
           [canManageUnits]="gameSession.currentPhase === 'movimiento_accion'"
-          [currentPhase]="gameSession.currentPhase"
-        ></app-map-view>
+          [currentPhase]="gameSession.currentPhase"/>
       </main>
 
       <!-- Panel inferior de acciones -->
       <footer class="game-footer">
-        <button class="btn-next-phase" (click)="nextPhase()" *ngIf="gameSession.currentPhase !== 'fin_ia'">
+        <button class="btn-next-phase" (click)="nextPhase()" *ngIf="gameSession.currentPhase !== 'ia'">
           Siguiente Fase
         </button>
-        <button class="btn-end-turn" (click)="endTurn()" [disabled]="gameSession.currentPhase !== 'fin_ia'">
+        <button class="btn-end-turn" (click)="endTurn()" [disabled]="gameSession.currentPhase !== 'ia'">
           Fin del Turno
         </button>
       </footer>

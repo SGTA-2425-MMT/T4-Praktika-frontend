@@ -22,7 +22,7 @@ export class CityService {
 
     // Crear la estructura de la ciudad con todos los campos requeridos
     const city: City = {
-      id: `city_${Date.now()}`,
+      id: `${x}${y}`, // ID basada en la concatenación de las coordenadas x e y
       name: name,
       ownerId: settler.owner,
       position: { x, y },
@@ -54,20 +54,24 @@ export class CityService {
         merchants: 0,
         artists: 0,
         engineers: 0
-      }
+      },
+      level: 'settlement', // Initial level of the city
     };
 
     // Marcar la casilla como que tiene una ciudad
     if (x >= 0 && x < map.width && y >= 0 && y < map.height) {
-      console.log(`Marcando tile (${x}, ${y}) como ciudad con ID: ${city.id}`);
+      console.log(`Assigning city "${city.name}" to tile (${x}, ${y})`);
       const tile = map.tiles[y][x];
-      tile.hasCityOnTile = true;
-      tile.cityId = city.id;
+      tile.city = {
+        id: city.id,
+        name: city.name,
+        level: city.level,
+      };
 
       // Debug
-      console.log('Tile actualizado:', tile);
+      console.log('Tile updated with city:', tile);
     } else {
-      console.error(`Coordenadas fuera de los límites del mapa: (${x}, ${y})`);
+      console.error(`Coordinates out of map bounds: (${x}, ${y})`);
     }
 
     // Actualizar los rendimientos de la ciudad basados en las casillas circundantes

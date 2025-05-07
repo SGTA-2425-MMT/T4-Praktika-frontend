@@ -121,13 +121,13 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   getCurrentPhaseName(): string {
-    if (!this.gameSession || !this.gameSession.currentPhase) return 'Movimiento y Acción';
+    if (!this.gameSession || !this.gameSession.currentPhase) return 'Diplomacia y Decisiones';
 
     switch(this.gameSession.currentPhase) {
-      case 'recoleccion': return 'Recolección de Recursos';
+      case 'diplomacia_decisiones': return 'Diplomacia y Decisiones';
+      case 'creacion_investigacion': return 'Construcción e Investigación';
       case 'movimiento_accion': return 'Movimiento y Acción';
-      case 'diplomacia_investigacion_fortificacion': return 'Diplomacia, Investigación y Fortificación';
-      case 'fin_ia': return 'Fin de Turno y Movimientos IA';
+      case 'ia': return 'IA';
       default: return 'Desconocida';
     }
   }

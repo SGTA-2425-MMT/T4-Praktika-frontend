@@ -22,7 +22,7 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
   @ViewChild('mapContainer') mapContainer!: ElementRef;
   @Input() gameSession: GameSession | null = null;
   @Output() endTurn = new EventEmitter<void>();
-  @Input() canManageUnits: boolean = false;
+  @Input() canManageUnits: boolean = false; // Corrected initialization
   @Input() currentPhase: string = '';
 
   selectedUnit: Unit | null = null;
@@ -85,13 +85,8 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
     if (!this.gameSession || !tile.isExplored) {
       return;
     }
-    // Solo permitir seleccionar unidades en fase de acción
-    if (!this.canManageUnits) {
-      return;
-    }
-
     // Comprobar si hay una ciudad en la casilla
-    if (tile.hasCityOnTile) {
+    if (tile.city?.id && this.gameSession.currentPhase === 'creacion_investigacion') {
       const cityOnTile = this.findCityAt(tile.x, tile.y);
       if (cityOnTile && cityOnTile.ownerId === this.gameSession.currentPlayerId) {
         this.selectedCity = cityOnTile;
@@ -130,7 +125,7 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
 
   // Mueve la unidad seleccionada a una casilla
   moveSelectedUnit(targetTile: MapTile): void {
-    if (!this.selectedUnit || !this.gameSession) return;
+    if (!this.selectedUnit || !this.gameSession || this.gameSession.currentPhase != "movimiento_accion") return;
 
     // Si la unidad ya está en esta casilla, no hacer nada
     if (this.selectedUnit.position.x === targetTile.x &&
@@ -239,8 +234,8 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
       // Verificar el estado del tile para asegurar que se actualizó correctamente
       const cityTile = this.gameSession.map.tiles[newCity.position.y][newCity.position.x];
       console.log('Estado del tile después de fundar ciudad:', {
-        hasCityOnTile: cityTile.hasCityOnTile,
-        cityId: cityTile.cityId
+        hasCityOnTile: cityTile.city.id !== undefined,
+        cityId: cityTile.city.id
       });
 
       // Limpiar selección y resetear estados

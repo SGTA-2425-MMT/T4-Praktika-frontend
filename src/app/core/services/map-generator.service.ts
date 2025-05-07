@@ -51,6 +51,12 @@ export class MapGeneratorService {
           isVisible: true,
           isExplored: true,
           yields: this.calculateBaseYield(terrain),
+          city: {
+            id: "0",
+            name: "0",
+            level: '0' // Asignar un nivel inicial
+          },
+
           //featureType: this.getRandomFeature(terrain)
         };
       }

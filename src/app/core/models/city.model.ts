@@ -49,26 +49,26 @@ export interface City {
   culturePerTurn: number;
   happiness: number;
   turnsFounded: number;
-  
+
   // Cola de producción
   currentProduction?: CityProduction;
   productionQueue?: CityProduction[];
-  
+
   // Edificios construidos
   buildings: string[];
-  
+
   // Casillas trabajadas
   workingTiles: {x: number, y: number}[];
-  
+
   // Valores estratégicos
   defense: number;
   health: number;
   maxHealth: number;
-  
+
   // Crecimiento cultural
   cultureBorder: number;
   cultureToExpand: number;
-  
+
   // Especialistas
   specialists: {
     scientists: number;
@@ -76,4 +76,7 @@ export interface City {
     artists: number;
     engineers: number;
   }
+
+  // Level of the city
+  level: string; // Level of the city, e.g., "settlement", "village", etc.
 }

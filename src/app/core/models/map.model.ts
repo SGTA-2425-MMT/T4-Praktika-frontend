@@ -19,8 +19,11 @@ export interface MapTile {
     production: number;
     gold: number;
   };
-  hasCityOnTile?: boolean;  // Indica si hay una ciudad en esta casilla
-  cityId?: string;          // ID de la ciudad en esta casilla, si existe
+  city: {
+    id: string;
+    name: string;
+    level: string; // Level of the city, e.g., "settlement", "village", etc.
+  };
 }
 
 export interface TileYield {

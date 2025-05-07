@@ -2,8 +2,8 @@
   @if (!gameSession) {
     <div class="loading-message">Cargando mapa...</div>
   } @else {
-    <!-- Añadimos la barra lateral que aparece durante la fase de acción -->
-    <div class="lateral-sidebar" [class.visible]="currentPhase === 'movimiento_accion'">
+    <!-- Update sidebar visibility condition -->
+    <div class="lateral-sidebar" [class.visible]="(selectedUnit || selectedCity) && (currentPhase === 'movimiento_accion' || currentPhase === 'creacion_investigacion')">
       <div class="sidebar-header">
         <h3>Panel de Control</h3>
       </div>
@@ -41,9 +41,9 @@
               }
             </div>
           </div>
-        } @else {
-          <div class="no-selection-message">
-            <p>Selecciona una unidad para ver información y realizar acciones</p>
+        } @else if (selectedCity) {
+          <div class="city-info">
+            <!-- ...existing code for city info... -->
           </div>
         }
       </div>

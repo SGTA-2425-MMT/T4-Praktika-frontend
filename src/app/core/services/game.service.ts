@@ -27,7 +27,7 @@ export interface GameSession {
   createdAt: Date;
   lastSaved?: Date;
 
-  currentPhase: 'recoleccion' | 'movimiento_accion' | 'diplomacia_investigacion_fortificacion' | 'fin_ia';
+  currentPhase: 'diplomacia_decisiones' | 'creacion_investigacion' | 'movimiento_accion' | 'ia';
   researchProgress?: {
     currentTechnology: string;
     progress: number;
@@ -86,7 +86,7 @@ export class GameService {
       playerCivilization: settings.civilization,
       difficulty: settings.difficulty,
       createdAt: new Date(),
-      currentPhase: 'recoleccion',
+      currentPhase: 'diplomacia_decisiones',
       discoveredTechnologies: [],
       availableTechnologies: [],
       gold: 0,
@@ -189,7 +189,7 @@ export class GameService {
   }
 
   endTurn(): void {
-    this.changePhase('fin_ia');
+    this.changePhase('ia');
   }
 
   private processEndOfTurn(): void {
@@ -199,14 +199,14 @@ export class GameService {
     game.turn++;
     this.resetUnitMoves();
     this.calculateResourcesPerTurn();
-    game.currentPhase = 'recoleccion';
+    game.currentPhase = 'diplomacia_decisiones';
     this.currentGameSubject.next({ ...game });
   }
 
   startTurn(): void {
     const game = this.currentGame;
     if (!game) return;
-    game.currentPhase = 'recoleccion';
+    game.currentPhase = 'diplomacia_decisiones';
     this.currentGameSubject.next({ ...game });
   }
 
@@ -215,15 +215,15 @@ export class GameService {
     if (!game) return;
 
     const phases: (
-      'recoleccion' |
+      'diplomacia_decisiones' |
+      'creacion_investigacion' |
       'movimiento_accion' |
-      'diplomacia_investigacion_fortificacion' |
-      'fin_ia'
+      'ia'
     )[] = [
-      'recoleccion',
+      'diplomacia_decisiones',
+      'creacion_investigacion',
       'movimiento_accion',
-      'diplomacia_investigacion_fortificacion',
-      'fin_ia'
+      'ia'
     ];
 
     const currentIndex = phases.indexOf(game.currentPhase);
@@ -236,29 +236,28 @@ export class GameService {
     }
   }
 
-  changePhase(phase: 'recoleccion' | 'movimiento_accion' | 'diplomacia_investigacion_fortificacion' | 'fin_ia'): void {
+  changePhase(phase: 'diplomacia_decisiones' | 'creacion_investigacion' | 'movimiento_accion' | 'ia'): void {
     const game = this.currentGame;
     if (!game) return;
 
     game.currentPhase = phase;
 
     switch (phase) {
-      case 'recoleccion':
-        this.processResourceCollection();
-        this.changePhase('movimiento_accion');
+      case 'diplomacia_decisiones':
+        this.processDiplomacy();
+        this.changePhase('creacion_investigacion');
         return;
 
-      case 'movimiento_accion':
-        this.resetUnitMoves();
-        this.updateAvailableActions();
-        break;
-
-      case 'diplomacia_investigacion_fortificacion':
+      case 'creacion_investigacion':
         this.updateResearch();
         this.updateCitiesProduction();
         break;
 
-      case 'fin_ia':
+      case 'movimiento_accion':
+        this.updateAvailableActions();
+        break;
+
+      case 'ia':
         this.processAI();
         this.processEndOfTurn();
         this.startTurn();
@@ -266,6 +265,10 @@ export class GameService {
     }
 
     this.currentGameSubject.next({ ...game });
+  }
+
+  private processDiplomacy(): void {
+    // Placeholder for diplomacy logic
   }
 
   private processResourceCollection(): void {

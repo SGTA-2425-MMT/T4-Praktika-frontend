@@ -6,10 +6,23 @@
   align-items: center;
   box-sizing: border-box;
   //border: 2px solid #000;
-  width: 50px;
-  height: 50px;
+  width: 100px;
+  height: 100px;
   margin: 0px;
   cursor: pointer;
+/*
+  transform: scale(1) skewY(-15deg);
+    .map-grid {
+      display: flex;
+      flex-wrap: wrap;
+      transform: rotateX( 0deg);
+      margin: -25px 0;
+    }
+
+    .map-row {
+      display: flex;
+      margin-left: 50px;
+    }
   background-size: cover;
   background-position: center;
 
@@ -77,14 +90,35 @@
 &.grassland {
   background-color: green;
   background-image: url('/assets/images/tiles/grassland.jpg');
+  &.city {
+    background-color: #ffcc00;
+    background-image: url('/assets/images/cities/settlement.png');
+    background-size: cover;
+    background-position: center;
+    z-index: 10;
+  }
 }
 &.plains {
   background-color: yellowgreen;
   background-image: url('/assets/images/tiles/plains.png');
+  &.city {
+    background-color: #ffcc00;
+    background-image: url('/assets/images/cities/settlement.png');
+    background-size: cover;
+    background-position: center;
+    z-index: 10;
+  }
 }
 &.desert {
   background-color: orange;
   background-image: url('/assets/images/tiles/desert.png');
+  &.city {
+    background-color: #ffcc00;
+    background-image: url('/assets/images/cities/settlement.png');
+    background-size: cover;
+    background-position: center;
+    z-index: 10;
+  }
 }
 &.rocky {
   background-color: grey;
@@ -94,16 +128,27 @@
   background-color: white;
   background-image: url('/assets/images/tiles/snow.png');
 }
-&.city {
-  background-color: #ffcc00;
-  background-image: url('/assets/images/cities/settlement.png');
-  background-size: cover;
-  background-position: center;
-  z-index: 10;
-}
 }
 
-
+.feature-image {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  //border: 2px solid #000;
+  width: 100px;
+  height: 100px;
+  margin: 0px;
+  cursor: pointer;
+  &.city {
+    background-color: #ffcc00;
+    background-image: url('/assets/images/cities/settlement1.png');
+    background-size: cover;
+    background-position: center;
+    z-index: 10;
+  }
+}
 /* Elementos dentro de la casilla */
 .debug-coords {
   position: absolute;
@@ -113,14 +158,17 @@
   //color: white;
   background-color: rgba(0, 0, 0, 0.5);
   padding: 1px 2px;
-  border-radius: 2px;
+  border-color: white;
+  radius: 2px;
   z-index: 3;
 }
 
 /* Características y recursos */
+//color: white;
 .feature-image, .resource-image {
   position: absolute;
   top: 50%;
+//color: white;
   left: 50%;
   transform: translate(-50%, -50%);
   width: 60%;
@@ -131,15 +179,14 @@
   opacity: 0.7;    // Más translúcido
   pointer-events: none;
   background: none;
-}
-
-/* Emojis para características */
+    //
+/* Emojis pararacterísticas */
 .feature-forest:after {
-  content: "🌲";
-  background-image: url('/assets/images/tiles/forest.png');
+ //ntent: "🌲";
+  background-image: url('/assets/images/tiles/fores//png');
 }
 
-.feature-jungle:after {
+.fere-jungle:after {
   content: "🌴";
   background-image: url('/assets/images/tiles/grassland.jpg');
 }
@@ -218,28 +265,28 @@
 
     .warrior {
       background-color: #cc0000;
-      color: white;
+       color: white;
     }
 
     .worker {
-      background-color: #3366cc;
+      background-color: #3366 cc;
       color: white;
     }
 
     .archer {
-      background-color: #8b4513;  /* Brown */
+       background-color:  #8b4513;  /* Brown */
       color: white;
     }
 
-    .horseman {
+    .horseman  {
       background-color: #006400;  /* Dark Green */
       color: white;
     }
 
-    .swordsman {
+    .swordsm an {
       background-color: #8b0000;  /* Dark Red */
       color: white;
-    }
+     }
 
     .catapult {
       background-color: #696969;  /* Dim Gray */
@@ -247,7 +294,7 @@
     }
 
     .galley {
-      background-color: #4682b4;  /* Steel Blue */
+      background-color: #4682b4;  /*  Steel Blue */
       color: white;
     }
 
@@ -303,3 +350,4 @@
         z-index: 10;
       }
     }
+  }

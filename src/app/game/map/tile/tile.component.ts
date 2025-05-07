@@ -47,7 +47,7 @@ export class TileComponent {
     }
 
     const classes: any = {
-      [this.tile.terrain]: true,
+      [this.tile.terrain]: true, // Aplica la clase según el tipo de terreno
       'selected': this.isUnitSelected,
       'path-tile': this.isPathTile,
       'has-unit': this.hasUnit,
@@ -57,23 +57,20 @@ export class TileComponent {
     // Si hay una característica de terreno, mostrarla en lugar del terreno base
     if (this.tile.featureType && this.tile.featureType !== 'none') {
       classes[this.tile.featureType] = true;
-      // Quitar la clase del terreno base si hay una característica
-      delete classes[this.tile.terrain];
+      //delete classes[this.tile.terrain]; // Quitar la clase del terreno base
     }
 
-    return classes; }
+    // Añadir la clase 'city' solo si el tile tiene una ciudad válida
+    if (this.tile.city && this.tile.city.id !== '0') {
+      classes['city'] = true;
+    }
+
+    return classes;
+  }
+
   isStrategicResource(resource: string): boolean {
-    // Añade aquí los nombres de tus recursos estratégicos
-    return ['iron', 'horses', 'coal', 'oil', 'aluminum', 'uranium'].includes(resource);
+    // Añade aquí los nombres de tus recursos estratégicos return ['wheat', 'rice', 'cattle', 'fish', 'sheep'].includes(resource);
+    return ['iron', 'horses', 'coal', 'oil', 'aluminum', 'uranium'].includes(resource);  }
   }
 
-  isFoodResource(resource: string): boolean {
-    // Añade aquí los nombres de tus recursos de alimento
-    return ['wheat', 'rice', 'cattle', 'fish', 'sheep'].includes(resource);
-  }
 
-  isLuxuryResource(resource: string): boolean {
-    // Añade aquí los nombres de tus recursos de lujo
-    return ['gold', 'silver', 'gems', 'spices', 'silk'].includes(resource);
-  }
-}
