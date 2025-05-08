@@ -17,6 +17,7 @@ export class TileComponent {
   @Input() hasUnit: boolean = false;
   @Input() unitCanMove: boolean = false;
   @Input() unitType: string = '';
+  @Input() isMovableTile: boolean = false; // Nueva propiedad para casillas a las que se puede mover
   @Output() tileClick = new EventEmitter<void>();
 
   onClick(): void {
@@ -40,18 +41,23 @@ export class TileComponent {
     }
   }
 
-  getTileClasses(): any {
+  getTileClasses(): { [key: string]: boolean } {
     // Si no está explorado, solo mostrar como inexplorado
     if (!this.tile.isExplored) {
-      return { 'unexplored': true };
+      return { 'tile-unexplored': true };
     }
 
-    const classes: any = {
+    const classes: { [key: string]: boolean } = {
+      'tile': true,
       [this.tile.terrain]: true, // Aplica la clase según el tipo de terreno
-      'selected': this.isUnitSelected,
-      'path-tile': this.isPathTile,
-      'has-unit': this.hasUnit,
-      'unit-can-move': this.unitCanMove && !this.isUnitSelected
+      'tile-highlighted': this.tile.isVisible && this.isUnitSelected,
+      'tile-path': this.isPathTile,
+      'tile-with-unit': this.hasUnit && this.unitCanMove,
+      'tile-unit-selected': this.isUnitSelected,
+      'tile-explored-not-visible': this.tile.isExplored && !this.tile.isVisible,
+      'tile-movable': this.isMovableTile, // Clase CSS para casillas a las que se puede mover
+      'settler': this.unitType === 'settler',
+      'warrior': this.unitType === 'warrior',
     };
 
     // Si hay una característica de terreno, añadirla como clase (excepto 'none')
@@ -68,8 +74,9 @@ export class TileComponent {
   }
 
   isStrategicResource(resource: string): boolean {
-    // Añade aquí los nombres de tus recursos estratégicos return ['wheat', 'rice', 'cattle', 'fish', 'sheep'].includes(resource);
-    return ['iron', 'horses', 'coal', 'oil', 'aluminum', 'uranium'].includes(resource);  }
+    // Añade aquí los nombres de tus recursos estratégicos
+    return ['iron', 'horses', 'coal', 'oil', 'aluminum', 'uranium'].includes(resource);
   }
+}
 
 

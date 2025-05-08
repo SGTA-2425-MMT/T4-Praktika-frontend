@@ -61,11 +61,9 @@
                 [hasUnit]="hasUnitAt(tile.x, tile.y)"
                 [unitCanMove]="canUnitAtTileMove(tile.x, tile.y)"
                 [unitType]="getUnitTypeAt(tile.x, tile.y)"
+                [isMovableTile]="gameSession.currentPhase === 'movimiento_accion' && isTileMovable(tile.x, tile.y)"
                 (tileClick)="onTileClick(tile)">
               </app-tile>
-              @if (findUnitAt(tile.x, tile.y)?.type === 'settler') {
-                <div class="settler-marker"></div>
-              }
             }
           </div>
         }

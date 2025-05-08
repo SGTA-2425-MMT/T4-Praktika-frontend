@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { MapCoordinate, MapTile, GameMap } from '../models/map.model';
 import { Unit } from '../models/unit.model';
 import { BehaviorSubject } from 'rxjs';
+import { GameService } from './game.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +11,7 @@ export class MovementService {
   private path = new BehaviorSubject<MapCoordinate[]>([]);
   currentPath$ = this.path.asObservable();
 
-  constructor() {}
+  constructor(private gameService: GameService) {}
 
   // Encuentra la ruta más corta usando el algoritmo A*
   findPath(map: GameMap, start: MapCoordinate, end: MapCoordinate, unit: Unit): MapCoordinate[] {
@@ -124,13 +125,28 @@ export class MovementService {
 
   // Verifica si una unidad puede moverse a una casilla
   canMoveTo(tile: MapTile, unit: Unit): boolean {
-    // Unidades terrestres no pueden moverse al océano
-
-
-
-
-    // Verificar si hay otra unidad del mismo tipo (terrestre/naval)
-    return true; // Simplificado, en un caso real habría que verificar las unidades en la casilla
+    // Verificar si el terreno es adecuado según el tipo de unidad
+    
+    // Verificar si hay una ciudad en la casilla
+    if (tile.city.id != '0') {
+      return false;
+    }
+    
+    // Verificar si hay alguna unidad en la misma casilla
+    const currentGame = this.gameService.currentGame;
+    if (currentGame) {
+      const unitInTile = currentGame.units.find(u => 
+        u.position.x === tile.x && 
+        u.position.y === tile.y &&
+        u.id !== unit.id // No considerar la unidad que se está moviendo
+      );
+      
+      if (unitInTile) {
+        return false;
+      }
+    }
+    
+    return true;
   }
 
   // Reconstruye la ruta encontrada

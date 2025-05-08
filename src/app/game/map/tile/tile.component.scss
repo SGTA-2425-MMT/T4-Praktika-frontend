@@ -78,6 +78,12 @@
     filter: grayscale(0.5);
   }
 
+  &.tile-movable {
+    border: 2px solid #4287f5; // Azul para casillas a las que se puede mover
+    box-shadow: 0 0 8px rgba(66, 135, 245, 0.6);
+    z-index: 8;
+  }
+
 /* Características adicionales */
 &.water {
   background-color: aqua;
@@ -117,6 +123,7 @@
     left: 0;
     width: 100%;
     height: 100%;
+    background-image: url('/assets/images/units/settler.png'); // Añadida imagen del settler
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
@@ -203,21 +210,7 @@
   }
 
   &.unit-icon::after {
-    position: relative;
-    background-image: url('/assets/images/units/settler.png'); /* Your PNG image */
-
-      content: '';
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      width: 16px;
-      height: 16px;
-      background: #0066ff;
-      border-radius: 50%;
-      border: 2px solid #fff;
-      box-shadow: 0 0 6px #0066ff;
-      z-index: 10;
+    content: none; // Evita que se genere contenido adicional
   }
 }
 
@@ -349,6 +342,20 @@
       font-size: 14px;
     }
 
+    .settler-unit {
+      background-image: url('/assets/images/units/settler_lvl1.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      width: 80%;
+      height: 80%;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+    }
+
     .settler {
       background-color: #ff9900;
       color: white;
@@ -421,24 +428,5 @@
       padding: 1px 2px;
       border-radius: 2px;
       z-index: 5;
-    }
-
-    .settler-unit {
-      position: relative;
-
-      &::after {
-        content: '';
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        width: 16px;
-        height: 16px;
-        background: #0066ff;
-        border-radius: 50%;
-        border: 2px solid #fff;
-        box-shadow: 0 0 6px #0066ff;
-        z-index: 10;
-      }
     }
   }

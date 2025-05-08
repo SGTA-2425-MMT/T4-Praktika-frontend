@@ -5,11 +5,11 @@
 >
   <div class="tile-feature"></div>
   @if (hasUnit) {
-    <div class="unit-icon" [class.settler-unit]="unitType === 'settler'" [class.can-move]="unitCanMove">
+    <!-- Modificar esta parte para evitar el cuadrado negro -->
+    <div class="unit-indicator" [ngClass]="unitType">
       {{ getUnitSymbol() }}
     </div>
   }
-
 
   <!-- Coordenadas para depuración
   <div class="debug-coords" *ngIf="tile.isExplored">{{tile.x}},{{tile.y}}</div>-->
