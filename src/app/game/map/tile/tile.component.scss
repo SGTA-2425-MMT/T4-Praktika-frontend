@@ -6,8 +6,8 @@
   align-items: center;
   box-sizing: border-box;
   //border: 2px solid #000;
-  width: 100px;
-  height: 100px;
+  width: 120px;
+  height: 120px;
   margin: 0px;
   cursor: pointer;
 /*
@@ -116,6 +116,92 @@
   background-color: white;
   background-image: url('/assets/images/tiles/snow.png');
 }
+
+&.coast_top {
+  background-image: url('/assets/images/tiles/coast11.png');
+}
+
+&.coast_right {
+  background-image: url('/assets/images/tiles/coast12.png');
+}
+
+&.coast_down {
+  background-image: url('/assets/images/tiles/coast13.png');
+  background-color: black;
+}
+
+&.coast_left {
+  background-image: url('/assets/images/tiles/coast14.png');
+}
+
+&.coast15 {
+  background-image: url('/assets/images/tiles/coast15.png');
+}
+
+&.coast16 {
+  background-image: url('/assets/images/tiles/coast16.png');
+}
+
+&.coast17 {
+  background-image: url('/assets/images/tiles/coast17.png');
+}
+
+&.coast18 {
+  background-image: url('/assets/images/tiles/coast18.png');
+}
+
+&.coast19 {
+  background-image: url('/assets/images/tiles/coast19.png');
+}
+&.coast20 {
+  background-image: url('/assets/images/tiles/coast20.png');
+}
+&.coast21 {
+  background-image: url('/assets/images/tiles/coast21.png');
+}
+&.coast22 {
+  background-image: url('/assets/images/tiles/coast22.png');
+}
+&.coast23 {
+  background-image: url('/assets/images/tiles/coast23.png');
+}
+&.coast24 {
+  background-image: url('/assets/images/tiles/coast24.png');
+}
+&.coast25 {
+  background-image: url('/assets/images/tiles/coast25.png');
+}
+&.coast26 {
+  background-image: url('/assets/images/tiles/coast26.png');
+}
+&.coast27 {
+  background-image: url('/assets/images/tiles/coast27.png');
+}
+&.coast28 {
+  background-image: url('/assets/images/tiles/coast28.png');
+}
+&.coast29 {
+  background-image: url('/assets/images/tiles/coast29.png');
+}
+&.coast30 {
+  background-image: url('/assets/images/tiles/coast30.png');
+}
+&.coast31 {
+  background-image: url('/assets/images/tiles/coast31.png');
+}
+&.coast32 {
+  background-image: url('/assets/images/tiles/coast32.png');
+}
+&.coast33 {
+  background-image: url('/assets/images/tiles/coast33.png');
+}
+&.coast34 {
+  background-image: url('/assets/images/tiles/coast34.png');
+}
+
+
+
+
   &.settler::after {
     content: '';
     position: absolute;
@@ -263,37 +349,6 @@
   opacity: 0.7;    // Más translúcido
   pointer-events: none;
   background: none;
-    //
-/* Emojis pararacterísticas */
-.feature-forest:after {
- //ntent: "🌲";
-  background-image: url('/assets/images/tiles/fores//png');
-}
-
-.fere-jungle:after {
-  content: "🌴";
-  background-image: url('/assets/images/tiles/grassland.jpg');
-}
-
-.feature-marsh:after {
-  content: "🌿";
-  background-image: url('/assets/images/tiles/grassland.jpg');
-}
-
-.feature-oasis:after {
-  content: "🏝️";
-  background-image: url('/assets/images/tiles/grassland.jpg');
-}
-
-.feature-ice:after {
-  content: "❄️";
-  background-image: url('/assets/images/tiles/snow.png');
-}
-
-.feature-floodplains:after {
-  content: "💧";
-  background-image: url('/assets/images/tiles/snow.png');
-}
 
 /* Niebla de guerra */
 .fog-of-war {
@@ -354,56 +409,6 @@
       left: 50%;
       transform: translate(-50%, -50%);
       z-index: 10;
-    }
-
-    .settler {
-      background-color: #ff9900;
-      color: white;
-    }
-
-    .warrior {
-      background-color: #cc0000;
-       color: white;
-    }
-
-    .worker {
-      background-color: #3366 cc;
-      color: white;
-    }
-
-    .archer {
-       background-color:  #8b4513;  /* Brown */
-      color: white;
-    }
-
-    .horseman  {
-      background-color: #006400;  /* Dark Green */
-      color: white;
-    }
-
-    .swordsm an {
-      background-color: #8b0000;  /* Dark Red */
-      color: white;
-     }
-
-    .catapult {
-      background-color: #696969;  /* Dim Gray */
-      color: white;
-    }
-
-    .galley {
-      background-color: #4682b4;  /*  Steel Blue */
-      color: white;
-    }
-
-    .warship {
-      background-color: #000080;  /* Navy */
-      color: white;
-    }
-
-    .scout {
-      background-color: #9acd32;  /* Yellow Green */
-      color: white;
     }
 
     /* Indicador de ciudad */

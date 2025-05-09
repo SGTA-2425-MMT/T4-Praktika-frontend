@@ -72,14 +72,42 @@ export class MapGeneratorService {
 
   // Add this helper function to your MapGeneratorService class
   private getTerrainType(code: number): TerrainType {
-    if (code === 0) return 'desert';
-    if (code === 1) return 'grassland';
-    if (code === 2) return 'plains';  // Note: JSON has "plain" but type needs "plains"
-    if (code === 3) return 'rocky';
-    if (code === 4) return 'snow';
-    if (code === 5) return 'water';
-    if (code === 6) return 'waterocean';
-    return 'plains'; // Default fallback
+    switch (code) {
+      case 0: return 'desert';
+      case 1: return 'grassland';
+      case 2: return 'plains'; // Note: JSON has "plain" but type needs "plains"
+      case 3: return 'rocky';
+      case 4: return 'snow';
+      case 5: return 'water';
+      case 6: return 'waterocean';
+      case 11: return 'coast_top';
+      case 12: return 'coast_right';
+      case 13: return 'coast_down';
+      case 14: return 'coast_left';
+      case 15: return 'coast15';
+      case 16: return 'coast16';
+      case 17: return 'coast17';
+      case 18: return 'coast18';
+      case 19: return 'coast19';
+      case 20: return 'coast20';
+      case 21: return 'coast21';
+      case 22: return 'coast22';
+      case 23: return 'coast23';
+      case 24: return 'coast24';
+      case 25: return 'coast25';
+      case 26: return 'coast26';
+      case 27: return 'coast27';
+      case 28: return 'coast28';
+      case 29: return 'coast29';
+      case 30: return 'coast30';
+      case 31: return 'coast31';
+      case 32: return 'coast32';
+      case 33: return 'coast33';
+      case 34: return 'coast34';
+      default:
+        console.warn(`Unknown terrain code: ${code}, defaulting to 'plains'`);
+        return 'plains'; // Default fallback
+    }
   }
 
   private getFeatureType(code: number): FeatureType {
@@ -126,6 +154,30 @@ export class MapGeneratorService {
       water: 1,
       waterocean: 1,
       rocky: 2,
+      coast_top: 1,
+      coast_right: 1,
+      coast_down: 1,
+      coast_left: 1,
+      coast15: 1,
+      coast16: 1,
+      coast17: 1,
+      coast18: 1,
+      coast19: 1,
+      coast20: 1,
+      coast21: 1,
+      coast22: 1,
+      coast23: 1,
+      coast24: 1,
+      coast25: 1,
+      coast26: 1,
+      coast27: 1,
+      coast28: 1,
+      coast29: 1,
+      coast30: 1,
+      coast31: 1,
+      coast32: 1,
+      coast33: 1,
+      coast34: 1,
     };
 
     return costs[terrain] || 1;
@@ -139,7 +191,31 @@ export class MapGeneratorService {
       snow: 0,
       water: 0,
       waterocean: 0,
-      rocky: 1
+      rocky: 1,
+      coast_top: 1,
+      coast_right: 1,
+      coast_down: 1,
+      coast_left: 1,
+      coast15: 0,
+      coast16: 0,
+      coast17: 0,
+      coast18: 0,
+      coast19: 0,
+      coast20: 0,
+      coast21: 0,
+      coast22: 0,
+      coast23: 0,
+      coast24: 0,
+      coast25: 0,
+      coast26: 0,
+      coast27: 0,
+      coast28: 0,
+      coast29: 0,
+      coast30: 0,
+      coast31: 0,
+      coast32: 0,
+      coast33: 0,
+      coast34: 0,
     };
 
     return bonuses[terrain] || 0;
@@ -153,7 +229,31 @@ export class MapGeneratorService {
       snow: { food: 0, production: 0, gold: 0 },
       water: { food: 1, production: 0, gold: 1 },
       waterocean: { food: 1, production: 0, gold: 1 },
-      rocky: { food: 0, production: 1, gold: 0 }
+      rocky: { food: 0, production: 1, gold: 0 },
+      coast_top: { food: 0, production: 0, gold: 1 },
+      coast_right: { food: 0, production: 0, gold: 1 },
+      coast_left: { food: 0, production: 0, gold: 1 },
+      coast_down: { food: 0, production: 0, gold: 1 },
+      coast15: { food: 0, production: 0, gold: 1 },
+      coast16: { food: 0, production: 0, gold: 1 },
+      coast17: { food: 0, production: 0, gold: 1 },
+      coast18: { food: 0, production: 0, gold: 1 },
+      coast19: { food: 0, production: 0, gold: 1 },
+      coast20: { food: 0, production: 0, gold: 1 },
+      coast21: { food: 0, production: 0, gold: 1 },
+      coast22: { food: 0, production: 0, gold: 1 },
+      coast23: { food: 0, production: 0, gold: 1 },
+      coast24: { food: 0, production: 0, gold: 1 },
+      coast25: { food: 0, production: 0, gold: 1 },
+      coast26: { food: 0, production: 0, gold: 1 },
+      coast27: { food: 0, production: 0, gold: 1 },
+      coast28: { food: 0, production: 0, gold: 1 },
+      coast29: { food: 0, production: 0, gold: 1 },
+      coast30: { food: 0, production: 0, gold: 1 },
+      coast31: { food: 0, production: 0, gold: 1 },
+      coast32: { food: 0, production: 0, gold: 1 },
+      coast33: { food: 0, production: 0, gold: 1 },
+      coast34: { food: 0, production: 0, gold: 1 },
     };
 
     return yields[terrain] || { food: 0, production: 0, gold: 0 };
