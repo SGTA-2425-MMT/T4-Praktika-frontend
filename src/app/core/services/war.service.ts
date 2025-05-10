@@ -1,0 +1,139 @@
+import { Injectable, EventEmitter } from '@angular/core';
+import { Unit } from '../models/unit.model';
+import { City } from '../models/city.model';
+import { GameService } from './game.service';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class WarService {
+  // Event emitters for visualization
+  unitAttackEvent = new EventEmitter<{ attacker: Unit; defender: Unit; damage: number }>();
+  cityAttackEvent = new EventEmitter<{ attacker: Unit; city: City; damage: number }>();
+
+  constructor(private gameService: GameService) {}
+
+  // Handle unit vs unit combat
+  attackUnit(attacker: Unit, defender: Unit): boolean {
+    if (!this.canAttack(attacker, defender)) {
+      console.error('Attack not allowed');
+      return false;
+    }
+
+    // Calculate damage
+    const damage = this.calculateDamage(attacker, defender);
+
+    // Apply damage to the defender
+    defender.health -= damage;
+
+    // Decrement attacksPerTurn
+    if (attacker.attacksPerTurn && attacker.attacksPerTurn > 0) {
+      attacker.attacksPerTurn -= 1;
+    }
+
+    // Emit event for visualization
+    this.unitAttackEvent.emit({ attacker, defender, damage });
+
+    console.log(`${attacker.name} attacked ${defender.name} for ${damage} damage!`);
+
+    // Check if the defender is dead
+    if (defender.health <= 0) {
+      this.removeUnit(defender);
+      console.log(`${defender.name} has been defeated!`);
+    }
+
+    return true;
+  }
+
+  // Handle unit vs city combat
+  attackCity(attacker: Unit, city: City): boolean {
+    if (!this.canAttackCity(attacker, city)) {
+      console.error('Attack on city not allowed');
+      return false;
+    }
+
+    // Calculate damage
+    const damage = attacker.strength;
+
+    // Apply damage to the city
+    city.health -= damage;
+
+    // Decrement attacksPerTurn
+    if (attacker.attacksPerTurn && attacker.attacksPerTurn > 0) {
+      attacker.attacksPerTurn -= 1;
+    }
+
+    // Emit event for visualization
+    this.cityAttackEvent.emit({ attacker, city, damage });
+
+    console.log(`${attacker.name} attacked ${city.name} for ${damage} damage!`);
+
+    // Check if the city is captured
+    if (city.health <= 0) {
+      this.captureCity(attacker, city);
+      console.log(`${city.name} has been captured by ${attacker.owner}!`);
+    }
+
+    return true;
+  }
+
+  // Check if a unit can attack another unit
+  private canAttack(attacker: Unit, defender: Unit): boolean {
+    console.log('Checking if attack is allowed...');
+    console.log('Attacker:', attacker);
+    console.log('Defender:', defender);
+
+    // Allow attacking own units for now
+    // Remove this condition to allow friendly fire
+    // if (attacker.owner === defender.owner) return false;
+
+    if (!attacker.attacksPerTurn || attacker.attacksPerTurn <= 0) {
+      console.error('Attack not allowed: Attacker has no attacks left this turn.');
+      return false; // No attacks left this turn
+    }
+
+    if (attacker.isRanged && attacker.range! < this.getDistance(attacker.position, defender.position)) {
+      console.error('Attack not allowed: Target is out of range for ranged units.');
+      return false; // Out of range for ranged units
+    }
+
+    console.log('Attack is allowed.');
+    return true;
+  }
+
+  // Check if a unit can attack a city
+  private canAttackCity(attacker: Unit, city: City): boolean {
+    if (attacker.movementPoints <= 0) return false; // No movement points left
+    return true;
+  }
+
+  // Calculate damage between units
+  private calculateDamage(attacker: Unit, defender: Unit): number {
+    const baseDamage = attacker.strength;
+    const defenseBonus = defender.isFortified ? 5 : 0;
+    return Math.max(0, baseDamage - defenseBonus);
+  }
+
+  // Remove a unit from the game
+  private removeUnit(unit: Unit): void {
+    const game = this.gameService.currentGame;
+    if (!game) return;
+
+    game.units = game.units.filter(u => u.id !== unit.id);
+  }
+
+  // Capture a city
+  private captureCity(attacker: Unit, city: City): void {
+    const game = this.gameService.currentGame;
+    if (!game) return;
+
+    city.ownerId = attacker.owner; // Change ownership
+    city.health = 50; // Reset city health
+    console.log(`${city.name} is now owned by ${attacker.owner}`);
+  }
+
+  // Calculate distance between two positions
+  private getDistance(pos1: { x: number; y: number }, pos2: { x: number; y: number }): number {
+    return Math.abs(pos1.x - pos2.x) + Math.abs(pos1.y - pos2.y); // Manhattan distance
+  }
+}

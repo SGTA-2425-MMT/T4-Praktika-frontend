@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MovementService } from '../../../core/services/movement.service';
 import { FogOfWarService } from '../../../core/services/fog-of-war.service';
 import { GameService } from '../../../core/services/game.service';
+import { WarService } from '../../../core/services/war.service';
 import { TileComponent } from '../tile/tile.component';
 import { GameMap, MapTile, MapCoordinate } from '../../../core/models/map.model';
 import { Unit, UnitAction } from '../../../core/models/unit.model';
@@ -32,17 +33,29 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
   cityName = '';
   selectedCity: City | null = null;
   movableTiles: { x: number, y: number }[] = [];
+  attackMode: boolean = false; // New property to track attack mode
+  attackableTiles: { x: number, y: number }[] = []; // Tiles with units that can be attacked
 
   constructor(
     private movementService: MovementService,
     private fogOfWarService: FogOfWarService,
-    private gameService: GameService
+    private gameService: GameService,
+    private warService: WarService // Inject WarService
   ) {}
 
   ngOnInit(): void {
     // Suscribirse a cambios en la ruta actual
     this.movementService.currentPath$.subscribe(path => {
       this.currentPath = path;
+    });
+
+    // Subscribe to attack events for visualization
+    this.warService.unitAttackEvent.subscribe(({ attacker, defender, damage }) => {
+      this.visualizeUnitAttack(attacker, defender, damage);
+    });
+
+    this.warService.cityAttackEvent.subscribe(({ attacker, city, damage }) => {
+      this.visualizeCityAttack(attacker, city, damage);
     });
   }
 
@@ -82,31 +95,35 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
 
   // Maneja el clic en una casilla
   onTileClick(tile: MapTile): void {
-    if (!this.gameSession || !tile.isExplored) {
-      return;
-    }
-    // Comprobar si hay una ciudad en la casilla
-    if (tile.city?.id && this.gameSession.currentPhase === 'creacion_investigacion') {
-      const cityOnTile = this.findCityAt(tile.x, tile.y);
-      if (cityOnTile && cityOnTile.ownerId === this.gameSession.currentPlayerId) {
-        this.selectedCity = cityOnTile;
+    if (this.attackMode) {
+      this.handleAttackTileClick(tile);
+    } else {
+      if (!this.gameSession || !tile.isExplored) {
         return;
       }
-    }
+      // Comprobar si hay una ciudad en la casilla
+      if (tile.city?.id && this.gameSession.currentPhase === 'creacion_investigacion') {
+        const cityOnTile = this.findCityAt(tile.x, tile.y);
+        if (cityOnTile && cityOnTile.ownerId === this.gameSession.currentPlayerId) {
+          this.selectedCity = cityOnTile;
+          return;
+        }
+      }
 
-    // Si no hay una ciudad del jugador, continuar con la lógica de unidades
-    const unitOnTile = this.findUnitAt(tile.x, tile.y);
+      // Si no hay una ciudad del jugador, continuar con la lógica de unidades
+      const unitOnTile = this.findUnitAt(tile.x, tile.y);
 
-    if (unitOnTile && unitOnTile.owner === this.gameSession.currentPlayerId) {
-      // Si hay una unidad del jugador actual en esta casilla, seleccionarla
-      this.selectUnit(unitOnTile);
-      this.highlightedTile = tile; // Mantenemos el seguimiento interno
-    } else if (this.selectedUnit && this.isTileMovable(tile.x, tile.y)) {
-      // Si hay una unidad seleccionada y el usuario hace clic en una casilla a la que se puede mover
-      this.moveSelectedUnit(tile);
+      if (unitOnTile && unitOnTile.owner === this.gameSession.currentPlayerId) {
+        // Si hay una unidad del jugador actual en esta casilla, seleccionarla
+        this.selectUnit(unitOnTile);
+        this.highlightedTile = tile; // Mantenemos el seguimiento interno
+      } else if (this.selectedUnit && this.isTileMovable(tile.x, tile.y)) {
+        // Si hay una unidad seleccionada y el usuario hace clic en una casilla a la que se puede mover
+        this.moveSelectedUnit(tile);
+      }
+      // Ya no limpiamos la selección si se hace clic en un espacio vacío
+      // Esto permite que la barra lateral permanezca visible
     }
-    // Ya no limpiamos la selección si se hace clic en un espacio vacío
-    // Esto permite que la barra lateral permanezca visible
   }
 
   // Método para cerrar la vista de la ciudad
@@ -184,6 +201,7 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
     this.highlightedTile = null;
     this.movementService.setCurrentPath([]);
     this.movableTiles = [];
+    this.disableAttackMode();
   }
 
   // Fortificar la unidad seleccionada
@@ -411,37 +429,37 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
 
     switch (productionDetails.type) {
       case 'warrior':
-        cost = 40;
+        cost = 0;
         break;
       case 'archer':
-        cost = 50;
+        cost = 0;
         break;
       case 'horseman':
-        cost = 70;
+        cost = 0;
         break;
       case 'swordsman':
-        cost = 75;
+        cost = 0;
         break;
       case 'catapult':
-        cost = 90;
+        cost = 0;
         break;
       case 'galley':
-        cost = 65;
+        cost = 0;
         break;
       case 'warship':
-        cost = 85;
+        cost = 0;
         break;
       case 'scout':
-        cost = 35;
+        cost = 0;
         break;
       case 'settler':
-        cost = 80;
+        cost = 0;
         break;
       case 'worker':
-        cost = 60;
+        cost = 0;
         break;
       default:
-        cost = 50;
+        cost = 0;
     }
 
     // Calcular los turnos restantes basado en la producción por turno
@@ -485,8 +503,15 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
         console.log('Llamando a foundCity() desde performUnitAction');
         this.foundCity();
         break;
-      case 'build_improvement':
+      case 'build':
         this.buildImprovement();
+        break;
+      case 'attack':
+        this.enableAttackMode();
+        break;
+      case 'negotiate':
+        // Aquí iría la lógica para negociar
+        console.log('Negociando...');
         break;
       default:
         console.error(`Acción desconocida: ${action}`);
@@ -501,7 +526,7 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
 
     // Aquí mostraríamos un menú para elegir qué mejora construir
     // Por ahora, simplemente fingimos que construye algo genérico
-    this.selectedUnit.currentAction = 'build_improvement';
+    this.selectedUnit.currentAction = 'build';
     this.selectedUnit.turnsToComplete = 3; // Por ejemplo, 3 turnos para construir
     this.selectedUnit.movementPoints = 0; // Ya no puede moverse este turno
 
@@ -514,9 +539,10 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
     switch(action) {
       case 'move': return 'Moviéndose';
       case 'attack': return 'Atacando';
-      case 'fortify': return 'Fortificado';
       case 'found_city': return 'Fundando ciudad';
-      case 'build_improvement': return 'Construyendo mejora';
+      case 'negotiate': return 'Negociando';
+      case 'retreat': return 'Retirándose';
+      case 'build': return 'Construyendo';
       default: return 'Desconocida';
     }
   }
@@ -569,11 +595,61 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
   isTileMovable(x: number, y: number): boolean {
     return this.movableTiles.some(t => t.x === x && t.y === y);
   }
-    // Añade este método a la clase MapViewComponent
-    getUnitCssClassAt(x: number, y: number): string {
-      const unit = this.findUnitAt(x, y);
-      if (!unit) return '';
-      if (unit.type === 'settler') return 'settler';
-      return '';
+
+  // Helper for template: is this tile attackable?
+  isTileAttackable(x: number, y: number): boolean {
+    return this.attackableTiles.some(t => t.x === x && t.y === y);
+  }
+
+  getUnitCssClassAt(x: number, y: number): string {
+    const unit = this.findUnitAt(x, y);
+    if (!unit) return '';
+    if (unit.type === 'settler') return 'settler';
+    return '';
+  }
+
+  // Visualize unit attack
+  private visualizeUnitAttack(attacker: Unit, defender: Unit, damage: number): void {
+    console.log(`Visualizing attack: ${attacker.name} -> ${defender.name}, Damage: ${damage}`);
+    // Add visualization logic here (e.g., animations, effects)
+  }
+
+  // Visualize city attack
+  private visualizeCityAttack(attacker: Unit, city: City, damage: number): void {
+    console.log(`Visualizing attack: ${attacker.name} -> ${city.name}, Damage: ${damage}`);
+    // Add visualization logic here (e.g., animations, effects)
+  }
+
+  // Enable attack mode for the selected unit
+  enableAttackMode(): void {
+    if (!this.selectedUnit || !this.gameSession) return;
+
+    this.attackMode = true;
+    this.attackableTiles = this.getAttackableTiles(this.selectedUnit);
+  }
+
+  // Disable attack mode
+  disableAttackMode(): void {
+    this.attackMode = false;
+    this.attackableTiles = [];
+  }
+
+  // Get tiles with units that can be attacked
+  getAttackableTiles(unit: Unit): { x: number, y: number }[] {
+    if (!this.gameSession) return [];
+    return this.gameSession.units
+      .filter(u => u.id !== unit.id) // Exclude the selected unit itself
+      .map(u => u.position);
+  }
+
+  // Handle tile click in attack mode
+  handleAttackTileClick(tile: MapTile): void {
+    if (!this.selectedUnit || !this.gameSession || !this.attackMode) return;
+
+    const targetUnit = this.findUnitAt(tile.x, tile.y);
+    if (targetUnit) {
+      this.warService.attackUnit(this.selectedUnit, targetUnit);
+      this.disableAttackMode(); // Exit attack mode after attacking
     }
+  }
 }

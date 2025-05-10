@@ -40,7 +40,7 @@ export interface PlayerState {
 })
 export class PlayerService {
   private playerStateSubject = new BehaviorSubject<PlayerState | null>(null);
-  
+
   // Definición de las tecnologías disponibles
   private availableTechnologies: Technology[] = [
     {
@@ -94,17 +94,17 @@ export class PlayerService {
       iconPath: 'assets/icons/tech/sailing.png'
     }
   ];
-  
+
   constructor() {}
-  
+
   get playerState$(): Observable<PlayerState | null> {
     return this.playerStateSubject.asObservable();
   }
-  
+
   get playerState(): PlayerState | null {
     return this.playerStateSubject.value;
   }
-  
+
   // Inicializar el estado del jugador
   initializePlayer(id: string, name: string, civilization: string): void {
     const initialState: PlayerState = {
@@ -128,24 +128,24 @@ export class PlayerService {
       availableTechnologies: ['agriculture', 'mining', 'sailing'],
       era: 'ancient'
     };
-    
+
     this.playerStateSubject.next(initialState);
   }
-  
+
   // Iniciar investigación de una tecnología
   startResearch(technologyId: string): boolean {
     const playerState = this.playerState;
     if (!playerState) return false;
-    
+
     // Verificar si la tecnología está disponible
     if (!playerState.availableTechnologies.includes(technologyId)) {
       return false;
     }
-    
+
     // Encontrar la tecnología
     const technology = this.availableTechnologies.find(tech => tech.id === technologyId);
     if (!technology) return false;
-    
+
     // Configurar la investigación
     const updatedState: PlayerState = {
       ...playerState,
@@ -155,33 +155,33 @@ export class PlayerService {
         turnsRemaining: Math.ceil(technology.cost / playerState.resources.sciencePerTurn)
       }
     };
-    
+
     this.playerStateSubject.next(updatedState);
     return true;
   }
-  
+
   // Procesar la investigación en un turno
   processResearch(): void {
     const playerState = this.playerState;
     if (!playerState || !playerState.research.currentTechnology) return;
-    
+
     const technology = this.availableTechnologies.find(
       tech => tech.id === playerState.research.currentTechnology
     );
-    
+
     if (!technology) return;
-    
+
     // Añadir progreso
     const progress = playerState.research.progress + playerState.resources.sciencePerTurn;
-    
+
     // Verificar si se ha completado
     if (progress >= technology.cost) {
       // Añadir a las tecnologías descubiertas
       const updatedTechnologies = [...playerState.technologies, technology.id];
-      
+
       // Actualizar tecnologías disponibles
       const newAvailableTechnologies = this.calculateAvailableTechnologies(updatedTechnologies);
-      
+
       // Actualizar estado del jugador
       this.playerStateSubject.next({
         ...playerState,
@@ -192,7 +192,7 @@ export class PlayerService {
           turnsRemaining: 0
         }
       });
-      
+
       console.log(`Tecnología descubierta: ${technology.name}`);
     } else {
       // Actualizar progreso
@@ -206,7 +206,7 @@ export class PlayerService {
       });
     }
   }
-  
+
   // Calcular qué tecnologías están disponibles basándose en las ya descubiertas
   private calculateAvailableTechnologies(discoveredTechs: string[]): string[] {
     return this.availableTechnologies
@@ -218,12 +218,12 @@ export class PlayerService {
       })
       .map(tech => tech.id);
   }
-  
+
   // Actualizar recursos tras un turno
   updateResources(goldPerTurn: number, sciencePerTurn: number, culturePerTurn: number): void {
     const playerState = this.playerState;
     if (!playerState) return;
-    
+
     this.playerStateSubject.next({
       ...playerState,
       resources: {
@@ -235,7 +235,7 @@ export class PlayerService {
       }
     });
   }
-  
+
   // Obtener información de una tecnología
   getTechnologyInfo(techId: string): Technology | undefined {
     return this.availableTechnologies.find(tech => tech.id === techId);

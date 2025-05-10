@@ -34,11 +34,23 @@
                 </button>
               }
 
-              @if (canUnitPerformAction(selectedUnit, 'build_improvement')) {
-                <button (click)="performUnitAction('build_improvement')">
-                  Construir Mejora
+              @if (canUnitPerformAction(selectedUnit, 'build')) {
+                <button (click)="performUnitAction('build')">
+                  Construir
                 </button>
               }
+              @if (canUnitPerformAction(selectedUnit, 'attack')) {
+                <button (click)="performUnitAction('attack')">
+                  Atacar
+                </button>
+              }
+              <!--Do a retreat one-->
+              @if (canUnitPerformAction(selectedUnit, 'retreat')) {
+                <button (click)="performUnitAction('retreat')">
+                  Retirarse
+                </button>
+              }
+              
             </div>
           </div>
         } @else if (selectedCity) {
@@ -50,6 +62,7 @@
     </div>
 
     <div class="map-viewport" tabindex="0" #mapContainer>
+      <button *ngIf="selectedUnit" (click)="enableAttackMode()">Attack</button>
       <div class="map-grid">
         @for (row of gameSession.map.tiles; track $index) {
           <div class="map-row">
@@ -62,6 +75,7 @@
                 [unitCanMove]="canUnitAtTileMove(tile.x, tile.y)"
                 [unitType]="getUnitTypeAt(tile.x, tile.y)"
                 [isMovableTile]="gameSession.currentPhase === 'movimiento_accion' && isTileMovable(tile.x, tile.y)"
+                [isAttackable]="isTileAttackable(tile.x, tile.y)"
                 (tileClick)="onTileClick(tile)">
               </app-tile>
             }

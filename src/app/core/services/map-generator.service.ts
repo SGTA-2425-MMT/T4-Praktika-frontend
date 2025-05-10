@@ -1,4 +1,4 @@
-import { createSettler, SettlerUnit } from './../models/unit.model';
+import { createSettler } from './../models/unit.model';
 import { Injectable } from '@angular/core';
 import { GameMap, MapTile, TerrainType, ResourceType, FeatureType } from '../models/map.model';
 
@@ -104,6 +104,14 @@ export class MapGeneratorService {
       case 32: return 'coast32';
       case 33: return 'coast33';
       case 34: return 'coast34';
+      case 35: return 'water_ocean1';
+      case 36: return 'water_ocean2';
+      case 37: return 'water_ocean3';
+      case 38: return 'water_ocean4';
+      case 39: return 'water_ocean5';
+      case 40: return 'water_ocean6';
+      case 41: return 'water_ocean7';
+      case 42: return 'water_ocean8';
       default:
         console.warn(`Unknown terrain code: ${code}, defaulting to 'plains'`);
         return 'plains'; // Default fallback
@@ -158,26 +166,12 @@ export class MapGeneratorService {
       coast_right: 1,
       coast_down: 1,
       coast_left: 1,
-      coast15: 1,
-      coast16: 1,
-      coast17: 1,
-      coast18: 1,
-      coast19: 1,
-      coast20: 1,
-      coast21: 1,
-      coast22: 1,
-      coast23: 1,
-      coast24: 1,
-      coast25: 1,
-      coast26: 1,
-      coast27: 1,
-      coast28: 1,
-      coast29: 1,
-      coast30: 1,
-      coast31: 1,
-      coast32: 1,
-      coast33: 1,
-      coast34: 1,
+      coast15: 1, coast16: 1, coast17: 1, coast18: 1, coast19: 1,
+      coast20: 1, coast21: 1, coast22: 1, coast23: 1, coast24: 1,
+      coast25: 1, coast26: 1, coast27: 1, coast28: 1, coast29: 1,
+      coast30: 1, coast31: 1, coast32: 1, coast33: 1, coast34: 1,
+      water_ocean1: 2, water_ocean2: 2, water_ocean3: 2, water_ocean4: 2,
+      water_ocean5: 2, water_ocean6: 2, water_ocean7: 2,  water_ocean8: 2
     };
 
     return costs[terrain] || 1;
@@ -196,26 +190,12 @@ export class MapGeneratorService {
       coast_right: 1,
       coast_down: 1,
       coast_left: 1,
-      coast15: 0,
-      coast16: 0,
-      coast17: 0,
-      coast18: 0,
-      coast19: 0,
-      coast20: 0,
-      coast21: 0,
-      coast22: 0,
-      coast23: 0,
-      coast24: 0,
-      coast25: 0,
-      coast26: 0,
-      coast27: 0,
-      coast28: 0,
-      coast29: 0,
-      coast30: 0,
-      coast31: 0,
-      coast32: 0,
-      coast33: 0,
-      coast34: 0,
+      coast15: 1, coast16: 1, coast17: 1, coast18: 1, coast19: 1,
+      coast20: 1, coast21: 1, coast22: 1, coast23: 1, coast24: 1,
+      coast25: 1, coast26: 1, coast27: 1, coast28: 1, coast29: 1,
+      coast30: 1, coast31: 1, coast32: 1, coast33: 1, coast34: 1,
+      water_ocean1: 0, water_ocean2: 0, water_ocean3: 0, water_ocean4: 0,
+      water_ocean5: 0, water_ocean6: 0, water_ocean7: 0,  water_ocean8: 0
     };
 
     return bonuses[terrain] || 0;
@@ -254,6 +234,14 @@ export class MapGeneratorService {
       coast32: { food: 0, production: 0, gold: 1 },
       coast33: { food: 0, production: 0, gold: 1 },
       coast34: { food: 0, production: 0, gold: 1 },
+      water_ocean1: { food: 0, production: 0, gold: 1 },
+      water_ocean2: { food: 0, production: 0, gold: 1 },
+      water_ocean3: { food: 0, production: 0, gold: 1 },
+      water_ocean4: { food: 0, production: 0, gold: 1 },
+      water_ocean5: { food: 0, production: 0, gold: 1 },
+      water_ocean6: { food: 0, production: 0, gold: 1 },
+      water_ocean7: { food: 0, production: 0, gold: 1 },
+      water_ocean8: { food: 0, production: 0, gold: 1 }
     };
 
     return yields[terrain] || { food: 0, production: 0, gold: 0 };

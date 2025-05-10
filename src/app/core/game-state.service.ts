@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { Tile } from './models/tile.model';
+import { MapTile } from './models/map.model';
 import { Unit } from './models/unit.model';
 import { Player } from './models/player.model';
 import { City } from './models/city.model';
@@ -13,7 +13,7 @@ export interface GameState {
   map: {
     width: number;
     height: number;
-    tiles: { [id: string]: Tile };
+    tiles: { [id: string]: MapTile };
   };
   turn: number;
 }
@@ -34,7 +34,7 @@ export class GameStateService {
     },
     turn: 1
   };
-  
+
   private gameStateSubject = new BehaviorSubject<GameState>(this.gameState);
 
   constructor() {
@@ -53,7 +53,7 @@ export class GameStateService {
   getCurrentGameState(): GameState {
     return this.gameState;
   }
-  
+
   getVisibleTilesForCurrentPlayer(): string[] {
     const currentPlayer = this.gameState.players[this.gameState.currentPlayerId];
     return currentPlayer ? currentPlayer.visibleTiles : [];
