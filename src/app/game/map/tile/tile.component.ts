@@ -18,6 +18,7 @@ export class TileComponent {
   @Input() unitCanMove: boolean = false;
   @Input() unitType: string = '';
   @Input() isMovableTile: boolean = false; // Nueva propiedad para casillas a las que se puede mover
+  @Input() isAttackable: boolean = false; // New input for attackable tiles
   @Output() tileClick = new EventEmitter<void>();
 
   onClick(): void {
@@ -56,8 +57,15 @@ export class TileComponent {
       'tile-unit-selected': this.isUnitSelected,
       'tile-explored-not-visible': this.tile.isExplored && !this.tile.isVisible,
       'tile-movable': this.isMovableTile, // Clase CSS para casillas a las que se puede mover
+      'tile-attackable': this.isAttackable, // Add attackable class
       'settler': this.unitType === 'settler',
       'warrior': this.unitType === 'warrior',
+      'worker': this.unitType === 'worker',
+      'archer': this.unitType === 'archer',
+      'horseman': this.unitType === 'horseman',
+      'swordsman': this.unitType === 'swordsman',
+      'catapult': this.unitType === 'catapult',
+      'galley': this.unitType === 'galley',
     };
 
     // Si hay una característica de terreno, añadirla como clase (excepto 'none')

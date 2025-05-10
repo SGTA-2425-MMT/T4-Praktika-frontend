@@ -84,6 +84,12 @@
     z-index: 8;
   }
 
+  &.tile-attackable {
+    border: 2px solid red;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
+    z-index: 30;
+  }
+
 /* Características adicionales */
 &.water {
   background-color: aqua;
@@ -199,105 +205,102 @@
   background-image: url('/assets/images/tiles/coast34.png');
 }
 
+&.water_ocean1 {
+  background-image: url('/assets/images/tiles/water-ocean1.png');
+}
+&.water_ocean2 {
+  background-image: url('/assets/images/tiles/water-ocean2.png');
+}
+&.water_ocean3 {
+  background-image: url('/assets/images/tiles/water-ocean3.png');
+}
+&.water_ocean4 {
+  background-image: url('/assets/images/tiles/water-ocean4.png');
+}
+&.water_ocean5 {
+  background-image: url('/assets/images/tiles/water-ocean5.png');
+}
+&.water_ocean6 {
+  background-image: url('/assets/images/tiles/water-ocean6.png');
+}
+&.water_ocean7 {
+  background-image: url('/assets/images/tiles/water-ocean7.png');
+}
+&.water_ocean8 {
+  background-image: url('/assets/images/tiles/water-ocean8.png');
+}
 
 
-
-  &.settler::after {
+    &::after {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url('/assets/images/units/settler.png'); // Añadida imagen del settler
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    pointer-events: none; /* Ensure it doesn't block interactions */
+    pointer-events: none; /* Asegura que no bloquee interacciones */
   }
+
+   &.settler::after {
+    background-image: url('/assets/images/units/settler_lvl1.png');
+  }
+
+  &.settler2::after {
+    background-image: url('/assets/images/units/settler_lvl2.png');
+  }
+
+  &.worker::after {
+    background-image: url('/assets/images/units/worker_lvl1.png');
+  }
+
   &.warrior::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    pointer-events: none; /* Ensure it doesn't block interactions */
-    background-image: url('/assets/images/units/warrior_lvl1.png'); /* Your PNG image */
+    background-image: url('/assets/images/units/warrior_lvl1.png');
   }
+
+  &.horseman::after {
+    background-image: url('/assets/images/units/horseman_lvl1.png');
+  }
+
+    &.swordsman::after {
+      background-image: url('/assets/images/units/warrior_lvl2.png');
+    }
+
+  &.archer::after {
+    background-image: url('/assets/images/units/archer_lvl1.png');
+  }
+
+  &.catapult::after {
+    background-image: url('/assets/images/units/catapult.png');
+  }
+
+  &.galley::after {
+    background-image: url('/assets/images/units/galley.png');
+  }
+
   &.city::after {
-      content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    pointer-events: none; /* Ensure it doesn't block interactions */
-    background-image: url('/assets/images/cities/settlement.png'); /* Your PNG image */
+    background-image: url('/assets/images/cities/settlement.png');
   }
 
   &.forest::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    pointer-events: none; /* Ensure it doesn't block interactions */
-    background-image: url('/assets/images/features/forest.png'); /* Your PNG image */
-  }
-  &.jungle::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    pointer-events: none; /* Ensure it doesn't block interactions */
-    background-image: url('/assets/images/features/jungle.png'); /* Your PNG image */
-  }
-  &.oasis::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    pointer-events: none; /* Ensure it doesn't block interactions */
-    background-image: url('/assets/images/features/oasis.png'); /* Your PNG image */
-  }
-  &.mountain::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    pointer-events: none; /* Ensure it doesn't block interactions */
-    background-image: url('/assets/images/features/mountain.png'); /* Your PNG image */
+    background-image: url('/assets/images/features/forest.png');
   }
 
-  &.unit-icon::after {
-    content: none; // Evita que se genere contenido adicional
+  &.jungle::after {
+    background-image: url('/assets/images/features/jungle.png');
   }
+
+  &.oasis::after {
+    background-image: url('/assets/images/features/oasis.png');
+  }
+
+  &.mountain::after {
+    background-image: url('/assets/images/features/mountain.png');
+  }
+
+
 }
 
 .feature-image {

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { GameMap } from '../models/map.model';
-import { Unit, UnitAction } from '../models/unit.model';
+import * as UnitModel from '../models/unit.model';
 import { City } from '../models/city.model';
 import { MapGeneratorService } from './map-generator.service';
 import { CityService } from './city.service';
@@ -20,7 +20,7 @@ export interface GameSession {
   turn: number;
   currentPlayerId: string;
   map: GameMap;
-  units: Unit[];
+  units: UnitModel.Unit[];
   cities: City[];
   playerCivilization: string;
   difficulty: string;
@@ -106,7 +106,7 @@ export class GameService {
     return gameSession;
   }
 
-  foundCity(settler: Unit, cityName: string): City | null {
+  foundCity(settler: UnitModel.Unit, cityName: string): City | null {
     console.log(`GameService.foundCity: Intentando fundar ciudad "${cityName}" con colono ${settler.id}`);
     const game = this.currentGame;
     if (!game) {
@@ -289,18 +289,23 @@ export class GameService {
 
     game.units.forEach(unit => {
       if (unit.owner === game.currentPlayerId && unit.movementPoints > 0) {
-        const availableActions: UnitAction[] = ['move'];
+        const availableActions: UnitModel.UnitAction[] = ['move'];
 
         if (unit.type === 'settler' && unit.movementPoints > 0) {
           availableActions.push('found_city');
         }
 
         if (unit.type === 'worker' && unit.movementPoints > 0) {
-          availableActions.push('build_improvement');
+          availableActions.push('build');
         }
 
-        if (unit.movementPoints > 0) {
-          availableActions.push('fortify');
+        if (unit.type === 'warrior' && unit.movementPoints > 0) {
+          availableActions.push('attack');
+
+        }
+
+        if (unit.type === 'archer' && unit.movementPoints > 0) {
+          availableActions.push('attack');
         }
 
         unit.availableActions = availableActions;
@@ -365,135 +370,30 @@ export class GameService {
     city.currentProduction = undefined;
   }
 
-  private createNewUnit(type: string, position: { x: number; y: number }, owner: string): Unit | null {
+  private createNewUnit(type: string, position: { x: number; y: number }, owner: string): UnitModel.Unit | null {
     const id = `${type}_${Date.now()}`;
-    const baseUnit: Unit = {
-      id,
-      position: { ...position },
-      owner,
-      movementPoints: 0,
-      health: 100,
-      maxHealth: 100,
-      isRanged: false,
-      experience: 0,
-      abilities: [],
-      canMove: false,
-      isFortified: false,
-      strength: 0,
-      maxMovementPoints: 0,
-      name: '',
-      type: 'warrior',
-      movementType: 'land',
-      cost: 0
-    };
 
     switch (type) {
       case 'warrior':
-        return {
-          ...baseUnit,
-          name: 'Guerrero',
-          type: 'warrior',
-          strength: 5,
-          maxMovementPoints: 2,
-          movementType: 'land',
-          cost: 40
-        };
+        return UnitModel.createWarrior(owner , position.x, position.y, 1);
       case 'settler':
-        return {
-          ...baseUnit,
-          name: 'Colono',
-          type: 'settler',
-          strength: 0,
-          maxMovementPoints: 2,
-          movementType: 'land',
-          cost: 80
-        };
+        return UnitModel.createSettler(owner , position.x, position.y, 1);
       case 'worker':
-        return {
-          ...baseUnit,
-          name: 'Trabajador',
-          type: 'worker',
-          strength: 0,
-          maxMovementPoints: 2,
-          movementType: 'land',
-          cost: 60
-        };
+        return UnitModel.createWorker(owner , position.x, position.y, 1);
       case 'archer':
-        return {
-          ...baseUnit,
-          name: 'Arquero',
-          type: 'archer',
-          strength: 4,
-          rangedStrength: 6,
-          range: 2,
-          isRanged: true,
-          maxMovementPoints: 2,
-          movementType: 'land',
-          cost: 50
-        };
+        return UnitModel.createArcher(owner , position.x, position.y, 1);
       case 'horseman':
-        return {
-          ...baseUnit,
-          name: 'Jinete',
-          type: 'horseman',
-          strength: 7,
-          maxMovementPoints: 4,
-          movementType: 'land',
-          cost: 70
-        };
+        return UnitModel.createHorseman(owner , position.x, position.y, 1);
       case 'swordsman':
-        return {
-          ...baseUnit,
-          name: 'Espadachín',
-          type: 'swordsman',
-          strength: 9,
-          maxMovementPoints: 2,
-          movementType: 'land',
-          cost: 75
-        };
+        return UnitModel.createWarrior(owner , position.x, position.y, 2);
       case 'catapult':
-        return {
-          ...baseUnit,
-          name: 'Catapulta',
-          type: 'catapult',
-          strength: 3,
-          rangedStrength: 10,
-          range: 2,
-          isRanged: true,
-          maxMovementPoints: 1,
-          movementType: 'land',
-          cost: 90
-        };
-      case 'galley':
-        return {
-          ...baseUnit,
-          name: 'Galera',
-          type: 'galley',
-          strength: 4,
-          maxMovementPoints: 3,
-          movementType: 'naval',
-          cost: 65
-        };
+        return UnitModel.createCatapult(owner , position.x, position.y, 1);
       case 'warship':
-        return {
-          ...baseUnit,
-          name: 'Barco de Guerra',
-          type: 'warship',
-          strength: 8,
-          maxMovementPoints: 4,
-          movementType: 'naval',
-          cost: 85
-        };
-      case 'scout':
-        return {
-          ...baseUnit,
-          name: 'Explorador',
-          type: 'scout',
-          strength: 2,
-          maxMovementPoints: 3,
-          movementType: 'land',
-          cost: 35
-        };
+        return UnitModel.createWarship(owner , position.x, position.y, 1);
+      case 'cannon' :
+        return UnitModel.createCannon(owner , position.x, position.y, 1);
+      case 'galley':
+        return UnitModel.createGalley(owner , position.x, position.y, 1);
       default:
         console.error(`Tipo de unidad desconocido: ${type}`);
         return null;
@@ -539,43 +439,11 @@ export class GameService {
     };
   }
 
-  private createStartingUnits(civilization: string, position: { x: number; y: number }): Unit[] {
-    return [
-      {
-        id: 'settler_1',
-        name: 'Colono',
-        type: 'settler',
-        owner: 'player1',
-        position: { ...position },
-        movementPoints: 2,
-        maxMovementPoints: 2,
-        strength: 0,
-        health: 100,
-        maxHealth: 100,
-        isRanged: false,
-        experience: 0,
-        abilities: [],
-        canMove: true,
-        isFortified: false
-      },
-      {
-        id: 'warrior_1',
-        name: 'Guerrero',
-        type: 'warrior',
-        owner: 'player1',
-        position: { ...position },
-        movementPoints: 2,
-        maxMovementPoints: 2,
-        strength: 5,
-        health: 100,
-        maxHealth: 100,
-        isRanged: false,
-        experience: 0,
-        abilities: [],
-        canMove: true,
-        isFortified: false
-      }
-    ];
+  private createStartingUnits(civilization: string, position: { x: number; y: number }): UnitModel.Unit[] {
+    const settler = UnitModel.createSettler('player1', position.x, position.y, 1);
+    const owner = 'player1';
+    const worker = UnitModel.createWorker(owner , position.x, position.y, 1);
+    return [settler, worker];
   }
 
   private revealInitialMap(game: GameSession): void {
@@ -629,6 +497,7 @@ export class GameService {
     game.units.forEach(unit => {
       if (unit.owner === game.currentPlayerId) {
         unit.movementPoints = unit.maxMovementPoints;
+        unit.attacksPerTurn = unit.maxattacksPerTurn;
         unit.canMove = true;
       }
     });

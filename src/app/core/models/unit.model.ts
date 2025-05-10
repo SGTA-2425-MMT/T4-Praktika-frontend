@@ -8,7 +8,7 @@ export type UnitType =
   // Especiales
   'worker' | 'scout';
 
-export type UnitAction = 'move' | 'attack' | 'fortify' |'found_city' | 'build_improvement' | 'negotiate';
+export type UnitAction = 'move' | 'attack' |'found_city' | 'build' | 'negotiate' | 'retreat' | 'navigate';
 
 export interface Unit {
   id: string;
@@ -25,15 +25,16 @@ export interface Unit {
   health: number;
   maxHealth: number;
   isRanged: boolean;
-  experience: number;
-  abilities: string[];
   canMove: boolean;
   isFortified: boolean;
   rangedStrength?: number;
   range?: number;
-  attacksPerTurn?: number;
+  maxRange?: number;
+  maxattacksPerTurn: number;
+  attacksPerTurn: number;
   movementType?: 'land' | 'naval' | 'air';
-  cost?: number;
+  cost: number;
+  level: number; // Nivel de la unidad
 
   // Nuevos campos para mejorar la jugabilidad
   availableActions?: UnitAction[];
@@ -41,8 +42,6 @@ export interface Unit {
   currentAction?: UnitAction; // Acción actual que está realizando
   targetPosition?: {x: number, y: number}; // Posición objetivo para acciones como moverse
   isAutoExploring?: boolean; // Si la unidad está en modo exploración automática
-  experiencePoints?: number; // Puntos de experiencia acumulados
-  level?: number; // Nivel de la unidad
   promotions?: string[]; // Promociones/mejoras que tiene la unidad
 }
 
@@ -69,34 +68,245 @@ export interface TerrainEffect {
   attackPenalty: number;
 }
 
-export interface SettlerUnit extends Unit {
-  type: 'settler';
-  movementPoints: 2;
-  maxMovementPoints: 2;
-  strength: 0; // No puede pelear
-  isRanged: false;
-  availableActions: UnitAction[]; // Ej: ['move', 'found_city', 'negotiate']
-  canNegotiate: true;
-}
 
 // Ejemplo de creación de un Settler:
-export const createSettler = (owner: string, x: number, y: number): SettlerUnit => ({
+export const createSettler = (owner: string, x: number, y: number, level:number): Unit => ({
   id: `settler_${Date.now()}`,
   name: 'Settler',
   type: 'settler',
   owner,
   position: { x, y },
+
+  turnsToComplete: 0,
+  cost: 0,
+
   movementPoints: 2,
   maxMovementPoints: 2,
   strength: 0,
   health: 100,
   maxHealth: 100,
+  maxattacksPerTurn: 0,
+  attacksPerTurn: 0,
+
   isRanged: false,
-  experience: 0,
-  abilities: [],
+  availableActions: ['move', 'found_city', 'negotiate'],
   canMove: true,
   isFortified: false,
-  availableActions: ['move', 'found_city', 'negotiate'],
-  canNegotiate: true
+  level: level,
 });
 
+//Ejemplo de Worker
+export const createWorker = (owner: string, x: number, y: number, level:number): Unit => ({
+  id: `worker_${Date.now()}`,
+  name: 'Worker',
+  type: 'worker',
+  owner,
+  position: { x, y },
+
+  turnsToComplete: 0,
+  cost: 0,
+
+  movementPoints: 2,
+  maxMovementPoints: 2,
+  strength: 0,
+  health: 100,
+  maxHealth: 100,
+  maxattacksPerTurn: 0,
+  attacksPerTurn: 0,
+
+  isRanged: false,
+  availableActions: ['move', 'build'],
+  canMove: true,
+  isFortified: false,
+  level: level,
+});
+
+// Ejemplo de creación de un Warrior:
+export const createWarrior = (owner: string, x: number, y: number, level:number): Unit => ({
+  id: `warrior_${Date.now()}`,
+  name: 'Warrior',
+  type: 'warrior',
+  owner,
+  position: { x, y },
+
+  turnsToComplete: 0,
+  cost: 0,
+
+  movementPoints: 2,
+  maxMovementPoints: 2,
+  strength: 20,
+  health: 100,
+  maxHealth: 100,
+  attacksPerTurn: 1,
+  maxattacksPerTurn: 1,
+
+  isRanged: false,
+  availableActions: ['move', 'attack', 'retreat'],
+  canMove: true,
+  isFortified: false,
+  level: level,
+});
+
+// Ejemplo de creación de un Archer:
+export const createArcher = (owner: string, x: number, y: number, level:number): Unit => ({
+  id: `archer_${Date.now()}`,
+  name: 'Archer',
+  type: 'archer',
+  owner,
+  position: { x, y },
+
+  turnsToComplete: 0,
+  cost: 0,
+
+  movementPoints: 2,
+  maxMovementPoints: 2,
+  strength: 5,
+  health: 100,
+  maxHealth: 100,
+
+  isRanged: true,
+  maxRange: 2,
+  attacksPerTurn: 1,
+  maxattacksPerTurn: 1,
+
+  availableActions: ['move', 'attack', 'retreat'],
+  canMove: true,
+  isFortified: false,
+  level: level,
+});
+
+// Ejemplo de creación de un Horseman:
+export const createHorseman = (owner: string, x: number, y: number, level:number): Unit => ({
+  id: `horseman_${Date.now()}`,
+  name: 'Horseman',
+  type: 'horseman',
+  owner,
+  position: { x, y },
+
+  turnsToComplete: 0,
+  cost: 0,
+
+  movementPoints: 4,
+  maxMovementPoints: 4,
+  strength: 8,
+  health: 100,
+  maxHealth: 100,
+  attacksPerTurn: 1,
+  maxattacksPerTurn: 1,
+
+  isRanged: false,
+  availableActions: ['move', 'attack', 'retreat'],
+  canMove: true,
+  isFortified: false,
+  level: level,
+});
+
+// Ejemplo de creación de un Catapult:
+export const createCatapult = (owner: string, x: number, y: number, level:number): Unit => ({
+  id: `catapult_${Date.now()}`,
+  name: 'Catapult',
+  type: 'catapult',
+  owner,
+  position: { x, y },
+
+  turnsToComplete: 0,
+  cost: 0,
+
+  movementPoints: 2,
+  maxMovementPoints: 2,
+  strength: 6,
+  health: 100,
+  maxHealth: 100,
+
+  isRanged: true,
+  maxRange: 3,
+  attacksPerTurn: 1,
+  maxattacksPerTurn: 1,
+
+  availableActions: ['move', 'attack'],
+  canMove: true,
+  isFortified: false,
+  level: level,
+});
+
+// Ejemplo de cañon
+export const createCannon = (owner: string, x: number, y: number, level:number): Unit => ({
+  id: `cannon_${Date.now()}`,
+  name: 'Cannon',
+  type: 'catapult',
+  owner,
+  position: { x, y },
+
+  turnsToComplete: 0,
+  cost: 0,
+
+  movementPoints: 2,
+  maxMovementPoints: 2,
+  strength: 10,
+  health: 100,
+  maxHealth: 100,
+
+  isRanged: true,
+  maxRange: 4,
+  attacksPerTurn: 1,
+  maxattacksPerTurn: 1,
+
+  availableActions: ['move', 'attack'],
+  canMove: true,
+  isFortified: false,
+  level: level,
+});
+
+// Ejemplo de creación de un Galley:
+export const createGalley = (owner: string, x: number, y: number, level:number): Unit => ({
+  id: `galley_${Date.now()}`,
+  name: 'Galley',
+  type: 'galley',
+  owner,
+  position: { x, y },
+
+  turnsToComplete: 0,
+  cost: 0,
+
+  movementPoints: 3,
+  maxMovementPoints: 3,
+  strength: 5,
+  health: 100,
+  maxHealth: 100,
+  attacksPerTurn: 1,
+  maxattacksPerTurn: 1,
+
+  isRanged: false,
+  availableActions: ['navigate', 'attack'],
+  canMove: true,
+  isFortified: false,
+  level: level,
+});
+
+// Ejemplo de buque de guerra
+export const createWarship = (owner: string, x: number, y: number, level:number): Unit => ({
+  id: `warship_${Date.now()}`,
+  name: 'Warship',
+  type: 'warship',
+  owner,
+  position: { x, y },
+
+  turnsToComplete: 0,
+  cost: 0,
+
+  movementPoints: 4,
+  maxMovementPoints: 4,
+  strength: 10,
+  health: 100,
+  maxHealth: 100,
+
+  isRanged: true,
+  maxRange: 3,
+  attacksPerTurn: 1,
+  maxattacksPerTurn: 1,
+
+  availableActions: ['navigate', 'attack'],
+  canMove: true,
+  isFortified: false,
+  level: level,
+});
