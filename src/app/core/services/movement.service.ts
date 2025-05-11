@@ -126,26 +126,26 @@ export class MovementService {
   // Verifica si una unidad puede moverse a una casilla
   canMoveTo(tile: MapTile, unit: Unit): boolean {
     // Verificar si el terreno es adecuado según el tipo de unidad
-    
+
     // Verificar si hay una ciudad en la casilla
     if (tile.city.id != '0') {
       return false;
     }
-    
+
     // Verificar si hay alguna unidad en la misma casilla
     const currentGame = this.gameService.currentGame;
     if (currentGame) {
-      const unitInTile = currentGame.units.find(u => 
-        u.position.x === tile.x && 
+      const unitInTile = currentGame.units.find(u =>
+        u.position.x === tile.x &&
         u.position.y === tile.y &&
         u.id !== unit.id // No considerar la unidad que se está moviendo
       );
-      
+
       if (unitInTile) {
         return false;
       }
     }
-    
+
     return true;
   }
 
@@ -178,6 +178,9 @@ export class MovementService {
 
     // Si no hay camino, no se puede mover
     if (path.length === 0) return false;
+
+    // Determinar la dirección del movimiento
+    const direction = destination.x > unit.position.x ? 'right' : 'left';
 
     // Mover la unidad
     unit.position = { x: destination.x, y: destination.y };

@@ -19,6 +19,7 @@ export class TileComponent {
   @Input() unitType: string = '';
   @Input() isMovableTile: boolean = false; // Nueva propiedad para casillas a las que se puede mover
   @Input() isAttackable: boolean = false; // New input for attackable tiles
+  @Input() direction: 'left' | 'right' | null = null; // New input for unit direction
   @Output() tileClick = new EventEmitter<void>();
 
   onClick(): void {
@@ -66,6 +67,9 @@ export class TileComponent {
       'swordsman': this.unitType === 'swordsman',
       'catapult': this.unitType === 'catapult',
       'galley': this.unitType === 'galley',
+
+      'unit-left': this.direction === 'left', // Add direction class
+      'unit-right': this.direction === 'right',
     };
 
     // Si hay una característica de terreno, añadirla como clase (excepto 'none')

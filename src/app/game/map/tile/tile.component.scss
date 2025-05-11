@@ -242,10 +242,18 @@
     background-repeat: no-repeat;
     background-position: center;
     pointer-events: none; /* Asegura que no bloquee interacciones */
+    transition: transform 0.3s ease; // Transición suave para el cambio de orientación
   }
 
    &.settler::after {
     background-image: url('/assets/images/units/settler_lvl1.png');
+        &.left {
+        transform: scaleX(-1); // Flip the image horizontally
+  }
+
+      &.right {
+        transform: scaleX(1); // Original direction
+      }
   }
 
   &.settler2::after {
@@ -300,6 +308,13 @@
     background-image: url('/assets/images/features/mountain.png');
   }
 
+    &.left::after {
+        transform: scaleX(-1); // Flip the image horizontally
+  }
+
+      &.right::after {
+        transform: scaleX(1); // Original direction
+      }
 
 }
 
@@ -382,36 +397,12 @@
     .unexplored { background-color: #1a1a1a; }
 
     /* Indicadores de unidades */
-    .unit-indicator {
-      position: absolute;
-      width: 24px;
-      height: 24px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background-color: white;
-      border-radius: 50%;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-weight: bold;
-      z-index: 10;
-      border: 2px solid #333;
-      font-size: 14px;
+    .unit-indicator.left::after {
+      transform: scaleX(-1); // Flip the image horizontally
     }
 
-    .settler-unit {
-      background-image: url('/assets/images/units/settler_lvl1.png');
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center;
-      width: 80%;
-      height: 80%;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 10;
+    .unit-indicator.right::after {
+      transform: scaleX(1); // Original direction
     }
 
     /* Indicador de ciudad */
