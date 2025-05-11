@@ -151,46 +151,55 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
     ) || null;
   }
 
-  // Mueve la unidad seleccionada a una casilla
-  moveSelectedUnit(targetTile: MapTile): void {
-    if (!this.selectedUnit || !this.gameSession || this.gameSession.currentPhase != "movimiento_accion") return;
+moveSelectedUnit(targetTile: MapTile): void {
+  if (!this.selectedUnit || !this.gameSession || this.gameSession.currentPhase != "movimiento_accion") return;
 
-    // Si la unidad ya está en esta casilla, no hacer nada
-    if (this.selectedUnit.position.x === targetTile.x &&
-        this.selectedUnit.position.y === targetTile.y) {
-      return;
-    }
+  // If the unit is already on the target tile, do nothing
+  if (this.selectedUnit.position.x === targetTile.x &&
+      this.selectedUnit.position.y === targetTile.y) {
+    return;
+  }
 
-    // Guardar la posición original antes del movimiento
-    const originalX = this.selectedUnit.position.x;
-    const originalY = this.selectedUnit.position.y;
+  // Determine the direction of movement
+  const direction = targetTile.x > this.selectedUnit.position.x ? 'right' : 'left';
 
-    const success = this.movementService.moveUnit(
-      this.selectedUnit,
-      { x: targetTile.x, y: targetTile.y },
-      this.gameSession.map,
-      (unit) => this.updateUnitVisibility(unit)
-    );
-
-    if (success) {
-      // Actualizar el resaltado para seguir a la unidad
-      this.highlightedTile = targetTile;
-
-      // Actualizar la niebla de guerra después del movimiento
-      this.updateAllUnitsVisibility();
-
-      // Limpiar la ruta
-      this.movementService.setCurrentPath([]);
-      this.movableTiles = [];
-
-      // Si la unidad ya no tiene movimientos, desseleccionarla
-      if (this.selectedUnit.movementPoints <= 0) {
-        this.clearSelection();
-      }
-    } else {
-      alert('No se puede mover a esa casilla');
+  // Update the direction class on the current tile
+  const currentTileElement = document.querySelector(`.tile[x="${this.selectedUnit.position.x}"][y="${this.selectedUnit.position.y}"]`);
+  if (currentTileElement) {
+    const unitIndicator = currentTileElement.querySelector('.unit-indicator');
+    if (unitIndicator) {
+      unitIndicator.classList.remove('left', 'right');
+      unitIndicator.classList.add(direction);
     }
   }
+
+  // Move the unit using the movement service
+  const success = this.movementService.moveUnit(
+    this.selectedUnit,
+    { x: targetTile.x, y: targetTile.y },
+    this.gameSession.map,
+    (unit) => this.updateUnitVisibility(unit)
+  );
+
+  if (success) {
+    // Update the highlighted tile to follow the unit
+    this.highlightedTile = targetTile;
+
+    // Update the fog of war after movement
+    this.updateAllUnitsVisibility();
+
+    // Clear the path and movable tiles
+    this.movementService.setCurrentPath([]);
+    this.movableTiles = [];
+
+    // If the unit has no movement points left, deselect it
+    if (this.selectedUnit.movementPoints <= 0) {
+      this.clearSelection();
+    }
+  } else {
+    alert('No se puede mover a esa casilla');
+  }
+}
 
   // Selecciona una unidad
   selectUnit(unit: Unit): void {

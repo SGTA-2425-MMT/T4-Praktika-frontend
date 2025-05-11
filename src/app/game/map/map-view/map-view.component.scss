@@ -430,3 +430,12 @@ app-tile {
   pointer-events: none; /* Para que los clicks pasen a través */
   z-index: 10; /* Asegúrate de que esté por encima del mapa */
 }
+
+
+.unit-indicator.left::after {
+  transform: scaleX(-1);
+}
+
+.unit-indicator.right::after {
+  transform: scaleX(1);
+}

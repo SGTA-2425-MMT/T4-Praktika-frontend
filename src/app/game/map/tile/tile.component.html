@@ -4,12 +4,9 @@
   (click)="onClick()"
 >
   <div class="tile-feature"></div>
-  @if (hasUnit) {
-    <!-- Modificar esta parte para evitar el cuadrado negro -->
-    <div class="unit-indicator" [ngClass]="unitType">
-      {{ getUnitSymbol() }}
-    </div>
-  }
+  <div *ngIf="hasUnit" class="unit-indicator" [ngClass]="direction">
+    {{ getUnitSymbol() }}
+  </div>
 
   <!-- Coordenadas para depuración
   <div class="debug-coords" *ngIf="tile.isExplored">{{tile.x}},{{tile.y}}</div>-->
