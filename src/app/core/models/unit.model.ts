@@ -83,8 +83,8 @@ export const createSettler = (owner: string, x: number, y: number, level:number)
   movementPoints: 2,
   maxMovementPoints: 2,
   strength: 0,
-  health: 100,
-  maxHealth: 100,
+  health: 100 + 10 * level,
+  maxHealth: 100 + 10 * level,
   maxattacksPerTurn: 0,
   attacksPerTurn: 0,
 
@@ -109,8 +109,9 @@ export const createWorker = (owner: string, x: number, y: number, level:number):
   movementPoints: 2,
   maxMovementPoints: 2,
   strength: 0,
-  health: 100,
-  maxHealth: 100,
+  maxHealth: 100 + 20 * level,
+  health: 100 + 20 * level,
+
   maxattacksPerTurn: 0,
   attacksPerTurn: 0,
 
@@ -134,9 +135,9 @@ export const createWarrior = (owner: string, x: number, y: number, level:number)
 
   movementPoints: 2,
   maxMovementPoints: 2,
-  strength: 20,
-  health: 100,
-  maxHealth: 100,
+  strength: 20 + 5 * level,
+  health: 100 + 15 * level,
+  maxHealth: 100 + 15 * level,
   attacksPerTurn: 1,
   maxattacksPerTurn: 1,
 
@@ -160,9 +161,9 @@ export const createArcher = (owner: string, x: number, y: number, level:number):
 
   movementPoints: 2,
   maxMovementPoints: 2,
-  strength: 5,
-  health: 100,
-  maxHealth: 100,
+  strength: 5 + 3 * level,
+  health: 100 + 10 * level,
+  maxHealth: 100 + 10 * level,
 
   isRanged: true,
   maxRange: 2,
@@ -188,9 +189,9 @@ export const createHorseman = (owner: string, x: number, y: number, level:number
 
   movementPoints: 4,
   maxMovementPoints: 4,
-  strength: 8,
-  health: 100,
-  maxHealth: 100,
+  strength: 8 + 4 * level,
+  health: 100 + 12 * level,
+  maxHealth: 100 + 12 * level,
   attacksPerTurn: 1,
   maxattacksPerTurn: 1,
 
@@ -214,9 +215,9 @@ export const createCatapult = (owner: string, x: number, y: number, level:number
 
   movementPoints: 2,
   maxMovementPoints: 2,
-  strength: 6,
-  health: 100,
-  maxHealth: 100,
+  strength: 6 + 2 * level,
+  health: 100 + 8 * level,
+  maxHealth: 100 + 8 * level,
 
   isRanged: true,
   maxRange: 3,
@@ -242,9 +243,9 @@ export const createCannon = (owner: string, x: number, y: number, level:number):
 
   movementPoints: 2,
   maxMovementPoints: 2,
-  strength: 10,
-  health: 100,
-  maxHealth: 100,
+  strength: 10 + 3 * level,
+  health: 100 + 10 * level,
+  maxHealth: 100 + 10 * level,
 
   isRanged: true,
   maxRange: 4,
@@ -270,9 +271,9 @@ export const createGalley = (owner: string, x: number, y: number, level:number):
 
   movementPoints: 3,
   maxMovementPoints: 3,
-  strength: 5,
-  health: 100,
-  maxHealth: 100,
+  strength: 5 + 2 * level,
+  health: 100 + 10 * level,
+  maxHealth: 100 + 10 * level,
   attacksPerTurn: 1,
   maxattacksPerTurn: 1,
 
@@ -296,9 +297,9 @@ export const createWarship = (owner: string, x: number, y: number, level:number)
 
   movementPoints: 4,
   maxMovementPoints: 4,
-  strength: 10,
-  health: 100,
-  maxHealth: 100,
+  strength: 10 + 4 * level,
+  health: 100 + 15 * level,
+  maxHealth: 100 + 15 * level,
 
   isRanged: true,
   maxRange: 3,

@@ -4,13 +4,13 @@
       <h2>{{ city.name }}</h2>
       <button class="close-btn" (click)="closeView()">✕</button>
     </div>
-    
+
     <div class="city-tabs">
       <button [class.active]="activeTab === 'overview'" (click)="changeTab('overview')">General</button>
       <button [class.active]="activeTab === 'production'" (click)="changeTab('production')">Producción</button>
       <button [class.active]="activeTab === 'buildings'" (click)="changeTab('buildings')">Edificios</button>
     </div>
-    
+
     <!-- Pestaña de visión general -->
     <div class="city-content" *ngIf="activeTab === 'overview'">
       <div class="city-info-panel">
@@ -29,7 +29,7 @@
             <span>{{ city.food }} / {{ city.foodToGrow }} ({{ getTurnsToGrow() }} turnos)</span>
           </div>
         </div>
-        
+
         <div class="resources-section">
           <h3>Producción por turno</h3>
           <div class="resource-row">
@@ -55,9 +55,9 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Pestaña de producción -->
-    <div class="city-content" *ngIf="activeTab === 'production'">
+    <div class="city-content production-content" *ngIf="activeTab === 'production'">
       <div class="production-panel">
         <h3>Producción actual</h3>
         <div class="current-production">
@@ -72,7 +72,7 @@
             <p>No hay producción en curso</p>
           </ng-template>
         </div>
-        
+
         <h3>Unidades disponibles</h3>
         <div class="production-options">
           <div class="production-item" (click)="selectProduction('warrior')">
@@ -83,7 +83,7 @@
               <p>Unidad militar básica para defensa</p>
             </div>
           </div>
-          
+
           <div class="production-item" (click)="selectProduction('archer')">
             <div class="production-icon archer-icon">🏹</div>
             <div class="production-details">
@@ -92,7 +92,7 @@
               <p>Ataque a distancia, buena para defensa</p>
             </div>
           </div>
-          
+
           <div class="production-item" (click)="selectProduction('horseman')">
             <div class="production-icon horseman-icon">🐎</div>
             <div class="production-details">
@@ -101,7 +101,7 @@
               <p>Unidad rápida para explorar y atacar</p>
             </div>
           </div>
-          
+
           <div class="production-item" (click)="selectProduction('swordsman')">
             <div class="production-icon swordsman-icon">🗡️</div>
             <div class="production-details">
@@ -110,7 +110,7 @@
               <p>Unidad terrestre fuerte para combates</p>
             </div>
           </div>
-          
+
           <div class="production-item" (click)="selectProduction('catapult')">
             <div class="production-icon catapult-icon">🧱</div>
             <div class="production-details">
@@ -119,7 +119,7 @@
               <p>Ataque a distancia contra ciudades</p>
             </div>
           </div>
-          
+
           <div class="production-item" (click)="selectProduction('galley')">
             <div class="production-icon galley-icon">⛵</div>
             <div class="production-details">
@@ -128,7 +128,7 @@
               <p>Transporte naval para unidades</p>
             </div>
           </div>
-          
+
           <div class="production-item" (click)="selectProduction('scout')">
             <div class="production-icon scout-icon">👁️</div>
             <div class="production-details">
@@ -137,7 +137,7 @@
               <p>Unidad rápida para exploración</p>
             </div>
           </div>
-          
+
           <div class="production-item" (click)="selectProduction('settler')">
             <div class="production-icon settler-icon">🏕️</div>
             <div class="production-details">
@@ -146,7 +146,7 @@
               <p>Funda nuevas ciudades</p>
             </div>
           </div>
-          
+
           <div class="production-item" (click)="selectProduction('worker')">
             <div class="production-icon worker-icon">🔧</div>
             <div class="production-details">
@@ -158,7 +158,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Pestaña de edificios -->
     <div class="city-content" *ngIf="activeTab === 'buildings'">
       <app-city-buildings [city]="city"></app-city-buildings>

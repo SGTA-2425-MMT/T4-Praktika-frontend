@@ -5,6 +5,7 @@ import { MovementService } from '../../../core/services/movement.service';
 import { FogOfWarService } from '../../../core/services/fog-of-war.service';
 import { GameService } from '../../../core/services/game.service';
 import { WarService } from '../../../core/services/war.service';
+import { AnimationService } from '../../../core/services/animation.service';
 import { TileComponent } from '../tile/tile.component';
 import { GameMap, MapTile, MapCoordinate } from '../../../core/models/map.model';
 import { Unit, UnitAction } from '../../../core/models/unit.model';
@@ -17,7 +18,8 @@ import { CityViewComponent } from '../../city/city-view/city-view.component';
   standalone: true,
   imports: [CommonModule, TileComponent, FormsModule, CityViewComponent],
   templateUrl: './map-view.component.html',
-  styleUrl: './map-view.component.scss'
+  styleUrl: './map-view.component.scss',
+  providers: [AnimationService]
 })
 export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
   @ViewChild('mapContainer') mapContainer!: ElementRef;
@@ -35,12 +37,14 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
   movableTiles: { x: number, y: number }[] = [];
   attackMode: boolean = false; // New property to track attack mode
   attackableTiles: { x: number, y: number }[] = []; // Tiles with units that can be attacked
+  private phaserScene!: Phaser.Scene;
 
   constructor(
     private movementService: MovementService,
     private fogOfWarService: FogOfWarService,
     private gameService: GameService,
-    private warService: WarService // Inject WarService
+    private animationService: AnimationService,
+    private warService: WarService
   ) {}
 
   ngOnInit(): void {
@@ -54,9 +58,13 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
       this.visualizeUnitAttack(attacker, defender, damage);
     });
 
-    this.warService.cityAttackEvent.subscribe(({ attacker, city, damage }) => {
-      this.visualizeCityAttack(attacker, city, damage);
+
+    // Initialize Phaser
+      this.warService.unitAttackEvent.subscribe(event => {
+      this.visualizeUnitAttack(event.attacker, event.defender, event.damage);
     });
+
+
   }
 
   ngAfterViewInit(): void {
@@ -73,6 +81,9 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
         }
       }
     }
+      setTimeout(() => {
+        this.animationService.initPhaser(this.mapContainer.nativeElement);
+      }, 500);
   }
 
   // Centra la cámara en una posición del mapa
@@ -222,7 +233,6 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
 
     console.log(`Unidad seleccionada: ${this.selectedUnit.type} en posición (${this.selectedUnit.position.x}, ${this.selectedUnit.position.y})`);
   // Para depuración: verificar si el botón está llamando a esta función
-    alert('Función foundCity() llamada');
 
     // Mostrar el diálogo para nombrar la ciudad
     this.showFoundCityDialog = true;
@@ -608,16 +618,41 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
     return '';
   }
 
-  // Visualize unit attack
-  private visualizeUnitAttack(attacker: Unit, defender: Unit, damage: number): void {
+  visualizeUnitAttack(attacker: Unit, defender: Unit, damage: number): void {
     console.log(`Visualizing attack: ${attacker.name} -> ${defender.name}, Damage: ${damage}`);
-    // Add visualization logic here (e.g., animations, effects)
-  }
 
-  // Visualize city attack
-  private visualizeCityAttack(attacker: Unit, city: City, damage: number): void {
-    console.log(`Visualizing attack: ${attacker.name} -> ${city.name}, Damage: ${damage}`);
-    // Add visualization logic here (e.g., animations, effects)
+    // Calculate pixel coordinates for the defender's position
+    const x = defender.position.x * 120 + 60; // Center of the tile
+    const y = defender.position.y * 120 + 60;
+
+    // Create a temporary DOM element to display the damage
+    const damageElement = document.createElement('div');
+    damageElement.textContent = `-${damage}`;
+    damageElement.style.position = 'absolute';
+    damageElement.style.left = `${x}px`;
+    damageElement.style.top = `${y}px`;
+    damageElement.style.color = 'red';
+    damageElement.style.fontSize = '24px';
+    damageElement.style.fontWeight = 'bold';
+    damageElement.style.transform = 'translate(-50%, -50%)';
+    damageElement.style.zIndex = '1000';
+    this.mapContainer.nativeElement.appendChild(damageElement);
+
+    // Animate the damage text (move up and fade out)
+    const animationDuration = 1000; // 1 second
+    const startTime = performance.now();
+    const animate = (time: number) => {
+        const elapsed = time - startTime;
+        const progress = Math.min(elapsed / animationDuration, 1);
+        damageElement.style.top = `${y - 30 * progress}px`;
+        damageElement.style.opacity = `${1 - progress}`;
+        if (progress < 1) {
+            requestAnimationFrame(animate);
+        } else {
+            damageElement.remove(); // Remove the element after animation
+        }
+    };
+    requestAnimationFrame(animate);
   }
 
   // Enable attack mode for the selected unit
