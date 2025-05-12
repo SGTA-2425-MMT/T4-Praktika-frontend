@@ -192,7 +192,12 @@ export class GameService {
   }
 
   endTurn(): void {
-    this.changePhase('ia');
+    // Primero procesamos la fase de IA (si no está en esa fase)
+    if (this.currentGame && this.currentGame.currentPhase !== 'ia') {
+      this.changePhase('ia');
+    }
+    // Luego procesamos el final del turno
+    this.processEndOfTurn();
   }
 
   private processEndOfTurn(): void {
@@ -270,8 +275,7 @@ export class GameService {
 
       case 'ia':
         this.processAI();
-        this.processEndOfTurn();
-        this.startTurn();
+        // Ya no llamamos a processEndOfTurn() aquí porque se maneja en endTurn()
         return;
     }
 

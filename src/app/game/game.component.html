@@ -67,7 +67,7 @@
         <button class="btn-next-phase" (click)="nextPhase()" *ngIf="gameSession.currentPhase !== 'ia'">
           Siguiente Fase
         </button>
-        <button class="btn-end-turn" (click)="endTurn()" [disabled]="gameSession.currentPhase !== 'ia'">
+        <button class="btn-end-turn" (click)="endTurn()">
           Fin del Turno
         </button>
       </footer>

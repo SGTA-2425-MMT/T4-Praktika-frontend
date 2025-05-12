@@ -102,10 +102,19 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   endTurn(): void {
-    // Ahora este método simplemente llama a la función en el servicio
+    // El método endTurn ahora procesará completamente el final del turno
     this.gameService.endTurn();
     this.gameSession = this.gameService.currentGame;
     this.showNewTurnNotification();
+
+    // También iniciamos el nuevo turno
+    this.startTurn();
+  }
+
+  private startTurn(): void {
+    // Esta función puede usarse para inicializar cosas al principio del turno
+    if (!this.gameSession) return;
+    console.log(`Iniciando turno ${this.gameSession.turn} en fase ${this.gameSession.currentPhase}`);
   }
 
   private showNewTurnNotification(): void {
