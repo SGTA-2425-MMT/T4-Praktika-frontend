@@ -2,13 +2,14 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MapViewComponent } from './map/map-view/map-view.component';
+import { TechTreeComponent } from './technology/tech-tree/tech-tree.component';
 import { GameService, GameSession } from '../core/services/game.service';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-game',
   standalone: true,
-  imports: [CommonModule, MapViewComponent],
+  imports: [CommonModule, MapViewComponent, TechTreeComponent],
   templateUrl: './game.component.html',
   styleUrl: './game.component.scss'
 })
@@ -17,6 +18,7 @@ export class GameComponent implements OnInit, OnDestroy {
   loading = true;
   error = '';
   subscription: Subscription = new Subscription();
+  showTechTree = false; // Estado para mostrar/ocultar el árbol tecnológico
 
   constructor(
     private route: ActivatedRoute,
@@ -141,5 +143,11 @@ export class GameComponent implements OnInit, OnDestroy {
   private showPhaseNotification(): void {
     // Aquí se podría implementar una animación o notificación visual
     console.log(`Cambiando a fase: ${this.getCurrentPhaseName()}`);
+  }
+
+  // Método para mostrar u ocultar el árbol tecnológico
+  toggleTechTree(): void {
+    this.showTechTree = !this.showTechTree;
+    console.log(`${this.showTechTree ? 'Mostrando' : 'Ocultando'} árbol tecnológico`);
   }
 }

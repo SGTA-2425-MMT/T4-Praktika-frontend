@@ -21,7 +21,10 @@
           <div class="stat-item">Turno: {{ gameSession.turn }}</div>
           <div class="stat-item">Dificultad: {{ gameSession.difficulty }}</div>
           <div class="stat-item">Oro: {{ gameSession.gold || 0 }} (+{{ gameSession.goldPerTurn || 0 }})</div>
-          <div class="stat-item">Ciencia: {{ gameSession.sciencePerTurn || 0 }}</div>
+          <div class="stat-item clickable" (click)="toggleTechTree()">
+            <span class="science-icon">🔬</span>
+            Ciencia: {{ gameSession.sciencePerTurn || 0 }}
+          </div>
           <div class="stat-item">Cultura: {{ gameSession.culturePerTurn || 0 }}</div>
         </div>
         <div class="game-phases">
@@ -44,6 +47,19 @@
           (endTurn)="endTurn()"
           [canManageUnits]="gameSession.currentPhase === 'movimiento_accion'"
           [currentPhase]="gameSession.currentPhase"/>
+        
+        <!-- Modal del árbol tecnológico -->
+        @if (showTechTree) {
+          <div class="tech-tree-modal">
+            <div class="tech-tree-header">
+              <h2>Árbol Tecnológico</h2>
+              <button class="close-button" (click)="toggleTechTree()">×</button>
+            </div>
+            <div class="tech-tree-content">
+              <app-tech-tree></app-tech-tree>
+            </div>
+          </div>
+        }
       </main>
 
       <!-- Panel inferior de acciones -->

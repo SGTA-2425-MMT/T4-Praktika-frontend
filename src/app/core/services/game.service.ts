@@ -5,6 +5,8 @@ import * as UnitModel from '../models/unit.model';
 import { City } from '../models/city.model';
 import { MapGeneratorService } from './map-generator.service';
 import { CityService } from './city.service';
+import { TechnologyService } from './technology.service';
+import { TechEra } from '../models/technology.model';
 
 export interface GameSettings {
   gameName: string;
@@ -55,7 +57,8 @@ export class GameService {
 
   constructor(
     private mapGeneratorService: MapGeneratorService,
-    private cityService: CityService
+    private cityService: CityService,
+    private technologyService: TechnologyService
   ) {
     this.loadSavedGames();
   }
@@ -196,9 +199,17 @@ export class GameService {
     const game = this.currentGame;
     if (!game) return;
 
+    // Procesar ciudades (crecimiento, producción, etc.)
+    this.processCitiesEndTurn();
+    
+    // Incrementar turno y reiniciar estado de unidades
     game.turn++;
     this.resetUnitMoves();
+    
+    // Actualizar recursos totales
     this.calculateResourcesPerTurn();
+    
+    // Cambiar fase
     game.currentPhase = 'diplomacia_decisiones';
     this.currentGameSubject.next({ ...game });
   }
@@ -516,7 +527,56 @@ export class GameService {
     const game = this.currentGame;
     if (!game) return;
 
-    // Logic to update available technologies based on discovered ones
+    // Obtener tecnologías disponibles basadas en las ya descubiertas
+    const availableTechs = this.technologyService.getAvailableTechnologies(game.discoveredTechnologies);
+    game.availableTechnologies = availableTechs.map(tech => tech.id);
+    
+    // Actualizar la era del juego basada en las tecnologías descubiertas
+    this.updateGameEra();
+  }
+
+  // Actualiza la era del juego según las tecnologías descubiertas
+  private updateGameEra(): void {
+    const game = this.currentGame;
+    if (!game) return;
+    
+    // Obtener todas las tecnologías descubiertas como objetos completos
+    const discoveredTechs = game.discoveredTechnologies.map(techId => 
+      this.technologyService.getTechnologyById(techId)
+    ).filter(tech => tech !== null);
+    
+    // Determinar la era actual según las tecnologías descubiertas
+    const currentEra = this.technologyService.determineEra(discoveredTechs);
+    
+    // Actualizar la era del juego si ha cambiado
+    if (this.convertTechEraToGameEra(currentEra) !== game.era) {
+      const newEra = this.convertTechEraToGameEra(currentEra);
+      const oldEra = game.era;
+      game.era = newEra;
+      console.log(`¡La civilización ha avanzado de la era ${oldEra} a la era ${newEra}!`);
+      
+      // Aquí se podrían añadir efectos adicionales al cambiar de era
+    }
+  }
+  
+  // Convierte el enum TechEra al formato de era usado en el juego
+  private convertTechEraToGameEra(techEra: TechEra): 'ancient' | 'classical' | 'medieval' | 'renaissance' | 'industrial' | 'modern' | 'information' {
+    switch (techEra) {
+      case TechEra.ANCIENT:
+        return 'ancient';
+      case TechEra.CLASSICAL:
+        return 'classical';
+      case TechEra.MEDIEVAL:
+        return 'medieval';
+      case TechEra.RENAISSANCE:
+        return 'renaissance';
+      case TechEra.INDUSTRIAL:
+        return 'industrial';
+      case TechEra.MODERN:
+        return 'modern';
+      default:
+        return 'ancient';
+    }
   }
 
   private updateCitiesProduction(): void {
@@ -524,5 +584,90 @@ export class GameService {
     if (!game) return;
 
     this.processCitiesProduction(game);
+  }
+
+  // Actualizar una ciudad en la sesión de juego actual
+  updateCity(city: City): void {
+    if (!this.currentGame) return;
+
+    const cityIndex = this.currentGame.cities.findIndex(c => c.id === city.id);
+    if (cityIndex !== -1) {
+      this.currentGame.cities[cityIndex] = city;
+      
+      // Actualizar el objeto de juego
+      const updatedGame = { ...this.currentGame };
+      this.currentGameSubject.next(updatedGame);
+      
+      // Actualizar la visualización del mapa si es necesario
+      const x = city.position.x;
+      const y = city.position.y;
+      if (x >= 0 && x < this.currentGame.map.width && y >= 0 && y < this.currentGame.map.height) {
+        // Asegurarse de que la referencia de ciudad en el mapa esté actualizada
+        const tile = this.currentGame.map.tiles[y][x];
+        if (tile.city) {
+          tile.city = {
+            id: city.id,
+            name: city.name,
+            level: city.level
+          };
+        }
+      }
+    }
+  }
+
+  // Obtener el servicio de ciudad
+  getCityService(): CityService {
+    return this.cityService;
+  }
+  
+  // Procesar las ciudades al final del turno
+  processCitiesEndTurn(): void {
+    if (!this.currentGame) return;
+    
+    // Para cada ciudad del jugador
+    this.currentGame.cities.forEach(city => {
+      if (city.ownerId === this.currentGame!.currentPlayerId) {
+        // Actualizar crecimiento de población
+        this.cityService.growCity(city);
+        
+        // Actualizar producción de edificios
+        this.cityService.updateBuildingProduction(city, this.currentGame!.turn);
+        
+        // Actualizar rendimientos de la ciudad
+        this.cityService.refreshCityBuildingEffects(city);
+        
+        // Otros procesos de ciudad...
+      }
+    });
+    
+    // Actualizar recursos totales del jugador
+    this.calculatePlayerResources();
+  }
+  
+  // Calcular recursos totales del jugador
+  private calculatePlayerResources(): void {
+    if (!this.currentGame) return;
+    
+    // Reiniciar valores
+    let goldPerTurn = 0;
+    let sciencePerTurn = 0;
+    let culturePerTurn = 0;
+    
+    // Sumar contribuciones de todas las ciudades del jugador
+    this.currentGame.cities.forEach(city => {
+      if (city.ownerId === this.currentGame!.currentPlayerId) {
+        goldPerTurn += city.goldPerTurn;
+        sciencePerTurn += city.sciencePerTurn;
+        culturePerTurn += city.culturePerTurn;
+      }
+    });
+    
+    // Actualizar valores en el juego
+    this.currentGame.goldPerTurn = goldPerTurn;
+    this.currentGame.sciencePerTurn = sciencePerTurn;
+    this.currentGame.culturePerTurn = culturePerTurn;
+    
+    // Actualizar el oro total (se acumula cada turno)
+    this.currentGame.gold += goldPerTurn;
   }
 }

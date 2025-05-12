@@ -1,29 +1,85 @@
-<div class="buildings-container">
-  <h3>Edificios disponibles</h3>
-  
-  <div class="buildings-grid">
-    @for (building of buildings; track building.id) {
-      <div class="building-card" (click)="selectBuilding(building.id)">
-        <div class="building-icon">{{ building.icon }}</div>
-        <div class="building-info">
-          <h4>{{ building.name }}</h4>
-          <p class="building-cost">
-            <span class="cost-icon">🔨</span> {{ building.cost }} ({{ building.turns }} turnos)
-          </p>
-          <p class="building-description">{{ building.description }}</p>
-          <div class="building-effects">
-            @for (effect of building.effects; track effect) {
-              <span class="effect-badge">{{ effect }}</span>
-            }
+<div class="buildings-container" *ngIf="city">
+  <!-- Sección de edificios ya construidos -->
+  <section class="constructed-buildings">
+    <h3>Edificios construidos</h3>
+    
+    <div class="buildings-grid" *ngIf="constructedBuildings.length > 0">
+      @for (building of constructedBuildings; track building.id) {
+        <div class="building-card constructed">
+          <div class="building-icon">{{ building.icon }}</div>
+          <div class="building-info">
+            <h4>{{ building.name }} <span class="level-badge">Nivel {{ building.currentLevel }}/{{ building.maxLevel }}</span></h4>
+            <p class="building-description">{{ building.description }}</p>
+            <div class="building-effects">
+              @for (effect of building.effects; track effect) {
+                <span class="effect-badge">{{ effect }}</span>
+              }
+            </div>
+            <div class="upgrade-option" *ngIf="building.canBeUpgraded">
+              <button class="upgrade-button" (click)="selectBuilding(building.id)">
+                Mejorar: {{ building.upgradeCost }} 🔨 ({{ building.upgradeTurns }} turnos)
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    }
-  </div>
-  
-  @if (buildings.length === 0) {
-    <div class="no-buildings-message">
-      <p>No hay edificios disponibles para construir actualmente.</p>
+      }
     </div>
-  }
+    
+    <div class="no-buildings-message" *ngIf="constructedBuildings.length === 0">
+      <p>Aún no has construido ningún edificio.</p>
+    </div>
+  </section>
+  
+  <!-- Sección de edificios en construcción -->
+  <section class="buildings-in-progress" *ngIf="city.buildingProductionQueue && city.buildingProductionQueue.length > 0">
+    <h3>En construcción</h3>
+    
+    <div class="building-progress-list">
+      @for (buildingProduction of city.buildingProductionQueue; track buildingProduction.buildingId) {
+        <div class="building-progress-item">
+          <div class="building-progress-info">
+            <h4>{{ buildingProduction.name }}</h4>
+            <div class="progress-details">
+              <span>{{ buildingProduction.progress }} / {{ buildingProduction.cost }} puntos</span>
+              <span>{{ buildingProduction.turnsLeft }} turno(s) restante(s)</span>
+            </div>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="(buildingProduction.progress / buildingProduction.cost) * 100"></div>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+  
+  <!-- Sección de edificios disponibles para construcción -->
+  <section class="available-buildings">
+    <h3>Edificios disponibles para construir</h3>
+    
+    <div class="buildings-grid">
+      @for (building of availableBuildings; track building.id) {
+        <div class="building-card available" (click)="selectBuilding(building.id)">
+          <div class="building-era-badge">{{ building.era }}</div>
+          <div class="building-icon">{{ building.icon }}</div>
+          <div class="building-info">
+            <h4>{{ building.name }}</h4>
+            <p class="building-cost">
+              <span class="cost-icon">🔨</span> {{ building.cost }} ({{ getTurnsToBuild(building) }} turnos)
+            </p>
+            <p class="building-description">{{ building.description }}</p>
+            <div class="building-effects">
+              @for (effect of getBuildingEffectsAsStrings(building); track effect) {
+                <span class="effect-badge">{{ effect }}</span>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+    
+    <div class="no-buildings-message" *ngIf="availableBuildings.length === 0">
+      <p>No hay edificios disponibles para construir actualmente.</p>
+      <p>Avanza tecnológicamente para desbloquear más edificios.</p>
+    </div>
+  </section>
 </div>

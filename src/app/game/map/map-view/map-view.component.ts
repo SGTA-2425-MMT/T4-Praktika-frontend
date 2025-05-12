@@ -498,6 +498,32 @@ moveSelectedUnit(targetTile: MapTile): void {
     this.selectedCity = this.gameSession.cities[cityIndex];
   }
 
+  // Manejar la construcción de un edificio en una ciudad
+  onCityBuildBuilding(buildingId: string): void {
+    if (!this.selectedCity || !this.gameSession) return;
+    
+    const currentTurn = this.gameSession.turn;
+    const cityService = this.gameService.getCityService();
+    
+    // Construir el edificio
+    const success = cityService.constructBuilding(this.selectedCity, buildingId, currentTurn);
+    
+    if (success) {
+      console.log(`Iniciando construcción del edificio ${buildingId} en ${this.selectedCity.name}`);
+      
+      // Actualizar la ciudad en el gameSession
+      const cityIndex = this.gameSession.cities.findIndex(c => c.id === this.selectedCity!.id);
+      if (cityIndex !== -1) {
+        this.gameSession.cities[cityIndex] = this.selectedCity;
+        
+        // Actualizar también en el GameService
+        this.gameService.updateCity(this.selectedCity);
+      }
+    } else {
+      console.error(`No se pudo iniciar la construcción del edificio ${buildingId}`);
+    }
+  }
+
   // Verificar si la unidad puede realizar una acción específica
   canUnitPerformAction(unit: Unit, action: UnitAction): boolean {
     if (!unit || !unit.availableActions) return false;

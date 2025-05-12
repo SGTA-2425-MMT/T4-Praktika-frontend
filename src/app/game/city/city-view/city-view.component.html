@@ -5,20 +5,25 @@
       <button class="close-btn" (click)="closeView()">✕</button>
     </div>
 
-    <div class="city-tabs">
-      <button [class.active]="activeTab === 'overview'" (click)="changeTab('overview')">General</button>
-      <button [class.active]="activeTab === 'production'" (click)="changeTab('production')">Producción</button>
-      <button [class.active]="activeTab === 'buildings'" (click)="changeTab('buildings')">Edificios</button>
-    </div>
+  <div class="city-tabs">
+    <button [class.active]="activeTab === 'overview'" (click)="changeTab('overview')">General</button>
+    <button [class.active]="activeTab === 'citizens'" (click)="changeTab('citizens')">Ciudadanos</button>
+    <button [class.active]="activeTab === 'production'" (click)="changeTab('production')">Producción</button>
+    <button [class.active]="activeTab === 'buildings'" (click)="changeTab('buildings')">Edificios</button>
+  </div>
 
     <!-- Pestaña de visión general -->
     <div class="city-content" *ngIf="activeTab === 'overview'">
       <div class="city-info-panel">
         <div class="info-section">
           <h3>Información General</h3>
+          <div class="city-era">
+            <span class="era-label">Era:</span>
+            <span class="era-value">{{ getEraName() }}</span>
+          </div>
           <div class="info-row">
             <span>Población:</span>
-            <span>{{ city.population }}</span>
+            <span>{{ city.population }} / {{ city.maxPopulation }}</span>
           </div>
           <div class="info-row">
             <span>Fundada en el turno:</span>
@@ -27,6 +32,10 @@
           <div class="info-row">
             <span>Crecimiento:</span>
             <span>{{ city.food }} / {{ city.foodToGrow }} ({{ getTurnsToGrow() }} turnos)</span>
+          </div>
+          <div class="info-row">
+            <span>Nivel de la ciudad:</span>
+            <span>{{ city.level }}</span>
           </div>
         </div>
 
@@ -52,6 +61,70 @@
             <span class="resource-icon">🎭</span>
             <span>Cultura: {{ city.culturePerTurn }}</span>
           </div>
+          <div class="resource-row">
+            <span class="resource-icon">🛡️</span>
+            <span>Defensa: {{ city.defense }}</span>
+          </div>
+          <div class="resource-row">
+            <span class="resource-icon">😊</span>
+            <span>Felicidad: {{ city.happiness }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pestaña de gestión de ciudadanos -->
+    <div class="city-content citizens-content" *ngIf="activeTab === 'citizens'">
+      <div class="citizens-panel">
+        <h3>Gestión de Ciudadanos</h3>
+        
+        <div class="citizens-summary">
+          <div class="info-row">
+            <span>Población total:</span>
+            <span>{{ city.population }}</span>
+          </div>
+          <div class="info-row highlighted">
+            <span>Ciudadanos sin asignar:</span>
+            <span>{{ city.citizens.unemployed }}</span>
+          </div>
+        </div>
+        
+        <div class="citizens-distribution">
+          <h4>Distribución de ciudadanos</h4>
+          
+          <div class="citizen-category" *ngFor="let type of citizenTypes">
+            <div class="citizen-type">
+              <span class="citizen-icon">{{ type.icon }}</span>
+              <span class="citizen-name">{{ type.name }}:</span>
+              <span class="citizen-count">{{ city.citizens[type.key] }}</span>
+            </div>
+            <div class="citizen-effect">{{ type.effect }}</div>
+            <div class="citizen-actions">
+              <button class="action-btn add-btn" 
+                      [disabled]="city.citizens.unemployed <= 0"
+                      (click)="assignCitizen(type.key)">
+                +
+              </button>
+              <button class="action-btn remove-btn" 
+                      [disabled]="city.citizens[type.key] <= 0"
+                      (click)="unassignCitizen(type.key)">
+                -
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="citizens-info">
+          <h4>Información</h4>
+          <p>Los ciudadanos generan recursos adicionales según su especialización:</p>
+          <ul>
+            <li>Granjeros: +2 Alimentos por turno</li>
+            <li>Trabajadores: +2 Producción por turno</li>
+            <li>Comerciantes: +2 Oro por turno</li>
+            <li>Científicos: +2 Ciencia por turno</li>
+            <li>Artistas: +2 Cultura por turno</li>
+          </ul>
+          <p>Asigna a tus ciudadanos estratégicamente para maximizar los recursos que más necesitas.</p>
         </div>
       </div>
     </div>
@@ -161,7 +234,10 @@
 
     <!-- Pestaña de edificios -->
     <div class="city-content" *ngIf="activeTab === 'buildings'">
-      <app-city-buildings [city]="city"></app-city-buildings>
+      <app-city-buildings 
+        [city]="city" 
+        (buildingSelected)="onBuildingSelected($event)">
+      </app-city-buildings>
     </div>
   </div>
 </div>

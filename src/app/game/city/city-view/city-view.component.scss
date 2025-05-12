@@ -161,6 +161,207 @@
   }
 }
 
+// Estilos para la pestaña de ciudadanos
+.citizens-content {
+  .citizens-panel {
+    background: #2c2f48;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+
+    h3, h4 {
+      margin-top: 0;
+      color: #fff;
+      margin-bottom: 15px;
+    }
+    
+    .citizens-summary {
+      background: #23243a;
+      padding: 10px 15px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        margin: 5px 0;
+        
+        &.highlighted {
+          font-weight: bold;
+          color: #4e90ff;
+        }
+      }
+    }
+    
+    .citizens-distribution {
+      margin-bottom: 20px;
+      
+      .citizen-category {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border-radius: 6px;
+        background: #343760;
+        margin-bottom: 8px;
+        
+        .citizen-type {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          
+          .citizen-icon {
+            margin-right: 10px;
+            font-size: 1.2em;
+          }
+          
+          .citizen-name {
+            margin-right: 5px;
+          }
+          
+          .citizen-count {
+            font-weight: bold;
+            color: #fff;
+          }
+        }
+        
+        .citizen-effect {
+          flex: 1;
+          color: #a9b7d0;
+        }
+        
+        .citizen-actions {
+          display: flex;
+          gap: 5px;
+          
+          .action-btn {
+            width: 30px;
+            height: 30px;
+            border: none;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
+            
+            &.add-btn {
+              background: #4caf50;
+              color: white;
+              
+              &:hover {
+                background: #388e3c;
+              }
+              
+              &[disabled] {
+                background: #757575;
+                cursor: not-allowed;
+              }
+            }
+            
+            &.remove-btn {
+              background: #f44336;
+              color: white;
+              
+              &:hover {
+                background: #d32f2f;
+              }
+              
+              &[disabled] {
+                background: #757575;
+                cursor: not-allowed;
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    .citizens-info {
+      background: #343760;
+      padding: 15px;
+      border-radius: 6px;
+      
+      p {
+        margin: 10px 0;
+      }
+      
+      ul {
+        padding-left: 20px;
+        
+        li {
+          margin: 5px 0;
+        }
+      }
+    }
+  }
+}
+
+// Estilos para la pestaña de información general actualizados
+.city-era {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  
+  .era-label {
+    font-weight: bold;
+    margin-right: 10px;
+  }
+  
+  .era-value {
+    color: #4e90ff;
+    font-style: italic;
+  }
+}
+
+// Estilos adicionales para las tarjetas de edificios
+app-city-buildings {
+  .buildings-container {
+    .building-card {
+      &.constructed {
+        background: #343760;
+        border-left: 3px solid #4caf50;
+        
+        .level-badge {
+          font-size: 0.8em;
+          background: #4e54c8;
+          padding: 2px 6px;
+          border-radius: 4px;
+          margin-left: 8px;
+        }
+      }
+      
+      .building-era-badge {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        font-size: 0.7em;
+        background: #4e54c8;
+        padding: 2px 6px;
+        border-radius: 4px;
+        color: #fff;
+      }
+      
+      .upgrade-option {
+        margin-top: 10px;
+        
+        .upgrade-button {
+          background: #4e54c8;
+          color: white;
+          border: none;
+          padding: 5px 10px;
+          border-radius: 4px;
+          cursor: pointer;
+          width: 100%;
+          
+          &:hover {
+            background: #3a3e99;
+          }
+        }
+      }
+    }
+  }
+}
+
 .warrior-icon { background-color: #c33; }
 .settler-icon { background-color: #396; }
 .worker-icon { background-color: #963; }

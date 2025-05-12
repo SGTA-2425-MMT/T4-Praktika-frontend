@@ -89,7 +89,8 @@
       <app-city-view
         [city]="selectedCity"
         (close)="closeCity()"
-        (production)="onCityProduction($event)">
+        (production)="onCityProduction($event)"
+        (buildBuilding)="onCityBuildBuilding($event)">
       </app-city-view>
     }
 

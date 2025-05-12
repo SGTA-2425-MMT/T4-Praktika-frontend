@@ -1,7 +1,30 @@
+export enum BuildingCategory {
+  FOOD = 'food',
+  PRODUCTION = 'production',
+  GOLD = 'gold',
+  SCIENCE = 'science',
+  CULTURE = 'culture',
+  MILITARY = 'military'
+}
+
+export enum Era {
+  ANCIENT = 'ancient',
+  CLASSICAL = 'classical',
+  MEDIEVAL = 'medieval',
+  RENAISSANCE = 'renaissance',
+  INDUSTRIAL = 'industrial',
+  MODERN = 'modern'
+}
+
 export interface Building {
   id: string;
   name: string;
-  cost: number;
+  category: BuildingCategory;
+  level: number;
+  maxLevel: number;
+  era: Era;
+  cost: number; 
+  upgradeCost: number;
   maintenance: number;
   effects: {
     food?: number;
@@ -16,15 +39,34 @@ export interface Building {
     technology?: string;
     building?: string;
   }
+  description: string;
+  icon: string;
 }
 
 export interface CityProduction {
   id: string;
   name: string;
-  type: 'unit' | 'building' | 'wonder';
+  type: 'unit' | 'wonder';
   cost: number;
   progress: number;
   turnsLeft: number;
+}
+
+// Añadir interfaz para producción de edificios
+export interface BuildingProduction {
+  buildingId: string;
+  name: string;
+  cost: number;
+  progress: number;
+  turnsLeft: number;
+  isUpgrade: boolean;
+}
+
+export interface CityBuilding extends Building {
+  constructionTurn: number;
+  currentLevel: number;
+  isUpgrading: boolean;
+  upgradeProgress?: number;
 }
 
 export interface City {
@@ -35,7 +77,21 @@ export interface City {
     x: number;
     y: number;
   };
+  
+  // Población y crecimiento
   population: number;
+  maxPopulation: number;
+  populationGrowth: number;
+  citizens: {
+    unemployed: number;
+    farmers: number;
+    workers: number;
+    merchants: number;
+    scientists: number;
+    artists: number;
+  };
+  
+  // Recursos
   food: number;
   foodPerTurn: number;
   foodToGrow: number;
@@ -49,13 +105,19 @@ export interface City {
   culturePerTurn: number;
   happiness: number;
   turnsFounded: number;
+  
+  // Era actual de la ciudad
+  era: Era;
 
-  // Cola de producción
+  // Cola de producción de unidades
   currentProduction?: CityProduction;
   productionQueue?: CityProduction[];
+  
+  // Cola de producción específica para edificios
+  buildingProductionQueue?: BuildingProduction[];
 
-  // Edificios construidos
-  buildings: string[];
+  // Edificios construidos (ahora con información detallada)
+  buildings: CityBuilding[];
 
   // Casillas trabajadas
   workingTiles: {x: number, y: number}[];
@@ -77,6 +139,6 @@ export interface City {
     engineers: number;
   }
 
-  // Level of the city
-  level: string; // Level of the city, e.g., "settlement", "village", etc.
+  // Nivel de la ciudad
+  level: string; // Nivel de la ciudad, p.ej., "asentamiento", "aldea", etc.
 }
