@@ -4,9 +4,11 @@
   (click)="onClick()"
 >
   <div class="tile-feature"></div>
-  <div *ngIf="hasUnit" class="unit-indicator" [ngClass]="direction">
-    {{ getUnitSymbol() }}
-  </div>
+  @if (hasUnit) {
+    <div class="unit-indicator" [ngClass]="direction">
+      {{ getUnitSymbol() }}
+    </div>
+  }
 
   <!-- Coordenadas para depuración
   <div class="debug-coords" *ngIf="tile.isExplored">{{tile.x}},{{tile.y}}</div>-->

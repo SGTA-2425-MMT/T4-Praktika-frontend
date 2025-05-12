@@ -112,6 +112,10 @@ export class MapGeneratorService {
       case 40: return 'water_ocean6';
       case 41: return 'water_ocean7';
       case 42: return 'water_ocean8';
+      case 43: return 'water_ocean9';
+      case 44: return 'water_ocean10';
+      case 45: return 'water_ocean11';
+      case 46: return 'water_ocean12';
       default:
         console.warn(`Unknown terrain code: ${code}, defaulting to 'plains'`);
         return 'plains'; // Default fallback
@@ -171,7 +175,8 @@ export class MapGeneratorService {
       coast25: 1, coast26: 1, coast27: 1, coast28: 1, coast29: 1,
       coast30: 1, coast31: 1, coast32: 1, coast33: 1, coast34: 1,
       water_ocean1: 2, water_ocean2: 2, water_ocean3: 2, water_ocean4: 2,
-      water_ocean5: 2, water_ocean6: 2, water_ocean7: 2,  water_ocean8: 2
+      water_ocean5: 2, water_ocean6: 2, water_ocean7: 2,  water_ocean8: 2,
+      water_ocean9: 2, water_ocean10: 2, water_ocean11: 2, water_ocean12: 2
     };
 
     return costs[terrain] || 1;
@@ -195,7 +200,8 @@ export class MapGeneratorService {
       coast25: 1, coast26: 1, coast27: 1, coast28: 1, coast29: 1,
       coast30: 1, coast31: 1, coast32: 1, coast33: 1, coast34: 1,
       water_ocean1: 0, water_ocean2: 0, water_ocean3: 0, water_ocean4: 0,
-      water_ocean5: 0, water_ocean6: 0, water_ocean7: 0,  water_ocean8: 0
+      water_ocean5: 0, water_ocean6: 0, water_ocean7: 0,  water_ocean8: 0,
+      water_ocean9: 0, water_ocean10: 0, water_ocean11: 0, water_ocean12: 0
     };
 
     return bonuses[terrain] || 0;
@@ -241,7 +247,11 @@ export class MapGeneratorService {
       water_ocean5: { food: 0, production: 0, gold: 1 },
       water_ocean6: { food: 0, production: 0, gold: 1 },
       water_ocean7: { food: 0, production: 0, gold: 1 },
-      water_ocean8: { food: 0, production: 0, gold: 1 }
+      water_ocean8: { food: 0, production: 0, gold: 1 },
+      water_ocean9: { food: 0, production: 0, gold: 1 },
+      water_ocean10: { food: 0, production: 0, gold: 1 },
+      water_ocean11: { food: 0, production: 0, gold: 1 },
+      water_ocean12: { food: 0, production: 0, gold: 1 }
     };
 
     return yields[terrain] || { food: 0, production: 0, gold: 0 };
