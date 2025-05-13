@@ -582,6 +582,8 @@ export class CityService {
     this.updateCityYieldsBasedOnCitizens(city);
     
     console.log(`Ciudadano asignado como ${role} en ${city.name}`);
+    console.log(`Ciencia por turno actualizada a: ${city.sciencePerTurn}`);
+    
     return true;
   }
   
@@ -603,6 +605,8 @@ export class CityService {
     this.updateCityYieldsBasedOnCitizens(city);
     
     console.log(`Ciudadano desasignado de ${role} en ${city.name}`);
+    console.log(`Ciencia por turno actualizada a: ${city.sciencePerTurn}`);
+    
     return true;
   }
   
@@ -631,12 +635,21 @@ export class CityService {
     const scienceFromScientists = city.citizens.scientists * 2;
     const cultureFromArtists = city.citizens.artists * 2;
     
+    // Guardar valores anteriores para depuración
+    const oldSciencePerTurn = city.sciencePerTurn;
+    
     // Actualizar los rendimientos totales
     city.foodPerTurn = baseFood + foodFromFarmers;
     city.productionPerTurn = baseProduction + productionFromWorkers;
     city.goldPerTurn = baseGold + goldFromMerchants;
     city.sciencePerTurn = baseScience + scienceFromScientists;
     city.culturePerTurn = baseCulture + cultureFromArtists;
+    
+    // Registrar cambios específicos en la ciencia para depuración
+    if (city.sciencePerTurn !== oldSciencePerTurn) {
+      console.log(`Ciudad ${city.name} - Ciencia actualizada: ${oldSciencePerTurn} → ${city.sciencePerTurn}`);
+      console.log(`  Base: ${baseScience}, Científicos: ${city.citizens.scientists}, Aporte científico: ${scienceFromScientists}`);
+    }
     
     console.log(`Ciudad ${city.name} - Rendimientos actualizados:`, {
       comida: city.foodPerTurn,

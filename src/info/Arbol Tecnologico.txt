@@ -1,0 +1,82 @@
+Cómo Utilizar el Sistema de Tecnologías en el Juego
+1. Acceder al Árbol Tecnológico
+Cuando estás jugando, puedes acceder al árbol tecnológico de dos maneras:
+
+Haciendo clic en el indicador de Ciencia: En la cabecera del juego, encontrarás un indicador que muestra tu producción de ciencia por turno con un ícono de microscopio (🔬). Al hacer clic en este indicador, se abrirá el árbol tecnológico.
+
+Durante la fase de Investigación: Cuando el juego está en la fase de "Construcción e Investigación" (segunda fase del turno), es un buen momento para revisar y seleccionar tecnologías para investigar.
+
+2. Entender el Árbol Tecnológico
+Una vez que accedas al árbol tecnológico, verás:
+
+Las tecnologías organizadas por eras (Antigua, Clásica, Medieval, etc.)
+Cada tecnología muestra:
+Un nombre y un ícono
+Una descripción de lo que representa
+Los efectos que proporciona (bonificaciones, desbloqueos)
+Un color de borde que indica la categoría (agricultura, guerra, economía, etc.)
+
+3. Estado de las Tecnologías
+Las tecnologías se mostrarán con diferentes estados:
+
+Disponibles para investigar: Tecnologías que puedes comenzar a investigar ahora (resaltadas)
+Descubiertas: Tecnologías que ya has investigado completamente
+No disponibles: Tecnologías que requieren prerrequisitos que aún no has descubierto
+En investigación: La tecnología que estás investigando actualmente (si hay alguna)
+
+4. Iniciar una Investigación
+Para comenzar a investigar una tecnología:
+
+Haz clic en una tecnología disponible (las resaltadas)
+Esta se establecerá como tu investigación actual
+Verás en la parte superior del árbol tecnológico:
+La tecnología que estás investigando
+Una barra de progreso
+La cantidad de ciencia acumulada
+La ciencia total necesaria
+Turnos estimados para completarla
+
+5. Progreso de la Investigación
+Cada turno, tu civilización producirá una cantidad de "ciencia" basada en tus ciudades, edificios y otros factores
+Esta ciencia se aplica automáticamente a tu investigación actual
+Puedes ver tu producción de ciencia por turno en la interfaz
+Cuando acumules suficiente ciencia, la tecnología se completará
+
+6. Completar Tecnologías
+Al completar una tecnología:
+
+Recibirás los beneficios inmediatamente (bonificaciones de producción, oro, etc.)
+Se desbloquearán nuevos edificios y unidades
+Se activarán nuevas tecnologías que dependen de la que acabas de descubrir
+Podrás seleccionar una nueva tecnología para investigar
+
+7. Estrategia de Investigación
+Camino tecnológico: Planifica la ruta tecnológica que quieres seguir según tus objetivos
+Prioridades:
+Enfoca en agricultura/producción para crecimiento temprano
+Investiga tecnologías de guerra si necesitas unidades militares más fuertes
+Desarrolla tecnologías económicas para mejorar la generación de oro
+Apuesta por tecnologías científicas para acelerar futuras investigaciones
+
+8. Ciclo de Juego Recomendado
+Al inicio del juego: Selecciona una tecnología inicial (generalmente Agricultura es una buena opción)
+Cada turno:
+Revisa tu progreso tecnológico actual
+Construye edificios que aumenten tu producción de ciencia
+Funda nuevas ciudades para aumentar la generación total de ciencia
+Al completar una tecnología: Evalúa qué camino seguir basado en tu situación actual
+A lo largo del juego: Mantén equilibrada tu investigación entre diferentes categorías
+
+9. Consejos Prácticos
+La producción de ciencia es acumulativa - intenta mejorarla constantemente
+Las bibliotecas y universidades son edificios clave para impulsar tu ciencia
+Algunas tecnologías desbloquean mejoras de terreno que pueden ser cruciales
+Las tecnologías avanzadas requieren más ciencia, pero ofrecen bonificaciones más potentes
+No descuides la investigación, incluso cuando estés en guerra
+
+10. Cómo Avanzar de Era
+El juego avanza a través de diferentes eras (Antigua, Clásica, Medieval, etc.) a medida que descubres más tecnologías. Para avanzar de era, necesitas:
+
+Investigar suficientes tecnologías de tu era actual
+Descubrir tecnologías clave que sirven como "puente" a la siguiente era
+Al avanzar de era, obtendrás acceso a tecnologías más avanzadas

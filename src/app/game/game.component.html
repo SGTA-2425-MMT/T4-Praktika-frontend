@@ -36,7 +36,11 @@
             <div class="phase" [class.active]="gameSession.currentPhase === 'ia'"></div>
           </div>
         </div>
-        <!-- Se eliminaron los botones de guardar y salir que estaban aquí -->
+        <!-- Botones de guardar y salir -->
+        <div class="game-controls">
+          <button class="btn-save" (click)="saveGame()">💾 Guardar Partida</button>
+          <button class="btn-exit" (click)="exitToMenu()">🚪 Salir</button>
+        </div>
       </header>
 
       <!-- Contenedor principal del juego -->

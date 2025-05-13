@@ -127,6 +127,38 @@
   }
 }
 
+.game-controls {
+  display: flex;
+  gap: 10px;
+
+  button {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s ease;
+  }
+
+  .btn-save {
+    background-color: #3498db;
+    color: #fff;
+
+    &:hover {
+      background-color: #2980b9;
+    }
+  }
+
+  .btn-exit {
+    background-color: #e74c3c;
+    color: #fff;
+
+    &:hover {
+      background-color: #c0392b;
+    }
+  }
+}
+
 .game-content {
   flex: 1;
   overflow: hidden;

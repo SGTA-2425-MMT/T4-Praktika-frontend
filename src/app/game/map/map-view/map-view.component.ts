@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { GameService } from '../../../core/services/game.service';
 import { GameSession } from '../../../core/services/game.service';
 import { WarService } from '../../../core/services/war.service';
-import { MapService } from '../../../core/services/map.service';
 import { TileImprovementService } from '../../../core/services/tile-improvement.service';
 import { FogOfWarService } from '../../../core/services/fog-of-war.service';
 import { MovementService } from '../../../core/services/movement.service';

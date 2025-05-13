@@ -1,9 +1,10 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MapViewComponent } from './map/map-view/map-view.component';
 import { TechTreeComponent } from './technology/tech-tree/tech-tree.component';
 import { GameService, GameSession } from '../core/services/game.service';
+import { DebugService } from '../core/services/debug.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -23,7 +24,8 @@ export class GameComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private gameService: GameService
+    private gameService: GameService,
+    private debugService: DebugService
   ) {}
 
   ngOnInit(): void {
@@ -158,5 +160,29 @@ export class GameComponent implements OnInit, OnDestroy {
   toggleTechTree(): void {
     this.showTechTree = !this.showTechTree;
     console.log(`${this.showTechTree ? 'Mostrando' : 'Ocultando'} árbol tecnológico`);
+  }
+  
+  // Escuchar teclas para depuración
+  @HostListener('window:keydown', ['$event'])
+  handleKeyDown(event: KeyboardEvent): void {
+    // F9 para mostrar información de ciencia
+    if (event.key === 'F9') {
+      console.log("Ejecutando diagnóstico de ciencia...");
+      this.debugService.debugScienceStatus();
+    }
+    
+    // Shift+F9 para corregir problemas de ciencia
+    if (event.key === 'F9' && event.shiftKey) {
+      console.log("Corrigiendo problemas de ciencia...");
+      this.debugService.fixScienceIssues();
+      alert("Se ha aplicado una corrección a la producción de ciencia. Verifica la consola para más detalles.");
+    }
+    
+    // Ctrl+F9 para forzar actualización de investigación
+    if (event.key === 'F9' && event.ctrlKey) {
+      console.log("Forzando actualización de la investigación...");
+      this.debugService.forceResearchUpdate();
+      alert("Se ha forzado la actualización de la investigación. Verifica la consola para más detalles.");
+    }
   }
 }

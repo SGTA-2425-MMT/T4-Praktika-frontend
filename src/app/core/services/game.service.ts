@@ -68,6 +68,9 @@ export class GameService {
     private injector: Injector
   ) {
     this.loadSavedGames();
+    // Hacer que el servicio sea accesible globalmente para llamarlo desde cualquier componente
+    // Esto es una solución temporal, en una aplicación real usaríamos un enfoque más adecuado
+    (window as any).gameServiceInstance = this;
   }
 
   get currentGame$(): Observable<GameSession | null> {
@@ -217,6 +220,9 @@ export class GameService {
     // Procesar acciones de los trabajadores
     this.processWorkerActions(game);
 
+    // Actualizar ciencia acumulada y progreso de investigación
+    this.updateResearch();
+    
     // Incrementar turno y reiniciar estado de unidades
     game.turn++;
     this.resetUnitMoves();
@@ -338,25 +344,70 @@ export class GameService {
     });
   }
 
-  private updateResearch(): void {
+  updateResearch(): void {
     const game = this.currentGame;
-    if (!game || !game.researchProgress) return;
-
-    game.researchProgress.progress += game.sciencePerTurn;
-
-    if (game.researchProgress.progress >= game.researchProgress.totalCost) {
-      const completedTechnology = game.researchProgress.currentTechnology;
-
-      game.discoveredTechnologies.push(completedTechnology);
-      this.updateAvailableTechnologies();
-      console.log(`¡Investigación completada: ${completedTechnology}!`);
-
-      game.researchProgress = undefined;
-    } else {
-      game.researchProgress.turnsLeft = Math.ceil(
-        (game.researchProgress.totalCost - game.researchProgress.progress) / game.sciencePerTurn
-      );
+    if (!game) return;
+    
+    console.log('=== Actualizando investigación ===');
+    // Recalcular la ciencia por turno antes de actualizar la investigación
+    // Esto asegura que estamos usando los valores más actualizados
+    this.calculatePlayerResources();
+    
+    // Verificar la ciencia por ciudades
+    console.log('Contribuciones científicas por ciudad:');
+    let totalCalculatedScience = 0;
+    game.cities.forEach(city => {
+      if (city.ownerId === game.currentPlayerId) {
+        console.log(`  ${city.name}: ${city.sciencePerTurn} (Científicos: ${city.citizens.scientists})`);
+        totalCalculatedScience += city.sciencePerTurn;
+      }
+    });
+    
+    // Esto debería coincidir con game.sciencePerTurn
+    console.log(`Ciencia calculada manualmente: ${totalCalculatedScience}`);
+    console.log(`Ciencia en el estado del juego: ${game.sciencePerTurn}`);
+    
+    // Si hay discrepancia, corregir
+    if (totalCalculatedScience !== game.sciencePerTurn) {
+      console.log('¡DISCREPANCIA DETECTADA! Corrigiendo...');
+      game.sciencePerTurn = totalCalculatedScience;
     }
+    
+    // Añadir la ciencia generada por turno a la ciencia acumulada
+    game.science += game.sciencePerTurn;
+    console.log(`Ciencia acumulada: ${game.science} (+${game.sciencePerTurn} este turno)`);
+
+    // Si hay una investigación en progreso, actualizar su avance
+    if (game.researchProgress) {
+      // Actualizar el progreso con la ciencia generada este turno
+      game.researchProgress.progress += game.sciencePerTurn;
+      console.log(`Progreso de investigación: ${game.researchProgress.progress}/${game.researchProgress.totalCost} (${game.sciencePerTurn} añadidos este turno)`);
+
+      // Verificar si la investigación se ha completado
+      if (game.researchProgress.progress >= game.researchProgress.totalCost) {
+        const completedTechnology = game.researchProgress.currentTechnology;
+
+        game.discoveredTechnologies.push(completedTechnology);
+        this.updateAvailableTechnologies();
+        console.log(`¡Investigación completada: ${completedTechnology}!`);
+
+        // Notificar al jugador que la investigación se ha completado
+        // TODO: Implementar sistema de notificaciones
+
+        // Limpiar la investigación actual
+        game.researchProgress = undefined;
+      } else {
+        // Actualizar los turnos restantes
+        game.researchProgress.turnsLeft = Math.ceil(
+          (game.researchProgress.totalCost - game.researchProgress.progress) / Math.max(1, game.sciencePerTurn)
+        );
+      }
+    }
+    
+    // Asegurar que se conserven los valores actualizados 
+    // y que se propague la notificación de cambio
+    this.currentGameSubject.next({...game});
+    console.log('=== Investigación actualizada ===');
   }
 
   private processCitiesProduction(game: GameSession): void {
@@ -606,6 +657,14 @@ export class GameService {
 
     const cityIndex = this.currentGame.cities.findIndex(c => c.id === city.id);
     if (cityIndex !== -1) {
+      // Verificar si hay cambios en los científicos para depuración
+      const oldCity = this.currentGame.cities[cityIndex];
+      if (oldCity.citizens.scientists !== city.citizens.scientists) {
+        console.log(`Cambio en científicos en ${city.name}: ${oldCity.citizens.scientists} → ${city.citizens.scientists}`);
+        console.log(`Ciencia esperada: ${city.citizens.scientists * 2 + 1} (base 1 + científicos)`);
+      }
+      
+      // Actualizar la ciudad
       this.currentGame.cities[cityIndex] = city;
       
       // Actualizar el objeto de juego
@@ -638,9 +697,14 @@ export class GameService {
   processCitiesEndTurn(): void {
     if (!this.currentGame) return;
     
+    console.log('=== Procesando ciudades al final del turno ===');
+    console.log(`Ciencia actual: ${this.currentGame.sciencePerTurn} por turno`);
+    
     // Para cada ciudad del jugador
     this.currentGame.cities.forEach(city => {
       if (city.ownerId === this.currentGame!.currentPlayerId) {
+        console.log(`Ciudad: ${city.name}, Científicos: ${city.citizens.scientists}, Ciencia: ${city.sciencePerTurn}`);
+        
         // Actualizar crecimiento de población
         this.cityService.growCity(city);
         
@@ -650,16 +714,23 @@ export class GameService {
         // Actualizar rendimientos de la ciudad
         this.cityService.refreshCityBuildingEffects(city);
         
-        // Otros procesos de ciudad...
+        // Asegurar que las contribuciones de los científicos se apliquen
+        // Esto calcula la ciencia por científico y la añade a la base
+        this.cityService.updateCityYieldsBasedOnCitizens(city);
+        
+        console.log(`Después de actualizar: Ciudad ${city.name}, Científicos: ${city.citizens.scientists}, Ciencia: ${city.sciencePerTurn}`);
       }
     });
     
-    // Actualizar recursos totales del jugador
+    // Recalcular los recursos totales del jugador sumando de todas las ciudades
+    let oldSciencePerTurn = this.currentGame.sciencePerTurn;
     this.calculatePlayerResources();
+    console.log(`Ciencia recalculada: ${oldSciencePerTurn} → ${this.currentGame.sciencePerTurn} por turno`);
+    console.log('=======================================');
   }
   
   // Calcular recursos totales del jugador
-  private calculatePlayerResources(): void {
+  calculatePlayerResources(): void {
     if (!this.currentGame) return;
     
     // Reiniciar valores
@@ -681,8 +752,9 @@ export class GameService {
     this.currentGame.sciencePerTurn = sciencePerTurn;
     this.currentGame.culturePerTurn = culturePerTurn;
     
-    // Actualizar el oro total (se acumula cada turno)
-    this.currentGame.gold += goldPerTurn;
+    // No acumulamos el oro en este método para evitar acumulación duplicada
+    // Notificar los cambios
+    this.currentGameSubject.next({...this.currentGame});
   }
 
   // Método para procesar las acciones del Worker al final del turno
@@ -753,5 +825,15 @@ export class GameService {
     
     // Emitir el evento de actualización de casilla
     this.tileUpdateSubject.next(tile);
+  }
+
+  // Actualizar el estado del juego forzando una emisión del BehaviorSubject
+  updateGame(): void {
+    if (!this.currentGame) return;
+    
+    // Crear una copia del objeto para asegurar que se detecten los cambios
+    const updatedGame = {...this.currentGame};
+    this.currentGameSubject.next(updatedGame);
+    console.log('Estado del juego actualizado manualmente');
   }
 }

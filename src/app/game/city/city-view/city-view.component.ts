@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { City } from '../../../core/models/city.model';
 import { CityBuildingsComponent } from '../city-buildings/city-buildings.component';
 import { CityService } from '../../../core/services/city.service';
+import { GameService } from '../../../core/services/game.service';
 
 @Component({
   selector: 'app-city-view',
@@ -31,7 +32,10 @@ export class CityViewComponent {
     { key: 'artists' as keyof City['citizens'], name: 'Artistas', icon: '🎭', effect: '+2 Cultura por turno' }
   ];
 
-  constructor(private cityService: CityService) {}
+  constructor(
+    private cityService: CityService,
+    private gameService: GameService
+  ) {}
 
   // Método para cambiar entre pestañas
   changeTab(tab: 'overview' | 'production' | 'buildings' | 'citizens'): void {
@@ -106,6 +110,16 @@ export class CityViewComponent {
     
     if (success) {
       console.log(`Ciudadano asignado como ${role}`);
+      console.log(`Antes de actualizar: sciencePerTurn = ${this.gameService.currentGame?.sciencePerTurn}`);
+      
+      // Actualizar la ciudad en el servicio de juego primero
+      this.gameService.updateCity(this.city);
+      
+      // Luego recalcular los recursos totales del jugador
+      this.gameService.calculatePlayerResources();
+      
+      console.log(`Después de actualizar: sciencePerTurn = ${this.gameService.currentGame?.sciencePerTurn}`);
+      console.log('Recursos del jugador actualizados después de asignar ciudadano');
     }
   }
   
@@ -117,6 +131,16 @@ export class CityViewComponent {
     
     if (success) {
       console.log(`Ciudadano liberado de ${role}`);
+      console.log(`Antes de actualizar: sciencePerTurn = ${this.gameService.currentGame?.sciencePerTurn}`);
+      
+      // Actualizar la ciudad en el servicio de juego primero
+      this.gameService.updateCity(this.city);
+      
+      // Luego recalcular los recursos totales del jugador
+      this.gameService.calculatePlayerResources();
+      
+      console.log(`Después de actualizar: sciencePerTurn = ${this.gameService.currentGame?.sciencePerTurn}`);
+      console.log('Recursos del jugador actualizados después de desasignar ciudadano');
     }
   }
   

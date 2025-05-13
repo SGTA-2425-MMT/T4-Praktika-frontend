@@ -64,8 +64,14 @@ export class TechTreeComponent implements OnInit, OnDestroy {
       })
     );
     
-    // Obtener la ciencia por turno del jugador
-    this.updateSciencePerTurn();
+    // Suscribirse a cambios en el juego para actualizar la ciencia por turno
+    this.subscriptions.push(
+      this.gameService.currentGame$.subscribe(game => {
+        if (game) {
+          this.updateSciencePerTurn();
+        }
+      })
+    );
   }
   
   ngOnDestroy(): void {
@@ -92,15 +98,10 @@ export class TechTreeComponent implements OnInit, OnDestroy {
   private updateSciencePerTurn(): void {
     const game = this.gameService.currentGame;
     if (game) {
-      // Calcular ciencia total de todas las ciudades del jugador
-      let totalScience = 0;
-      game.cities.forEach(city => {
-        if (city.ownerId === game.currentPlayerId) {
-          totalScience += city.sciencePerTurn;
-        }
-      });
+      // Usar directamente el valor calculado del juego
+      this.sciencePerTurn = game.sciencePerTurn;
       
-      this.sciencePerTurn = totalScience;
+      console.log(`Ciencia por turno actualizada: ${this.sciencePerTurn}`);
     }
   }
   
@@ -112,11 +113,39 @@ export class TechTreeComponent implements OnInit, OnDestroy {
       }
     }
     
+    // Actualizar la ciencia por turno antes de comenzar la investigación
+    this.updateSciencePerTurn();
+    
+    // Verificar que haya ciencia por turno para investigar
+    if (this.sciencePerTurn <= 0) {
+      alert('No tienes producción de ciencia. Asigna ciudadanos como científicos o construye edificios que generen ciencia.');
+      return;
+    }
+    
+    const tech = this.technologies.find(t => t.id === techId);
     const success = this.techService.startResearch(techId, this.sciencePerTurn);
+    
     if (success) {
-      console.log(`Comenzando a investigar: ${techId}`);
+      console.log(`Comenzando a investigar: ${tech?.name || techId} con ${this.sciencePerTurn} ciencia por turno`);
+      
+      // Actualizar el estado del juego para reflejar la investigación en curso
+      if (this.gameService.currentGame) {
+        const game = this.gameService.currentGame;
+        if (!game.researchProgress) {
+          game.researchProgress = {
+            currentTechnology: techId,
+            progress: 0,
+            turnsLeft: Math.ceil((tech?.cost || 0) / Math.max(1, this.sciencePerTurn)),
+            totalCost: tech?.cost || 0
+          };
+          this.gameService.updateResearch();
+        }
+      }
+      
+      alert(`Comenzando a investigar: ${tech?.name || techId}.\nCiencia por turno: ${this.sciencePerTurn}\nTurnos estimados: ${Math.ceil((tech?.cost || 0) / Math.max(1, this.sciencePerTurn))}`);
     } else {
       console.error('No se pudo iniciar la investigación');
+      alert('No se pudo iniciar la investigación. Verifica que la tecnología esté disponible y cumpla con los prerrequisitos.');
     }
   }
   

@@ -249,11 +249,11 @@ export class TechnologyService {
       name: tech.name,
       progress: 0,
       totalCost: tech.cost,
-      turnsRemaining: Math.ceil(tech.cost / sciencePerTurn)
+      turnsRemaining: Math.max(1, Math.ceil(tech.cost / Math.max(1, sciencePerTurn)))
     };
     
     this.researchProgressSubject.next(this.researchInProgress);
-    console.log(`Comenzando a investigar: ${tech.name}`);
+    console.log(`Comenzando a investigar: ${tech.name} (Ciencia por turno: ${sciencePerTurn}, Costo total: ${tech.cost}, Turnos estimados: ${this.researchInProgress.turnsRemaining})`);
     
     return true;
   }
@@ -264,10 +264,16 @@ export class TechnologyService {
       return null;
     }
     
+    // Asegurarnos de que la ciencia por turno sea al menos 1 para evitar divisiones por cero
+    const effectiveSciencePerTurn = Math.max(1, sciencePerTurn);
+    
     // Actualizar progreso
-    this.researchInProgress.progress += sciencePerTurn;
+    this.researchInProgress.progress += effectiveSciencePerTurn;
+    console.log(`Progreso de investigación actualizado: ${this.researchInProgress.progress}/${this.researchInProgress.totalCost} (${effectiveSciencePerTurn} añadido)`);
+    
+    // Calcular turnos restantes (evitando división por cero)
     this.researchInProgress.turnsRemaining = Math.max(0, 
-      Math.ceil((this.researchInProgress.totalCost - this.researchInProgress.progress) / sciencePerTurn)
+      Math.ceil((this.researchInProgress.totalCost - this.researchInProgress.progress) / effectiveSciencePerTurn)
     );
     
     // Comprobar si se completó la investigación
