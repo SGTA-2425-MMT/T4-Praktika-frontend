@@ -1,5 +1,5 @@
 import { Player } from './player.model';
-import { Tile } from './tile.model';
+import { MapTile } from './map.model';
 import { City } from './city.model';
 import { Unit } from './unit.model';
 
@@ -16,7 +16,7 @@ export interface GameState {
   currentPlayerIndex: number;
   difficulty: GameDifficulty;
   players: Player[];
-  tiles: Tile[];
+  tiles: MapTile[];
   cities: City[];
   units: Unit[];
   winner?: string; // ID del jugador ganador si el juego ha terminado

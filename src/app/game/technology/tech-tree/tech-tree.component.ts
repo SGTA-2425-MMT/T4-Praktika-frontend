@@ -18,13 +18,13 @@ export class TechTreeComponent implements OnInit, OnDestroy {
   availableTechnologies: Technology[] = [];
   discoveredTechnologies: Technology[] = [];
   currentResearch: ResearchProgress | null = null;
-  
+
   // Organización visual
   techsByEra: { [key: string]: Technology[] } = {};
-  
+
   // Ciencia por turno
   sciencePerTurn: number = 0;
-  
+
   // Suscripciones
   private subscriptions: Subscription[] = [];
 
@@ -39,31 +39,31 @@ export class TechTreeComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Obtener todas las tecnologías
     this.technologies = this.techService.getTechnologyTree();
-    
+
     // Organizar tecnologías por era para la visualización
     this.organizeTechsByEra();
-    
+
     // Suscribirse a cambios en las tecnologías disponibles
     this.subscriptions.push(
       this.techService.availableTechnologies$.subscribe(techs => {
         this.availableTechnologies = techs;
       })
     );
-    
+
     // Suscribirse a cambios en las tecnologías descubiertas
     this.subscriptions.push(
       this.techService.discoveredTechnologies$.subscribe(techs => {
         this.discoveredTechnologies = techs;
       })
     );
-    
+
     // Suscribirse a cambios en la investigación actual
     this.subscriptions.push(
       this.techService.researchProgress$.subscribe(research => {
         this.currentResearch = research;
       })
     );
-    
+
     // Suscribirse a cambios en el juego para actualizar la ciencia por turno
     this.subscriptions.push(
       this.gameService.currentGame$.subscribe(game => {
@@ -73,38 +73,38 @@ export class TechTreeComponent implements OnInit, OnDestroy {
       })
     );
   }
-  
+
   ngOnDestroy(): void {
     // Cancelar todas las suscripciones al destruir el componente
     this.subscriptions.forEach(sub => sub.unsubscribe());
   }
-  
+
   // Organizar tecnologías por era para la visualización
   private organizeTechsByEra(): void {
     this.techsByEra = {};
-    
+
     // Inicializar arreglos para cada era
     Object.values(TechEra).forEach(era => {
       this.techsByEra[era] = [];
     });
-    
+
     // Asignar cada tecnología a su era correspondiente
     this.technologies.forEach(tech => {
       this.techsByEra[tech.era].push(tech);
     });
   }
-  
+
   // Obtener la ciencia por turno del jugador actual
   private updateSciencePerTurn(): void {
     const game = this.gameService.currentGame;
     if (game) {
       // Usar directamente el valor calculado del juego
       this.sciencePerTurn = game.sciencePerTurn;
-      
+
       console.log(`Ciencia por turno actualizada: ${this.sciencePerTurn}`);
     }
   }
-  
+
   // Iniciar investigación de una tecnología
   startResearch(techId: string): void {
     if (this.currentResearch) {
@@ -112,22 +112,22 @@ export class TechTreeComponent implements OnInit, OnDestroy {
         return;
       }
     }
-    
+
     // Actualizar la ciencia por turno antes de comenzar la investigación
     this.updateSciencePerTurn();
-    
+
     // Verificar que haya ciencia por turno para investigar
     if (this.sciencePerTurn <= 0) {
       alert('No tienes producción de ciencia. Asigna ciudadanos como científicos o construye edificios que generen ciencia.');
       return;
     }
-    
+
     const tech = this.technologies.find(t => t.id === techId);
     const success = this.techService.startResearch(techId, this.sciencePerTurn);
-    
+
     if (success) {
       console.log(`Comenzando a investigar: ${tech?.name || techId} con ${this.sciencePerTurn} ciencia por turno`);
-      
+
       // Actualizar el estado del juego para reflejar la investigación en curso
       if (this.gameService.currentGame) {
         const game = this.gameService.currentGame;
@@ -141,49 +141,45 @@ export class TechTreeComponent implements OnInit, OnDestroy {
           this.gameService.updateResearch();
         }
       }
-      
+
       alert(`Comenzando a investigar: ${tech?.name || techId}.\nCiencia por turno: ${this.sciencePerTurn}\nTurnos estimados: ${Math.ceil((tech?.cost || 0) / Math.max(1, this.sciencePerTurn))}`);
     } else {
       console.error('No se pudo iniciar la investigación');
       alert('No se pudo iniciar la investigación. Verifica que la tecnología esté disponible y cumpla con los prerrequisitos.');
     }
   }
-  
+
   // Verificar si una tecnología está disponible para investigar
   isTechAvailable(techId: string): boolean {
     return this.availableTechnologies.some(t => t.id === techId);
   }
-  
+
   // Verificar si una tecnología ya ha sido descubierta
   isTechDiscovered(techId: string): boolean {
     return this.discoveredTechnologies.some(t => t.id === techId);
   }
-  
+
   // Verificar si una tecnología está siendo investigada actualmente
   isCurrentlyResearching(techId: string): boolean {
     return this.currentResearch?.technologyId === techId;
   }
-  
+
   // Obtener el nombre de la era en español
   getEraName(era: string): string {
     switch (era) {
       case 'ancient':
         return 'Era Antigua';
-      case 'classical':
-        return 'Era Clásica';
       case 'medieval':
         return 'Era Medieval';
-      case 'renaissance':
-        return 'Era del Renacimiento';
-      case 'industrial':
-        return 'Era Industrial';
+      case 'age_of_discovery':
+        return 'Era de la colonizacion y revolucion francesa';
       case 'modern':
         return 'Era Moderna';
       default:
         return 'Desconocida';
     }
   }
-  
+
   // Obtener el nombre de la categoría en español
   getCategoryName(category: TechCategory): string {
     const categoryNames: { [key: string]: string } = {
@@ -196,7 +192,7 @@ export class TechTreeComponent implements OnInit, OnDestroy {
     };
     return categoryNames[category] || category;
   }
-  
+
   // Obtener color según la categoría
   getCategoryColor(category: TechCategory): string {
     const categoryColors: { [key: string]: string } = {

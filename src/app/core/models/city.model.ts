@@ -9,10 +9,8 @@ export enum BuildingCategory {
 
 export enum Era {
   ANCIENT = 'ancient',
-  CLASSICAL = 'classical',
   MEDIEVAL = 'medieval',
-  RENAISSANCE = 'renaissance',
-  INDUSTRIAL = 'industrial',
+  AGE_OF_DISCOVERIES = 'age_of_discovery',
   MODERN = 'modern'
 }
 
@@ -23,7 +21,7 @@ export interface Building {
   level: number;
   maxLevel: number;
   era: Era;
-  cost: number; 
+  cost: number;
   upgradeCost: number;
   maintenance: number;
   effects: {
@@ -77,7 +75,7 @@ export interface City {
     x: number;
     y: number;
   };
-  
+
   // Población y crecimiento
   population: number;
   maxPopulation: number;
@@ -90,7 +88,7 @@ export interface City {
     scientists: number;
     artists: number;
   };
-  
+
   // Recursos
   food: number;
   foodPerTurn: number;
@@ -105,14 +103,14 @@ export interface City {
   culturePerTurn: number;
   happiness: number;
   turnsFounded: number;
-  
+
   // Era actual de la ciudad
   era: Era;
 
   // Cola de producción de unidades
   currentProduction?: CityProduction;
   productionQueue?: CityProduction[];
-  
+
   // Cola de producción específica para edificios
   buildingProductionQueue?: BuildingProduction[];
 

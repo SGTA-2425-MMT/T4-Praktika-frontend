@@ -2,10 +2,8 @@
 
 export enum TechEra {
   ANCIENT = 'ancient',
-  CLASSICAL = 'classical',
   MEDIEVAL = 'medieval',
-  RENAISSANCE = 'renaissance',
-  INDUSTRIAL = 'industrial', 
+  AGE_OF_DISCOVERY = 'age_of_discovery',
   MODERN = 'modern'
 }
 

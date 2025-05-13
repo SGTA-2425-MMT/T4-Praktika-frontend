@@ -27,7 +27,7 @@ export class CityService {
       name: name,
       ownerId: settler.owner,
       position: { x, y },
-      
+
       // Población y crecimiento
       population: 1,
       maxPopulation: 5, // Límite inicial de población
@@ -40,7 +40,7 @@ export class CityService {
         scientists: 0,
         artists: 0,
       },
-      
+
       // Recursos
       food: 0,
       foodPerTurn: 2, // Valor inicial básico
@@ -102,14 +102,14 @@ export class CityService {
   updateCityYields(city: City, map: GameMap): void {
     // Obtener casillas trabajables
     const workableTiles = this.getWorkableTiles(city, map);
-    
+
     // Valores base
     let baseFood = 1;
     let baseProduction = 1;
     let baseGold = 1;
     let baseScience = 1;
     let baseCulture = 1;
-    
+
     // Añadir rendimientos de las casillas centrales (siempre trabajadas)
     const centerTile = map.tiles[city.position.y][city.position.x];
     if (centerTile) {
@@ -118,14 +118,14 @@ export class CityService {
       baseProduction += centerTile.yields?.production || 1;
       baseGold += centerTile.yields?.gold || 1;
     }
-    
+
     // Actualizar los valores base de la ciudad
     city.foodPerTurn = baseFood;
     city.productionPerTurn = baseProduction;
     city.goldPerTurn = baseGold;
     city.sciencePerTurn = baseScience;
     city.culturePerTurn = baseCulture;
-    
+
     // Añadir los efectos de los edificios y los ciudadanos
     this.refreshCityBuildingEffects(city);
     this.updateCityYieldsBasedOnCitizens(city);
@@ -205,7 +205,7 @@ export class CityService {
         category: BuildingCategory.SCIENCE,
         level: 1,
         maxLevel: 3,
-        era: Era.CLASSICAL,
+        era: Era.MEDIEVAL,
         cost: 120,
         upgradeCost: 240,
         maintenance: 2,
@@ -220,7 +220,7 @@ export class CityService {
         category: BuildingCategory.GOLD,
         level: 1,
         maxLevel: 3,
-        era: Era.CLASSICAL,
+        era: Era.MEDIEVAL,
         cost: 100,
         upgradeCost: 200,
         maintenance: 1,
@@ -269,7 +269,7 @@ export class CityService {
         category: BuildingCategory.GOLD,
         level: 1,
         maxLevel: 3,
-        era: Era.RENAISSANCE,
+        era: Era.AGE_OF_DISCOVERIES,
         cost: 220,
         upgradeCost: 440,
         maintenance: 3,
@@ -282,10 +282,10 @@ export class CityService {
 
     // Filtrar edificios disponibles según la era actual o anteriores
     return allBuildings.filter(building => {
-      const eraOrder = [Era.ANCIENT, Era.CLASSICAL, Era.MEDIEVAL, Era.RENAISSANCE, Era.INDUSTRIAL, Era.MODERN];
+      const eraOrder = [Era.ANCIENT, Era.MEDIEVAL, Era.AGE_OF_DISCOVERIES , Era.MODERN];
       const currentEraIndex = eraOrder.indexOf(era);
       const buildingEraIndex = eraOrder.indexOf(building.era);
-      
+
       return buildingEraIndex <= currentEraIndex;
     });
   }
@@ -293,7 +293,7 @@ export class CityService {
   // Obtener edificios disponibles para construir en una ciudad
   getAvailableBuildings(city: City): Building[] {
     const availableForEra = this.getAvailableBuildingsForEra(city.era);
-    
+
     // Filtrar edificios que ya están construidos o no cumplen con los requisitos
     return availableForEra.filter(building => {
       // Verificar si ya existe este edificio en la ciudad
@@ -302,29 +302,29 @@ export class CityService {
         // Si ya existe, solo mostrar si se puede mejorar
         return existingBuilding.currentLevel < building.maxLevel && !existingBuilding.isUpgrading;
       }
-      
+
       // Verificar si el edificio está en cola de construcción
       if (city.buildingProductionQueue?.some(bp => bp.buildingId === building.id)) {
         return false;
       }
-      
+
       // Verificar prerrequisitos
       if (building.prerequisites) {
         // Verificar edificios prerrequisitos
         if (building.prerequisites.building) {
-          const hasPrereqBuilding = city.buildings.some(b => 
+          const hasPrereqBuilding = city.buildings.some(b =>
             b.id === building.prerequisites?.building && b.currentLevel > 0
           );
           if (!hasPrereqBuilding) return false;
         }
-        
+
         // Verificar tecnologías prerrequisito
         if (building.prerequisites.technology) {
           const hasPrereqTech = this.technologyService.isTechnologyDiscovered(building.prerequisites.technology);
           if (!hasPrereqTech) return false;
         }
       }
-      
+
       return true;
     });
   }
@@ -332,53 +332,53 @@ export class CityService {
   // Procesar el crecimiento de la ciudad en un turno
   growCity(city: City): void {
     if (!city) return;
-    
+
     // Acumular comida según la producción por turno
     city.food += city.foodPerTurn;
-    
+
     // Verificar si hay suficiente comida para aumentar la población
     if (city.food >= city.foodToGrow) {
       // Aumentar población
       city.population++;
-      
+
       // Añadir nuevo ciudadano como desempleado
       city.citizens.unemployed++;
-      
+
       // Restar la comida consumida para el crecimiento
       city.food -= city.foodToGrow;
-      
+
       // Calcular nueva cantidad de comida necesaria para el siguiente crecimiento
       // La fórmula aumenta progresivamente la dificultad
       city.foodToGrow = Math.floor(city.foodToGrow * 1.5);
-      
+
       // Ajustar límite máximo de población basado en la felicidad
       city.maxPopulation = this.calculateMaxPopulation(city);
-      
+
       console.log(`La ciudad ${city.name} ha crecido a ${city.population} habitantes`);
-      
+
       // Verificar si la ciudad puede pasar de nivel
       this.checkCityLevelUp(city);
     }
   }
-  
+
   // Calcular la población máxima según la felicidad y edificios
   private calculateMaxPopulation(city: City): number {
     // Población base
     let maxPop = 5;
-    
+
     // Añadir bonificación por felicidad
     maxPop += Math.floor(city.happiness / 5);
-    
+
     // Añadir bonificación por edificios específicos
     city.buildings.forEach(building => {
       // Ejemplo: el acueducto aumenta la población máxima
       if (building.id === 'aqueduct') maxPop += 2;
       // Otros edificios pueden tener efectos similares...
     });
-    
+
     return maxPop;
   }
-  
+
   // Verificar si la ciudad puede subir de nivel basado en su población
   private checkCityLevelUp(city: City): void {
     // Criterios de nivel basados en la población
@@ -396,30 +396,30 @@ export class CityService {
       console.log(`${city.name} ha crecido a una aldea`);
     }
   }
-  
+
   // Construir un edificio en la ciudad
   constructBuilding(city: City, buildingId: string, currentTurn: number): boolean {
     if (!city) return false;
-    
+
     // Verificar si el edificio ya existe en la ciudad
     if (city.buildings.some(b => b.id === buildingId)) {
       console.log(`El edificio ${buildingId} ya existe en la ciudad ${city.name}`);
       return false;
     }
-    
+
     // Obtener información del edificio
     const building = this.getBuildingById(buildingId);
     if (!building) {
       console.log(`Edificio ${buildingId} no encontrado`);
       return false;
     }
-    
+
     // Verificar si cumple los prerrequisitos
     if (!this.checkBuildingPrerequisites(city, building)) {
       console.log(`La ciudad ${city.name} no cumple los prerrequisitos para construir ${building.name}`);
       return false;
     }
-    
+
     // Crear el edificio en la ciudad
     const cityBuilding: CityBuilding = {
       ...building,
@@ -427,17 +427,17 @@ export class CityService {
       currentLevel: 1,
       isUpgrading: false
     };
-    
+
     // Añadir el edificio a la lista de la ciudad
     city.buildings.push(cityBuilding);
-    
+
     // Actualizar los rendimientos de la ciudad
     this.updateCityYieldsBasedOnCitizens(city);
-    
+
     console.log(`Edificio ${building.name} construido en ${city.name}`);
     return true;
   }
-  
+
   // Comprobar si se cumplen los prerrequisitos para un edificio
   private checkBuildingPrerequisites(city: City, building: Building): boolean {
     // Verificar era
@@ -446,7 +446,7 @@ export class CityService {
       console.log(`La ciudad ${city.name} no está en la era adecuada para construir ${building.name}`);
       return false;
     }
-    
+
     // Verificar prerrequisitos de edificios
     if (building.prerequisites?.building) {
       const requiredBuilding = building.prerequisites.building;
@@ -455,7 +455,7 @@ export class CityService {
         return false;
       }
     }
-    
+
     // Verificar prerrequisitos de tecnología (usando el servicio de tecnología)
     if (building.prerequisites?.technology) {
       const requiredTech = building.prerequisites.technology;
@@ -464,45 +464,43 @@ export class CityService {
         return false;
       }
     }
-    
+
     return true;
   }
-  
+
   // Obtener un valor numérico para cada era (para comparaciones)
   private getEraValue(era: Era): number {
     const eraValues: {[key in Era]: number} = {
       [Era.ANCIENT]: 1,
-      [Era.CLASSICAL]: 2,
       [Era.MEDIEVAL]: 3,
-      [Era.RENAISSANCE]: 4,
-      [Era.INDUSTRIAL]: 5,
+      [Era.AGE_OF_DISCOVERIES]: 4,
       [Era.MODERN]: 6
     };
     return eraValues[era];
   }
-  
+
   // Actualizar la producción de edificios en una ciudad al final del turno
   updateBuildingProduction(city: City, currentTurn: number): void {
     if (!city) return;
-    
+
     // Procesar la construcción de edificios en cola
     this.processBuildingConstruction(city, currentTurn);
-    
+
     // Verificar si hay edificios en actualización/mejora
     city.buildings.forEach(building => {
       if (building.isUpgrading) {
         // Aquí implementaríamos la lógica para procesar la actualización de edificios
       }
     });
-    
+
     // Actualizar los rendimientos basados en todos los edificios activos
     this.refreshCityBuildingEffects(city);
   }
-  
+
   // Refrescar los efectos de todos los edificios en una ciudad
   refreshCityBuildingEffects(city: City): void {
     if (!city) return;
-    
+
     // Establecer valores base
     let baseFood = 1;
     let baseProduction = 1;
@@ -511,7 +509,7 @@ export class CityService {
     let baseCulture = 1;
     let baseHappiness = 0;
     let baseDefense = city.defense || 5;
-    
+
     // Sumar los efectos de todos los edificios
     city.buildings.forEach(building => {
       if (building.effects.food) baseFood += building.effects.food;
@@ -522,23 +520,23 @@ export class CityService {
       if (building.effects.happiness) baseHappiness += building.effects.happiness;
       if (building.effects.defense) baseDefense += building.effects.defense;
     });
-    
+
     // Actualizar los valores base de la ciudad
     // Estos valores se combinarán con la contribución de los ciudadanos
     // en updateCityYieldsBasedOnCitizens
-    
+
     // Finalmente, actualizar los rendimientos completos
     this.updateCityYieldsBasedOnCitizens(city);
   }
-  
+
   // Actualizar los efectos de un edificio según su nivel
   private updateBuildingEffects(building: CityBuilding): void {
     // Multiplicador basado en el nivel (nivel 1 = x1, nivel 2 = x1.5, nivel 3 = x2, etc.)
     const multiplier = 1 + ((building.currentLevel - 1) * 0.5);
-    
+
     // Crear una copia de los efectos base del edificio
     const baseEffects = { ...building.effects };
-    
+
     // Aplicar el multiplicador a todos los efectos
     if (baseEffects.food) building.effects.food = Math.round(baseEffects.food * multiplier);
     if (baseEffects.production) building.effects.production = Math.round(baseEffects.production * multiplier);
@@ -547,7 +545,7 @@ export class CityService {
     if (baseEffects.culture) building.effects.culture = Math.round(baseEffects.culture * multiplier);
     if (baseEffects.happiness) building.effects.happiness = Math.round(baseEffects.happiness * multiplier);
     if (baseEffects.defense) building.effects.defense = Math.round(baseEffects.defense * multiplier);
-    
+
     console.log(`Efectos del edificio ${building.name} actualizados según nivel ${building.currentLevel}`);
   }
 
@@ -556,10 +554,8 @@ export class CityService {
     // Esta es una implementación básica que debería ser mejorada
     // Idealmente tendríamos un servicio o repositorio dedicado a edificios
     return this.getAvailableBuildingsForEra(Era.ANCIENT)
-      .concat(this.getAvailableBuildingsForEra(Era.CLASSICAL))
       .concat(this.getAvailableBuildingsForEra(Era.MEDIEVAL))
-      .concat(this.getAvailableBuildingsForEra(Era.RENAISSANCE))
-      .concat(this.getAvailableBuildingsForEra(Era.INDUSTRIAL))
+      .concat(this.getAvailableBuildingsForEra(Era.AGE_OF_DISCOVERIES))
       .concat(this.getAvailableBuildingsForEra(Era.MODERN))
       .find(b => b.id === buildingId);
   }
@@ -567,49 +563,49 @@ export class CityService {
   // Asignar un ciudadano a un rol específico
   assignCitizen(city: City, role: keyof City['citizens']): boolean {
     if (!city) return false;
-    
+
     // Verificar que haya ciudadanos desempleados disponibles
     if (city.citizens.unemployed <= 0) {
       console.log('No hay ciudadanos desempleados disponibles');
       return false;
     }
-    
+
     // Asignar el ciudadano al rol específico
     city.citizens.unemployed--;
     city.citizens[role]++;
-    
+
     // Actualizar rendimientos de la ciudad según el rol asignado
     this.updateCityYieldsBasedOnCitizens(city);
-    
+
     console.log(`Ciudadano asignado como ${role} en ${city.name}`);
     console.log(`Ciencia por turno actualizada a: ${city.sciencePerTurn}`);
-    
+
     return true;
   }
-  
+
   // Desasignar un ciudadano de un rol específico
   unassignCitizen(city: City, role: keyof City['citizens']): boolean {
     if (!city) return false;
-    
+
     // Verificar que haya ciudadanos asignados en ese rol
     if (role === 'unemployed' || city.citizens[role] <= 0) {
       console.log(`No hay ciudadanos asignados como ${role}`);
       return false;
     }
-    
+
     // Desasignar el ciudadano del rol
     city.citizens[role]--;
     city.citizens.unemployed++;
-    
+
     // Actualizar rendimientos de la ciudad según los cambios
     this.updateCityYieldsBasedOnCitizens(city);
-    
+
     console.log(`Ciudadano desasignado de ${role} en ${city.name}`);
     console.log(`Ciencia por turno actualizada a: ${city.sciencePerTurn}`);
-    
+
     return true;
   }
-  
+
   // Actualizar los rendimientos de la ciudad basándose en la distribución de ciudadanos
   updateCityYieldsBasedOnCitizens(city: City): void {
     // Valores base proporcionados por el terreno y los edificios
@@ -618,7 +614,7 @@ export class CityService {
     let baseGold = 1; // Oro base de la ciudad
     let baseScience = 1; // Ciencia base de la ciudad
     let baseCulture = 1; // Cultura base de la ciudad
-    
+
     // Bonificaciones de los edificios (se implementará completamente más adelante)
     city.buildings.forEach(building => {
       if (building.effects.food) baseFood += building.effects.food;
@@ -627,30 +623,30 @@ export class CityService {
       if (building.effects.science) baseScience += building.effects.science;
       if (building.effects.culture) baseCulture += building.effects.culture;
     });
-    
+
     // Contribución de los ciudadanos según su especialización
     const foodFromFarmers = city.citizens.farmers * 2;
     const productionFromWorkers = city.citizens.workers * 2;
     const goldFromMerchants = city.citizens.merchants * 2;
     const scienceFromScientists = city.citizens.scientists * 2;
     const cultureFromArtists = city.citizens.artists * 2;
-    
+
     // Guardar valores anteriores para depuración
     const oldSciencePerTurn = city.sciencePerTurn;
-    
+
     // Actualizar los rendimientos totales
     city.foodPerTurn = baseFood + foodFromFarmers;
     city.productionPerTurn = baseProduction + productionFromWorkers;
     city.goldPerTurn = baseGold + goldFromMerchants;
     city.sciencePerTurn = baseScience + scienceFromScientists;
     city.culturePerTurn = baseCulture + cultureFromArtists;
-    
+
     // Registrar cambios específicos en la ciencia para depuración
     if (city.sciencePerTurn !== oldSciencePerTurn) {
       console.log(`Ciudad ${city.name} - Ciencia actualizada: ${oldSciencePerTurn} → ${city.sciencePerTurn}`);
       console.log(`  Base: ${baseScience}, Científicos: ${city.citizens.scientists}, Aporte científico: ${scienceFromScientists}`);
     }
-    
+
     console.log(`Ciudad ${city.name} - Rendimientos actualizados:`, {
       comida: city.foodPerTurn,
       producción: city.productionPerTurn,
@@ -663,20 +659,20 @@ export class CityService {
   // Añadir un edificio a la cola de construcción
   addBuildingToQueue(city: City, buildingId: string): boolean {
     if (!city) return false;
-    
+
     // Obtener información del edificio
     const building = this.getBuildingById(buildingId);
     if (!building) {
       console.log(`Edificio ${buildingId} no encontrado`);
       return false;
     }
-    
+
     // Verificar si cumple los prerrequisitos
     if (!this.checkBuildingPrerequisites(city, building)) {
       console.log(`La ciudad ${city.name} no cumple los prerrequisitos para construir ${building.name}`);
       return false;
     }
-    
+
     // Crear el objeto de producción del edificio
     const buildingProduction = {
       buildingId: building.id,
@@ -686,15 +682,15 @@ export class CityService {
       turnsLeft: Math.ceil(building.cost / city.productionPerTurn),
       isUpgrade: false
     };
-    
+
     // Inicializar la cola de producción de edificios si no existe
     if (!city.buildingProductionQueue) {
       city.buildingProductionQueue = [];
     }
-    
+
     // Añadir el edificio a la cola
     city.buildingProductionQueue.push(buildingProduction);
-    
+
     console.log(`Edificio ${building.name} añadido a la cola de construcción de ${city.name}`);
     return true;
   }
@@ -702,30 +698,30 @@ export class CityService {
   // Procesar la construcción de edificios al final de un turno
   processBuildingConstruction(city: City, currentTurn: number): void {
     if (!city || !city.buildingProductionQueue || city.buildingProductionQueue.length === 0) return;
-    
+
     // Obtener el primer edificio de la cola
     const currentBuilding = city.buildingProductionQueue[0];
-    
+
     // Añadir la producción de este turno
     currentBuilding.progress += city.productionPerTurn;
-    
+
     // Actualizar los turnos restantes
     currentBuilding.turnsLeft = Math.ceil((currentBuilding.cost - currentBuilding.progress) / city.productionPerTurn);
-    
+
     console.log(`Procesando construcción de ${currentBuilding.name} en ${city.name}. Progreso: ${currentBuilding.progress}/${currentBuilding.cost}`);
-    
+
     // Verificar si se ha completado la construcción
     if (currentBuilding.progress >= currentBuilding.cost) {
       // Eliminar de la cola
       city.buildingProductionQueue.shift();
-      
+
       // Si es una mejora, actualizar el nivel del edificio existente
       if (currentBuilding.isUpgrade) {
         const existingBuilding = city.buildings.find(b => b.id === currentBuilding.buildingId);
         if (existingBuilding) {
           existingBuilding.currentLevel++;
           console.log(`${city.name}: ${currentBuilding.name} mejorado a nivel ${existingBuilding.currentLevel}`);
-          
+
           // Actualizar los efectos según el nuevo nivel
           this.updateBuildingEffects(existingBuilding);
         }
@@ -733,7 +729,7 @@ export class CityService {
         // Construir el edificio nuevo
         this.constructBuilding(city, currentBuilding.buildingId, currentTurn);
       }
-      
+
       // Actualizar rendimientos de la ciudad
       this.refreshCityBuildingEffects(city);
     }
@@ -742,26 +738,26 @@ export class CityService {
   // Añadir la mejora de un edificio existente a la cola de construcción
   upgradeBuildingInQueue(city: City, buildingId: string): boolean {
     if (!city) return false;
-    
+
     // Buscar si el edificio existe en la ciudad
     const existingBuilding = city.buildings.find(b => b.id === buildingId);
     if (!existingBuilding) {
       console.log(`El edificio ${buildingId} no existe en la ciudad ${city.name}`);
       return false;
     }
-    
+
     // Verificar si el edificio ya está en su nivel máximo
     if (existingBuilding.currentLevel >= existingBuilding.maxLevel) {
       console.log(`El edificio ${existingBuilding.name} ya está en su nivel máximo`);
       return false;
     }
-    
+
     // Verificar si el edificio ya está siendo mejorado
     if (existingBuilding.isUpgrading) {
       console.log(`El edificio ${existingBuilding.name} ya está siendo mejorado`);
       return false;
     }
-    
+
     // Verificar si hay alguna tecnología necesaria para la mejora
     if (existingBuilding.prerequisites?.technology) {
       const techRequired = existingBuilding.prerequisites.technology;
@@ -770,7 +766,7 @@ export class CityService {
         return false;
       }
     }
-    
+
     // Crear el objeto de producción para la mejora
     const upgradeProduction = {
       buildingId: existingBuilding.id,
@@ -780,18 +776,18 @@ export class CityService {
       turnsLeft: Math.ceil(existingBuilding.upgradeCost / city.productionPerTurn),
       isUpgrade: true
     };
-    
+
     // Inicializar la cola de producción de edificios si no existe
     if (!city.buildingProductionQueue) {
       city.buildingProductionQueue = [];
     }
-    
+
     // Marcar el edificio como en actualización
     existingBuilding.isUpgrading = true;
-    
+
     // Añadir la mejora a la cola
     city.buildingProductionQueue.push(upgradeProduction);
-    
+
     console.log(`Mejora del edificio ${existingBuilding.name} añadida a la cola de construcción de ${city.name}`);
     return true;
   }

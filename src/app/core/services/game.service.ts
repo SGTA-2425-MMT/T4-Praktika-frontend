@@ -47,7 +47,7 @@ export interface GameSession {
   culture: number;
   culturePerTurn: number;
   happiness: number;
-  era: 'ancient' | 'classical' | 'medieval' | 'renaissance' | 'industrial' | 'modern' | 'information';
+  era: 'ancient'  | 'medieval' | 'age_of_discovery' | 'modern';
 }
 
 @Injectable({
@@ -216,20 +216,20 @@ export class GameService {
 
     // Procesar ciudades (crecimiento, producción, etc.)
     this.processCitiesEndTurn();
-    
+
     // Procesar acciones de los trabajadores
     this.processWorkerActions(game);
 
     // Actualizar ciencia acumulada y progreso de investigación
     this.updateResearch();
-    
+
     // Incrementar turno y reiniciar estado de unidades
     game.turn++;
     this.resetUnitMoves();
-    
+
     // Actualizar recursos totales
     this.calculateResourcesPerTurn();
-    
+
     // Cambiar fase
     game.currentPhase = 'diplomacia_decisiones';
     this.currentGameSubject.next({ ...game });
@@ -347,12 +347,12 @@ export class GameService {
   updateResearch(): void {
     const game = this.currentGame;
     if (!game) return;
-    
+
     console.log('=== Actualizando investigación ===');
     // Recalcular la ciencia por turno antes de actualizar la investigación
     // Esto asegura que estamos usando los valores más actualizados
     this.calculatePlayerResources();
-    
+
     // Verificar la ciencia por ciudades
     console.log('Contribuciones científicas por ciudad:');
     let totalCalculatedScience = 0;
@@ -362,17 +362,17 @@ export class GameService {
         totalCalculatedScience += city.sciencePerTurn;
       }
     });
-    
+
     // Esto debería coincidir con game.sciencePerTurn
     console.log(`Ciencia calculada manualmente: ${totalCalculatedScience}`);
     console.log(`Ciencia en el estado del juego: ${game.sciencePerTurn}`);
-    
+
     // Si hay discrepancia, corregir
     if (totalCalculatedScience !== game.sciencePerTurn) {
       console.log('¡DISCREPANCIA DETECTADA! Corrigiendo...');
       game.sciencePerTurn = totalCalculatedScience;
     }
-    
+
     // Añadir la ciencia generada por turno a la ciencia acumulada
     game.science += game.sciencePerTurn;
     console.log(`Ciencia acumulada: ${game.science} (+${game.sciencePerTurn} este turno)`);
@@ -403,8 +403,8 @@ export class GameService {
         );
       }
     }
-    
-    // Asegurar que se conserven los valores actualizados 
+
+    // Asegurar que se conserven los valores actualizados
     // y que se propague la notificación de cambio
     this.currentGameSubject.next({...game});
     console.log('=== Investigación actualizada ===');
@@ -595,7 +595,7 @@ export class GameService {
     // Obtener tecnologías disponibles basadas en las ya descubiertas
     const availableTechs = this.technologyService.getAvailableTechnologies(game.discoveredTechnologies);
     game.availableTechnologies = availableTechs.map(tech => tech.id);
-    
+
     // Actualizar la era del juego basada en las tecnologías descubiertas
     this.updateGameEra();
   }
@@ -604,39 +604,35 @@ export class GameService {
   private updateGameEra(): void {
     const game = this.currentGame;
     if (!game) return;
-    
+
     // Obtener todas las tecnologías descubiertas como objetos completos
-    const discoveredTechs = game.discoveredTechnologies.map(techId => 
+    const discoveredTechs = game.discoveredTechnologies.map(techId =>
       this.technologyService.getTechnologyById(techId)
     ).filter(tech => tech !== null);
-    
+
     // Determinar la era actual según las tecnologías descubiertas
     const currentEra = this.technologyService.determineEra(discoveredTechs);
-    
+
     // Actualizar la era del juego si ha cambiado
     if (this.convertTechEraToGameEra(currentEra) !== game.era) {
       const newEra = this.convertTechEraToGameEra(currentEra);
       const oldEra = game.era;
       game.era = newEra;
       console.log(`¡La civilización ha avanzado de la era ${oldEra} a la era ${newEra}!`);
-      
+
       // Aquí se podrían añadir efectos adicionales al cambiar de era
     }
   }
-  
+
   // Convierte el enum TechEra al formato de era usado en el juego
-  private convertTechEraToGameEra(techEra: TechEra): 'ancient' | 'classical' | 'medieval' | 'renaissance' | 'industrial' | 'modern' | 'information' {
+  private convertTechEraToGameEra(techEra: TechEra): 'ancient' | 'medieval' | 'age_of_discovery' | 'modern' {
     switch (techEra) {
       case TechEra.ANCIENT:
         return 'ancient';
-      case TechEra.CLASSICAL:
-        return 'classical';
       case TechEra.MEDIEVAL:
         return 'medieval';
-      case TechEra.RENAISSANCE:
-        return 'renaissance';
-      case TechEra.INDUSTRIAL:
-        return 'industrial';
+      case TechEra.AGE_OF_DISCOVERY:
+        return 'age_of_discovery';
       case TechEra.MODERN:
         return 'modern';
       default:
@@ -663,14 +659,14 @@ export class GameService {
         console.log(`Cambio en científicos en ${city.name}: ${oldCity.citizens.scientists} → ${city.citizens.scientists}`);
         console.log(`Ciencia esperada: ${city.citizens.scientists * 2 + 1} (base 1 + científicos)`);
       }
-      
+
       // Actualizar la ciudad
       this.currentGame.cities[cityIndex] = city;
-      
+
       // Actualizar el objeto de juego
       const updatedGame = { ...this.currentGame };
       this.currentGameSubject.next(updatedGame);
-      
+
       // Actualizar la visualización del mapa si es necesario
       const x = city.position.x;
       const y = city.position.y;
@@ -692,52 +688,52 @@ export class GameService {
   getCityService(): CityService {
     return this.cityService;
   }
-  
+
   // Procesar las ciudades al final del turno
   processCitiesEndTurn(): void {
     if (!this.currentGame) return;
-    
+
     console.log('=== Procesando ciudades al final del turno ===');
     console.log(`Ciencia actual: ${this.currentGame.sciencePerTurn} por turno`);
-    
+
     // Para cada ciudad del jugador
     this.currentGame.cities.forEach(city => {
       if (city.ownerId === this.currentGame!.currentPlayerId) {
         console.log(`Ciudad: ${city.name}, Científicos: ${city.citizens.scientists}, Ciencia: ${city.sciencePerTurn}`);
-        
+
         // Actualizar crecimiento de población
         this.cityService.growCity(city);
-        
+
         // Actualizar producción de edificios
         this.cityService.updateBuildingProduction(city, this.currentGame!.turn);
-        
+
         // Actualizar rendimientos de la ciudad
         this.cityService.refreshCityBuildingEffects(city);
-        
+
         // Asegurar que las contribuciones de los científicos se apliquen
         // Esto calcula la ciencia por científico y la añade a la base
         this.cityService.updateCityYieldsBasedOnCitizens(city);
-        
+
         console.log(`Después de actualizar: Ciudad ${city.name}, Científicos: ${city.citizens.scientists}, Ciencia: ${city.sciencePerTurn}`);
       }
     });
-    
+
     // Recalcular los recursos totales del jugador sumando de todas las ciudades
     let oldSciencePerTurn = this.currentGame.sciencePerTurn;
     this.calculatePlayerResources();
     console.log(`Ciencia recalculada: ${oldSciencePerTurn} → ${this.currentGame.sciencePerTurn} por turno`);
     console.log('=======================================');
   }
-  
+
   // Calcular recursos totales del jugador
   calculatePlayerResources(): void {
     if (!this.currentGame) return;
-    
+
     // Reiniciar valores
     let goldPerTurn = 0;
     let sciencePerTurn = 0;
     let culturePerTurn = 0;
-    
+
     // Sumar contribuciones de todas las ciudades del jugador
     this.currentGame.cities.forEach(city => {
       if (city.ownerId === this.currentGame!.currentPlayerId) {
@@ -746,12 +742,12 @@ export class GameService {
         culturePerTurn += city.culturePerTurn;
       }
     });
-    
+
     // Actualizar valores en el juego
     this.currentGame.goldPerTurn = goldPerTurn;
     this.currentGame.sciencePerTurn = sciencePerTurn;
     this.currentGame.culturePerTurn = culturePerTurn;
-    
+
     // No acumulamos el oro en este método para evitar acumulación duplicada
     // Notificar los cambios
     this.currentGameSubject.next({...this.currentGame});
@@ -763,15 +759,15 @@ export class GameService {
       if (unit.type === 'worker' && unit.currentAction && unit.turnsToComplete && unit.turnsToComplete > 0) {
         // Reducir el contador de turnos
         unit.turnsToComplete--;
-        
+
         // Si la tarea se ha completado
         if (unit.turnsToComplete <= 0) {
           const tilePosition = { x: unit.position.x, y: unit.position.y };
           const tile = game.map.tiles[tilePosition.y][tilePosition.x];
-          
+
           // Obtener el servicio de mejoras del terreno
           const tileImprovementService = this.injector.get(TileImprovementService);
-          
+
           // Determinar qué acción se ha completado
           if (unit.currentAction === 'build_road') {
             // Aplicar el camino a la casilla
@@ -781,29 +777,29 @@ export class GameService {
               tile.movementCost = 1;
             }
             console.log(`Trabajador completó la construcción de un camino en (${tile.x}, ${tile.y})`);
-            
+
             // Notificar la actualización del tile
             this.tileUpdateSubject.next({...tile});
           } else if (unit.currentAction && unit.currentAction.startsWith('build_') && unit.currentAction !== 'build_road' as UnitAction) {
             // Para mejoras que no son caminos (granjas, minas, etc.)
             const actionStr = unit.currentAction;
             const improvementType = actionStr.replace('build_', '') as ImprovementType;
-            
+
             // Aplicar la mejora a la casilla
             tileImprovementService.applyImprovement(improvementType, tile);
             console.log(`Trabajador completó la construcción de ${improvementType} en (${tile.x}, ${tile.y})`);
-            
+
             // Notificar la actualización del tile
             this.tileUpdateSubject.next({...tile});
           } else if (unit.currentAction && unit.currentAction.startsWith('clear_')) {
             // Eliminar la característica del terreno
             tileImprovementService.removeFeature(tile);
             console.log(`Trabajador completó la eliminación de característica en (${tile.x}, ${tile.y})`);
-            
+
             // Notificar la actualización del tile
             this.tileUpdateSubject.next({...tile});
           }
-          
+
           // Actualizar la visualización de la casilla
           this.updateTileVisualization(tile);
 
@@ -822,7 +818,7 @@ export class GameService {
   updateTileVisualization(tile: MapTile): void {
     // Notificar a los componentes interesados que la visualización de una casilla ha cambiado
     console.log(`Actualizando visualización de casilla (${tile.x}, ${tile.y}) con mejora: ${tile.improvement || 'ninguna'}`);
-    
+
     // Emitir el evento de actualización de casilla
     this.tileUpdateSubject.next(tile);
   }
@@ -830,7 +826,7 @@ export class GameService {
   // Actualizar el estado del juego forzando una emisión del BehaviorSubject
   updateGame(): void {
     if (!this.currentGame) return;
-    
+
     // Crear una copia del objeto para asegurar que se detecten los cambios
     const updatedGame = {...this.currentGame};
     this.currentGameSubject.next(updatedGame);
