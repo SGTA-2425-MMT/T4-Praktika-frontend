@@ -4,9 +4,11 @@
   (click)="onClick()"
 >
   <div class="tile-feature"></div>
-  <div *ngIf="hasUnit" class="unit-indicator" [ngClass]="direction">
-    {{ getUnitSymbol() }}
-  </div>
+  @if (hasUnit) {
+    <div class="unit-indicator" [ngClass]="direction">
+      {{ getUnitSymbol() }}
+    </div>
+  }
 
   <!-- Indicador de progreso de construcción -->
   <div *ngIf="isConstructionInProgress()" class="construction-progress-indicator">
