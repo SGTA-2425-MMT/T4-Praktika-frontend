@@ -122,6 +122,14 @@
   background-color: white;
   background-image: url('/assets/images/tiles/snow.png');
 }
+&.snowy_rocky {
+  background-color: white;
+  background-image: url('/assets/images/tiles/snowy_rocky.png');
+}
+&.sandy_rocky {
+  background-color: white;
+  background-image: url('/assets/images/tiles/sandy_rocky.png');
+}
 
 &.coast_top {
   background-image: url('/assets/images/tiles/coast11.png');
@@ -318,6 +326,10 @@
 
   &.mountain::after {
     background-image: url('/assets/images/features/mountain.png');
+  }
+
+  &.dunes::after {
+    background-image: url('/assets/images/features/dunes.png');
   }
 
     &.left::after {

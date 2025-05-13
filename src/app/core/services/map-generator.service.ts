@@ -80,6 +80,8 @@ export class MapGeneratorService {
       case 4: return 'snow';
       case 5: return 'water';
       case 6: return 'waterocean';
+      case 7: return 'snowy_rocky';
+      case 8: return 'sandy_rocky';
       case 11: return 'coast_top';
       case 12: return 'coast_right';
       case 13: return 'coast_down';
@@ -128,6 +130,7 @@ export class MapGeneratorService {
     if (code === 2) return 'jungle';
     if (code === 3) return 'oasis';
     if (code === 4) return 'mountain';
+    if (code === 5) return 'dunes';
     return 'none'; // Default fallback
   }
 
@@ -166,6 +169,8 @@ export class MapGeneratorService {
       water: 1,
       waterocean: 1,
       rocky: 2,
+      snowy_rocky: 2,
+      sandy_rocky: 2,
       coast_top: 1,
       coast_right: 1,
       coast_down: 1,
@@ -191,6 +196,8 @@ export class MapGeneratorService {
       water: 0,
       waterocean: 0,
       rocky: 1,
+      snowy_rocky: 1,
+      sandy_rocky: 1,
       coast_top: 1,
       coast_right: 1,
       coast_down: 1,
@@ -216,6 +223,8 @@ export class MapGeneratorService {
       water: { food: 1, production: 0, gold: 1 },
       waterocean: { food: 1, production: 0, gold: 1 },
       rocky: { food: 0, production: 1, gold: 0 },
+      snowy_rocky: { food: 0, production: 1, gold: 0 },
+      sandy_rocky: { food: 0, production: 1, gold: 0 },
       coast_top: { food: 0, production: 0, gold: 1 },
       coast_right: { food: 0, production: 0, gold: 1 },
       coast_left: { food: 0, production: 0, gold: 1 },

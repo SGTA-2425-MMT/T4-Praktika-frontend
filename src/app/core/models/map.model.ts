@@ -34,14 +34,14 @@ export interface TileYield {
   culture?: number;
 }
 
-export type TerrainType = 'plains' | 'grassland' | 'desert' | 'snow' | 'rocky' | 'water' | 'waterocean' |
+export type TerrainType = 'plains' | 'grassland' | 'desert' | 'snow' | 'rocky' | 'water' | 'waterocean' | 'snowy_rocky' | 'sandy_rocky' |
       'coast_top' | 'coast_right' | 'coast_down' | 'coast_left'| 'coast15' | 'coast16' | 'coast17' | 'coast18' |
       'coast19' | 'coast20' | 'coast21' | 'coast22' | 'coast23' | 'coast24' | 'coast25' | 'coast26' |
       'coast27' | 'coast28' | 'coast29' | 'coast30' | 'coast31' | 'coast32' | 'coast33' | 'coast34'
       | 'water_ocean1' | 'water_ocean2' | 'water_ocean3' | 'water_ocean4' | 'water_ocean5'
       | 'water_ocean6' | 'water_ocean7' | 'water_ocean8' | 'water_ocean9' | 'water_ocean10'
       | 'water_ocean11' | 'water_ocean12';
-export type FeatureType = 'forest' | 'jungle' | 'oasis' |  'mountain' | 'none';
+export type FeatureType = 'forest' | 'jungle' | 'oasis' |  'mountain' | 'dunes' | 'none';
 export type ResourceType =
   | 'horses' | 'iron' | 'coal' | 'oil' | 'aluminum' | 'uranium' // estratégicos
   | 'wheat' | 'cattle' | 'sheep' | 'bananas' | 'deer' | 'fish' // alimentos
