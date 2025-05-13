@@ -94,6 +94,18 @@
       </app-city-view>
     }
 
+    <!-- Menú de acciones del trabajador -->
+    @if (showWorkerActionsMenu && selectedUnit && selectedUnit.type === 'worker') {
+      <div class="worker-actions-overlay">
+        <app-worker-actions
+          [worker]="selectedUnit"
+          [currentTile]="gameSession.map.tiles[selectedUnit.position.y][selectedUnit.position.x]"
+          (actionSelected)="buildImprovement($event)"
+          (cancelAction)="cancelWorkerAction()">
+        </app-worker-actions>
+      </div>
+    }
+    
     <!-- Diálogo para nombrar la ciudad -->
     @if (showFoundCityDialog) {
       <div class="city-dialog-overlay">

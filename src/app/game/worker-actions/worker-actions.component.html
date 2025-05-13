@@ -1,0 +1,56 @@
+<div class="worker-action-panel">
+  <h3>Acciones del Trabajador</h3>
+  
+  <ng-container *ngIf="isWorkerBusy(); else actionsTemplate">
+    <!-- Mostrar el progreso del trabajador -->
+    <div class="current-work">
+      <p>{{ getCurrentWorkDescription() }}</p>
+      <div class="progress-bar">
+        <div class="progress" [style.width.%]="getProgressPercentage()"></div>
+      </div>
+      <div class="progress-text">{{ getProgressPercentage() | number:'1.0-0' }}% completado</div>
+      <button class="cancel-btn" (click)="cancel()">Cancelar</button>
+    </div>
+  </ng-container>
+  
+  <ng-template #actionsTemplate>
+    <!-- Lista de mejoras disponibles -->
+    <div class="improvement-section" *ngIf="availableImprovements.length > 0">
+      <h4>Construir mejoras</h4>
+      <ul class="improvement-list">
+        <li *ngFor="let improvement of availableImprovements">
+          <button (click)="buildImprovement(improvement.type)">
+            {{ improvement.name }}
+          </button>
+          <span class="tooltip">{{ improvement.description }} ({{ improvement.turnsToComplete }} turnos)</span>
+        </li>
+      </ul>
+    </div>
+    
+    <!-- Eliminar características -->
+    <div class="feature-section" *ngIf="canRemoveFeature && currentTile?.featureType">
+      <h4>Eliminar características</h4>
+      <ul class="feature-list">
+        <li>
+          <button (click)="clearFeature(currentTile?.featureType || '')">
+            Eliminar {{ currentTile?.featureType }}
+          </button>
+          <span class="tooltip">Eliminar {{ currentTile?.featureType }} para permitir otras mejoras.</span>
+        </li>
+      </ul>
+    </div>
+    
+    <!-- Construir camino -->
+    <div class="road-section" *ngIf="canBuildRoad">
+      <h4>Infraestructura</h4>
+      <ul class="road-list">
+        <li>
+          <button (click)="buildRoad()">
+            Construir Camino
+          </button>
+          <span class="tooltip">Construir un camino para reducir el costo de movimiento.</span>
+        </li>
+      </ul>
+    </div>
+  </ng-template>
+</div>

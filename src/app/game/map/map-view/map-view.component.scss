@@ -431,11 +431,29 @@ app-tile {
   z-index: 10; /* Asegúrate de que esté por encima del mapa */
 }
 
-
 .unit-indicator.left::after {
   transform: scaleX(-1);
 }
 
 .unit-indicator.right::after {
   transform: scaleX(1);
+}
+
+// Estilos para la superposición del menú de acciones del trabajador
+.worker-actions-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  
+  app-worker-actions {
+    width: 100%;
+  }
 }

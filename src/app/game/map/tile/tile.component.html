@@ -8,6 +8,13 @@
     {{ getUnitSymbol() }}
   </div>
 
+  <!-- Indicador de progreso de construcción -->
+  <div *ngIf="isConstructionInProgress()" class="construction-progress-indicator">
+    <div class="construction-progress-bar">
+      <div class="construction-progress" [style.width.%]="getConstructionProgress()"></div>
+    </div>
+  </div>
+
   <!-- Coordenadas para depuración
   <div class="debug-coords" *ngIf="tile.isExplored">{{tile.x}},{{tile.y}}</div>-->
 
@@ -32,6 +39,17 @@
 
     </div>-->
   }
+
+  <!-- Mejoras de terreno -->
+  <div *ngIf="tile.isExplored && tile.isVisible && tile.improvement && tile.improvement !== 'none'"
+       class="improvement-image improvement-{{tile.improvement}}">
+    <span *ngIf="tile.improvement === 'farm'">🌾</span>
+    <span *ngIf="tile.improvement === 'mine'">⛏️</span>
+    <span *ngIf="tile.improvement === 'plantation'">🌴</span>
+    <span *ngIf="tile.improvement === 'camp'">🏕️</span>
+    <span *ngIf="tile.improvement === 'pasture'">🐄</span>
+    <span *ngIf="tile.improvement === 'fishing_boats'">🚣</span>
+  </div>
 
   <div *ngIf="!tile.isExplored" class="fog-of-war"></div>
   <div *ngIf="tile.isExplored && !tile.isVisible" class="fog-overlay"></div>

@@ -1,0 +1,142 @@
+.worker-action-panel {
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  padding: 1rem;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  width: 300px;
+  margin-bottom: 1rem;
+}
+
+.current-work {
+  padding: 10px;
+  background-color: rgba(47, 79, 79, 0.6);
+  border-radius: 5px;
+  margin-bottom: 15px;
+  
+  p {
+    margin-bottom: 10px;
+    font-weight: bold;
+  }
+  
+  .progress-bar {
+    height: 10px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 5px;
+    
+    .progress {
+      height: 100%;
+      background: linear-gradient(90deg, #66ccff, #3399ff);
+      transition: width 0.3s ease;
+    }
+  }
+  
+  .progress-text {
+    text-align: center;
+    font-size: 0.8rem;
+    color: #66ccff;
+    margin-bottom: 10px;
+  }
+}
+
+h3 {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #ffd700;
+  font-size: 1.2rem;
+  border-bottom: 1px solid #444;
+  padding-bottom: 0.5rem;
+}
+
+h4 {
+  margin-top: 0.8rem;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  color: #a0c0ff;
+}
+
+.improvement-list, .feature-list, .road-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+li {
+  margin-bottom: 0.5rem;
+  position: relative;
+}
+
+button {
+  background-color: #2a3b4c;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 3px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #3a4b5c;
+}
+
+.tooltip {
+  display: none;
+  position: absolute;
+  background-color: #111;
+  padding: 0.5rem;
+  border-radius: 3px;
+  font-size: 0.8rem;
+  width: 200px;
+  left: 100%;
+  top: 0;
+  margin-left: 10px;
+  z-index: 10;
+}
+
+li:hover .tooltip {
+  display: block;
+}
+
+.current-work {
+  margin-top: 1rem;
+}
+
+.progress-bar {
+  background-color: #222;
+  height: 10px;
+  border-radius: 5px;
+  margin: 0.5rem 0;
+  overflow: hidden;
+}
+
+.progress {
+  background-color: #4caf50;
+  height: 100%;
+}
+
+.cancel-btn {
+  background-color: #c62828;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 3px;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+.cancel-btn:hover {
+  background-color: #d32f2f;
+}
+
+.improvement-section, .feature-section, .road-section {
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #333;
+}

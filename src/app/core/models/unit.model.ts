@@ -8,7 +8,9 @@ export type UnitType =
   // Especiales
   'worker' | 'scout';
 
-export type UnitAction = 'move' | 'attack' |'found_city' | 'build' | 'negotiate' | 'retreat' | 'navigate';
+export type UnitAction = 'move' | 'attack' |'found_city' | 'build' | 'negotiate' | 'retreat' | 'navigate' | 
+  'build_farm' | 'build_mine' | 'build_plantation' | 'build_camp' | 'build_pasture' | 'build_fishing_boats' | 
+  'clear_forest' | 'clear_jungle' | 'build_road';
 
 export interface Unit {
   id: string;
@@ -40,6 +42,7 @@ export interface Unit {
   availableActions?: UnitAction[];
   turnsToComplete?: number; // Para acciones como construir mejoras
   currentAction?: UnitAction; // Acción actual que está realizando
+  buildingImprovement?: string; // El tipo de mejora que está construyendo
   targetPosition?: {x: number, y: number}; // Posición objetivo para acciones como moverse
   isAutoExploring?: boolean; // Si la unidad está en modo exploración automática
   promotions?: string[]; // Promociones/mejoras que tiene la unidad
@@ -116,7 +119,9 @@ export const createWorker = (owner: string, x: number, y: number, level:number):
   attacksPerTurn: 0,
 
   isRanged: false,
-  availableActions: ['move', 'build'],
+  availableActions: ['move', 'build_farm', 'build_mine', 'build_plantation', 'build_camp', 'build_pasture', 
+                     'build_fishing_boats', 'clear_forest', 'clear_jungle', 'build_road'],
+  buildingImprovement: undefined,
   canMove: true,
   isFortified: false,
   level: level,

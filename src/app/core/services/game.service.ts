@@ -1,12 +1,14 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Injector } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { GameMap } from '../models/map.model';
+import { GameMap, MapTile, ImprovementType} from '../models/map.model';
 import * as UnitModel from '../models/unit.model';
 import { City } from '../models/city.model';
 import { MapGeneratorService } from './map-generator.service';
 import { CityService } from './city.service';
 import { TechnologyService } from './technology.service';
 import { TechEra } from '../models/technology.model';
+import { TileImprovementService } from './tile-improvement.service';
+import { UnitAction } from '../models/unit.model';
 
 export interface GameSettings {
   gameName: string;
@@ -55,10 +57,15 @@ export class GameService {
   private currentGameSubject = new BehaviorSubject<GameSession | null>(null);
   private savedGames: GameSession[] = [];
 
+  // Subject para notificar cambios en las casillas
+  private tileUpdateSubject = new BehaviorSubject<MapTile | null>(null);
+  public tileUpdate$ = this.tileUpdateSubject.asObservable();
+
   constructor(
     private mapGeneratorService: MapGeneratorService,
     private cityService: CityService,
-    private technologyService: TechnologyService
+    private technologyService: TechnologyService,
+    private injector: Injector
   ) {
     this.loadSavedGames();
   }
@@ -207,6 +214,9 @@ export class GameService {
     // Procesar ciudades (crecimiento, producción, etc.)
     this.processCitiesEndTurn();
     
+    // Procesar acciones de los trabajadores
+    this.processWorkerActions(game);
+
     // Incrementar turno y reiniciar estado de unidades
     game.turn++;
     this.resetUnitMoves();
@@ -673,5 +683,75 @@ export class GameService {
     
     // Actualizar el oro total (se acumula cada turno)
     this.currentGame.gold += goldPerTurn;
+  }
+
+  // Método para procesar las acciones del Worker al final del turno
+  private processWorkerActions(game: GameSession): void {
+    game.units.forEach(unit => {
+      if (unit.type === 'worker' && unit.currentAction && unit.turnsToComplete && unit.turnsToComplete > 0) {
+        // Reducir el contador de turnos
+        unit.turnsToComplete--;
+        
+        // Si la tarea se ha completado
+        if (unit.turnsToComplete <= 0) {
+          const tilePosition = { x: unit.position.x, y: unit.position.y };
+          const tile = game.map.tiles[tilePosition.y][tilePosition.x];
+          
+          // Obtener el servicio de mejoras del terreno
+          const tileImprovementService = this.injector.get(TileImprovementService);
+          
+          // Determinar qué acción se ha completado
+          if (unit.currentAction === 'build_road') {
+            // Aplicar el camino a la casilla
+            tile.hasRoad = true;
+            // Reducir el costo de movimiento si hay un camino
+            if (tile.movementCost > 1) {
+              tile.movementCost = 1;
+            }
+            console.log(`Trabajador completó la construcción de un camino en (${tile.x}, ${tile.y})`);
+            
+            // Notificar la actualización del tile
+            this.tileUpdateSubject.next({...tile});
+          } else if (unit.currentAction && unit.currentAction.startsWith('build_') && unit.currentAction !== 'build_road' as UnitAction) {
+            // Para mejoras que no son caminos (granjas, minas, etc.)
+            const actionStr = unit.currentAction;
+            const improvementType = actionStr.replace('build_', '') as ImprovementType;
+            
+            // Aplicar la mejora a la casilla
+            tileImprovementService.applyImprovement(improvementType, tile);
+            console.log(`Trabajador completó la construcción de ${improvementType} en (${tile.x}, ${tile.y})`);
+            
+            // Notificar la actualización del tile
+            this.tileUpdateSubject.next({...tile});
+          } else if (unit.currentAction && unit.currentAction.startsWith('clear_')) {
+            // Eliminar la característica del terreno
+            tileImprovementService.removeFeature(tile);
+            console.log(`Trabajador completó la eliminación de característica en (${tile.x}, ${tile.y})`);
+            
+            // Notificar la actualización del tile
+            this.tileUpdateSubject.next({...tile});
+          }
+          
+          // Actualizar la visualización de la casilla
+          this.updateTileVisualization(tile);
+
+          // Reiniciar el estado del trabajador
+          unit.currentAction = undefined;
+          unit.buildingImprovement = undefined;
+          unit.turnsToComplete = undefined;
+        } else {
+          console.log(`Trabajador continúa ${unit.currentAction} - ${unit.turnsToComplete} turnos restantes`);
+        }
+      }
+    });
+  }
+
+  // Actualizar la visualización de las casillas al completar mejoras
+  updateTileVisualization(tile: MapTile): void {
+    // Notificar a los componentes interesados que la visualización de una casilla ha cambiado
+    console.log(`Actualizando visualización de casilla (${tile.x}, ${tile.y}) con mejora: ${tile.improvement || 'ninguna'}`);
+    
+    // Emitir el evento de actualización de casilla
+    this.tileUpdateSubject.next(tile);
   }
 }

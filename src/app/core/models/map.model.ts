@@ -10,6 +10,8 @@ export interface MapTile {
   terrain: TerrainType;
   featureType?: FeatureType;
   resource?: ResourceType;
+  improvement?: ImprovementType;
+  hasRoad?: boolean; // Indica si hay un camino en la casilla
   movementCost: number;
   defense: number;
   isVisible: boolean;

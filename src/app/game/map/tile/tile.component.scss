@@ -89,6 +89,50 @@
     box-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
     z-index: 30;
   }
+  
+  /* Estilo para casillas con caminos */
+  &.has-road {
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: url('/assets/images/tiles/road.png');
+      background-size: 80% 80%;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: 0.7;
+      z-index: 2;
+    }
+  }
+  
+  /* Estilo para casillas con construcción en progreso */
+  &.construction-in-progress {
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: repeating-linear-gradient(
+        45deg,
+        rgba(255, 230, 0, 0.2),
+        rgba(255, 230, 0, 0.2) 10px,
+        rgba(255, 165, 0, 0.2) 10px,
+        rgba(255, 165, 0, 0.2) 20px
+      );
+      z-index: 3;
+      animation: construction-pulse 2s infinite alternate;
+    }
+    
+    @keyframes construction-pulse {
+      from { opacity: 0.4; }
+      to { opacity: 0.8; }
+    }
+  }
 
 /* Características adicionales */
 &.water {
@@ -347,7 +391,7 @@
   background-color: rgba(0, 0, 0, 0.5);
   padding: 1px 2px;
   border-color: white;
-  radius: 2px;
+  border-radius: 2px;
   z-index: 3;
 }
 
@@ -429,3 +473,119 @@
       z-index: 5;
     }
   }
+
+/* Estilos para mejoras de terreno */
+.improvement-image {
+  position: absolute;
+  font-size: 1.2rem;
+  bottom: 5px;
+  right: 5px;
+  z-index: 3;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.7);
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: scale(1.2);
+  }
+}
+
+.has-improvement {
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    height: 80%;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    opacity: 0.8;
+    z-index: 2;
+  }
+  
+  /* Efecto para resaltar mejoras recién construidas */
+  &.improvement-new {
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(ellipse at center, rgba(255,215,0,0.3) 0%, rgba(255,255,255,0) 70%);
+      animation: pulse 2s infinite;
+      z-index: 1;
+    }
+    
+    @keyframes pulse {
+      0% { opacity: 0.7; }
+      50% { opacity: 0.3; }
+      100% { opacity: 0.7; }
+    }
+  }
+  
+  &.improvement-farm::after {
+    background-image: url('/assets/images/improvements/farm.png');
+  }
+  
+  &.improvement-mine::after {
+    background-image: url('/assets/images/improvements/mine.png');
+  }
+  
+  &.improvement-plantation::after {
+    background-image: url('/assets/images/improvements/plantation.png');
+  }
+  
+  &.improvement-camp::after {
+    background-image: url('/assets/images/improvements/camp.png');
+  }
+  
+  &.improvement-pasture::after {
+    background-image: url('/assets/images/improvements/pasture.png');
+  }
+  
+  &.improvement-fishing_boats::after {
+    background-image: url('/assets/images/improvements/fishing_boats.png');
+  }
+}
+
+.improvement-farm { border: 2px dashed rgba(255, 235, 59, 0.5); }
+.improvement-mine { border: 2px dashed rgba(139, 69, 19, 0.5); }
+.improvement-plantation { border: 2px dashed rgba(76, 175, 80, 0.5); }
+.improvement-camp { border: 2px dashed rgba(121, 85, 72, 0.5); }
+.improvement-pasture { border: 2px dashed rgba(200, 230, 201, 0.5); }
+.improvement-fishing_boats { border: 2px dashed rgba(33, 150, 243, 0.5); }
+
+/* Indicador de progreso de construcción */
+.construction-progress-indicator {
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  right: 5px;
+  z-index: 20;
+  height: 6px;
+  pointer-events: none;
+  
+  .construction-progress-bar {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 3px;
+    overflow: hidden;
+    
+    .construction-progress {
+      height: 100%;
+      background: linear-gradient(to right, #ffd700, #ff9500);
+      box-shadow: 0 0 5px rgba(255, 215, 0, 0.7);
+    }
+  }
+}
+
+/* Efecto de pulso para la construcción en progreso */
+@keyframes construction-pulse {
+  0% { opacity: 0.5; }
+  50% { opacity: 0.8; }
+  100% { opacity: 0.5; }
+}
