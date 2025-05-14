@@ -13,7 +13,7 @@
             <h2>Elige tu civilización</h2>
             <div class="civilization-grid">
               @for (civ of civilizations; track civ.value) {
-                <div class="civilization-option" 
+                <div class="civilization-option"
                     [class.selected]="newGameForm.get('civilization')?.value === civ.value"
                     (click)="selectCivilization(civ.value)">
                   <span>{{civ.label}}</span>
@@ -21,7 +21,7 @@
               }
             </div>
           </div>
-          
+
           <div class="civilization-preview">
             @if (selectedCivilizationImage) {
               <div class="civilization-image">
@@ -34,10 +34,10 @@
             }
           </div>
         </div>
-        
+
         <div class="step-actions">
           <button type="button" class="btn-secondary" (click)="returnToMainMenu()">Cancelar</button>
-          <button type="button" class="btn-primary" 
+          <button type="button" class="btn-primary"
                   [disabled]="!newGameForm.get('civilization')?.value"
                   (click)="nextStep()">Continuar</button>
         </div>
@@ -50,10 +50,10 @@
             <h2>Nombra a tu líder</h2>
             <div class="form-group">
               <label for="leaderName">Nombre del Líder</label>
-              <input 
-                type="text" 
-                id="leaderName" 
-                formControlName="gameName" 
+              <input
+                type="text"
+                id="leaderName"
+                formControlName="gameName"
                 placeholder="Introduce un nombre"
               >
               @if (newGameForm.get('gameName')?.invalid && newGameForm.get('gameName')?.touched) {
@@ -63,11 +63,11 @@
               }
             </div>
           </div>
-          
+
           <div class="leader-preview">
             @if (selectedLeaderImage) {
               <div class="leader-image">
-                <img [src]="selectedLeaderImage" [alt]="getSelectedCivilizationName() + ' leader'">
+                <img [src]="selectedLeaderImage" [alt]="getSelectedCivilizationName() + '_leader'">
               </div>
               <div class="leader-title">
                 <h3>{{ newGameForm.get('gameName')?.value || 'Tu Líder' }}</h3>
@@ -76,10 +76,10 @@
             }
           </div>
         </div>
-        
+
         <div class="step-actions">
           <button type="button" class="btn-secondary" (click)="previousStep()">Atrás</button>
-          <button type="button" class="btn-primary" 
+          <button type="button" class="btn-primary"
                   [disabled]="newGameForm.get('gameName')?.invalid"
                   (click)="nextStep()">Continuar</button>
         </div>
@@ -89,7 +89,7 @@
       <div class="step-container" *ngIf="currentStep === 'mapSetup'">
         <div class="map-setup">
           <h2>Configuración del Mapa</h2>
-          
+
           <div class="form-group">
             <label for="mapSize">Tamaño del Mapa</label>
             <select id="mapSize" formControlName="mapSize" class="form-control">
@@ -101,16 +101,16 @@
 
           <div class="form-group">
             <label for="numberOfOpponents">Número de Oponentes</label>
-            <input 
-              type="number" 
-              id="numberOfOpponents" 
-              formControlName="numberOfOpponents" 
-              min="1" 
+            <input
+              type="number"
+              id="numberOfOpponents"
+              formControlName="numberOfOpponents"
+              min="1"
               max="7"
             >
           </div>
         </div>
-        
+
         <div class="step-actions">
           <button type="button" class="btn-secondary" (click)="previousStep()">Atrás</button>
           <button type="button" class="btn-primary" (click)="nextStep()">Continuar</button>
@@ -121,15 +121,15 @@
       <div class="step-container" *ngIf="currentStep === 'difficulty'">
         <div class="difficulty-setup">
           <h2>Elige la Dificultad</h2>
-          
+
           <div class="difficulty-selector">
-            <button type="button" [class.active]="newGameForm.get('difficulty')?.value === 'easy'" 
+            <button type="button" [class.active]="newGameForm.get('difficulty')?.value === 'easy'"
                     (click)="newGameForm.get('difficulty')?.setValue('easy')">Fácil</button>
-            <button type="button" [class.active]="newGameForm.get('difficulty')?.value === 'normal'" 
+            <button type="button" [class.active]="newGameForm.get('difficulty')?.value === 'normal'"
                     (click)="newGameForm.get('difficulty')?.setValue('normal')">Normal</button>
-            <button type="button" [class.active]="newGameForm.get('difficulty')?.value === 'hard'" 
+            <button type="button" [class.active]="newGameForm.get('difficulty')?.value === 'hard'"
                     (click)="newGameForm.get('difficulty')?.setValue('hard')">Difícil</button>
-            <button type="button" [class.active]="newGameForm.get('difficulty')?.value === 'expert'" 
+            <button type="button" [class.active]="newGameForm.get('difficulty')?.value === 'expert'"
                     (click)="newGameForm.get('difficulty')?.setValue('expert')">Experto</button>
           </div>
 
@@ -138,7 +138,7 @@
             <p>{{ getDifficultyDescription() }}</p>
           </div>
         </div>
-        
+
         <div class="step-actions">
           <button type="button" class="btn-secondary" (click)="previousStep()">Atrás</button>
           <button type="button" class="btn-primary" (click)="nextStep()">Continuar</button>
@@ -149,7 +149,7 @@
       <div class="step-container" *ngIf="currentStep === 'summary'">
         <div class="game-summary">
           <h2>Resumen de la Partida</h2>
-          
+
           <div class="summary-details">
             <div class="summary-item">
               <span class="summary-label">Civilización:</span>
@@ -173,11 +173,11 @@
             </div>
           </div>
         </div>
-        
+
         <div class="step-actions">
           <button type="button" class="btn-secondary" (click)="previousStep()">Atrás</button>
-          <button type="button" class="btn-primary" 
-                  [disabled]="newGameForm.invalid" 
+          <button type="button" class="btn-primary"
+                  [disabled]="newGameForm.invalid"
                   (click)="startGame()">¡Comenzar Partida!</button>
         </div>
       </div>

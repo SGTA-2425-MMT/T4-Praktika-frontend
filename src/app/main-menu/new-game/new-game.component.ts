@@ -24,70 +24,57 @@ interface Civilization {
 export class NewGameComponent {
   newGameForm: FormGroup;
   currentStep: GameStep = 'civilization';
-  
+
   mapSizes = [
     { value: 'small', label: 'Pequeño (2 jugadores)' },
     { value: 'medium', label: 'Medio (4 jugadores)' },
     { value: 'large', label: 'Grande (6 jugadores)' },
     { value: 'huge', label: 'Enorme (8 jugadores)' }
   ];
-  
+
   civilizations: Civilization[] = [
-    { 
-      value: 'spain', 
-      label: 'España', 
-      description: 'Una potencia colonial con bonificaciones en exploración y comercio.', 
+    {
+      value: 'spain',
+      label: 'España',
+      description: 'Una potencia colonial con bonificaciones en exploración y comercio.',
       flagImage: 'assets/images/civilizations/spain_flag.png',
-      leaderImage: 'assets/images/leaders/isabella.png'
+      leaderImage: 'assets/images/civilizations/spain_leader.png'
     },
-    { 
-      value: 'rome', 
-      label: 'Roma', 
-      description: 'Un imperio militar con ventajas en la expansión y el entrenamiento de unidades.', 
+    {
+      value: 'rome',
+      label: 'Roma',
+      description: 'Un imperio militar con ventajas en la expansión y el entrenamiento de unidades.',
       flagImage: 'assets/images/civilizations/rome_flag.png',
-      leaderImage: 'assets/images/leaders/caesar.png'
+      leaderImage: 'assets/images/civilizations/rome_leader.png'
     },
-    { 
-      value: 'egypt', 
-      label: 'Egipto', 
-      description: 'Una antigua civilización con fortalezas en la construcción de maravillas.', 
+    {
+      value: 'egypt',
+      label: 'Egipto',
+      description: 'Una antigua civilización con fortalezas en la construcción de maravillas.',
       flagImage: 'assets/images/civilizations/egypt_flag.png',
-      leaderImage: 'assets/images/leaders/cleopatra.png'
+      leaderImage: 'assets/images/civilizations/egypt_leader.png'
     },
-    { 
-      value: 'china', 
-      label: 'China', 
-      description: 'Una potencia cultural con ventajas en ciencia y población.', 
+    {
+      value: 'china',
+      label: 'China',
+      description: 'Una potencia cultural con ventajas en ciencia y población.',
       flagImage: 'assets/images/civilizations/china_flag.png',
-      leaderImage: 'assets/images/leaders/qin.png'
+      leaderImage: 'assets/images/civilizations/china_leader.png'
     },
-    { 
-      value: 'aztec', 
-      label: 'Azteca', 
-      description: 'Una civilización guerrera con bonificaciones al sacrificio y la agricultura.', 
-      flagImage: 'assets/images/civilizations/aztec_flag.png',
-      leaderImage: 'assets/images/leaders/montezuma.png'
-    },
-    { 
-      value: 'russia', 
-      label: 'Rusia', 
-      description: 'Un vasto imperio con ventajas en recursos estratégicos y resistencia al frío.', 
-      flagImage: 'assets/images/civilizations/russia_flag.png',
-      leaderImage: 'assets/images/leaders/stalin.png'
-    },
-    { 
-      value: 'france', 
-      label: 'Francia', 
-      description: 'Una nación cultural con bonificaciones diplomáticas y turísticas.', 
+
+    {
+      value: 'france',
+      label: 'Francia',
+      description: 'Una nación cultural con bonificaciones diplomáticas y turísticas.',
       flagImage: 'assets/images/civilizations/france_flag.png',
-      leaderImage: 'assets/images/leaders/napoleon.png'
+      leaderImage: 'assets/images/civilizations/france_leader.png'
     },
-    { 
-      value: 'greece', 
-      label: 'Grecia', 
-      description: 'Una civilización clásica con ventajas en cultura y ciudad-estado.', 
+    {
+      value: 'greece',
+      label: 'Grecia',
+      description: 'Una civilización clásica con ventajas en cultura y ciudad-estado.',
       flagImage: 'assets/images/civilizations/greece_flag.png',
-      leaderImage: 'assets/images/leaders/pericles.png'
+      leaderImage: 'assets/images/civilizations/greece_leader.png'
     }
   ];
 
@@ -214,7 +201,7 @@ export class NewGameComponent {
     if (this.newGameForm.invalid) {
       return;
     }
-    
+
     // Crear la configuración del juego desde el formulario
     const gameSettings: GameSettings = {
       gameName: this.newGameForm.get('gameName')?.value,
@@ -223,10 +210,10 @@ export class NewGameComponent {
       difficulty: this.newGameForm.get('difficulty')?.value,
       numberOfOpponents: this.newGameForm.get('numberOfOpponents')?.value
     };
-    
+
     // Crear una nueva partida con el servicio
     this.gameService.createNewGame(gameSettings);
-    
+
     // Navegar a la pantalla de juego con el parámetro 'new'
     this.router.navigate(['/game'], { queryParams: { new: 'true' } });
   }
