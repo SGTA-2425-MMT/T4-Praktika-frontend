@@ -39,6 +39,26 @@
       transform: translateY(-3px);
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     }
+    
+    &.newly-unlocked {
+      animation: pulse-highlight 2s infinite;
+      border: 2px dashed #ffeb3b;
+      box-shadow: 0 0 15px rgba(255, 235, 59, 0.5);
+      
+      &::after {
+        content: "¡Nuevo!";
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        background-color: #ffeb3b;
+        color: #333;
+        padding: 3px 8px;
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: bold;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+    }
   }
   
   &.constructed {
@@ -215,5 +235,17 @@
       font-size: 0.9em;
       font-style: italic;
     }
+  }
+}
+
+@keyframes pulse-highlight {
+  0% {
+    box-shadow: 0 0 5px rgba(255, 235, 59, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 235, 59, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 5px rgba(255, 235, 59, 0.5);
   }
 }

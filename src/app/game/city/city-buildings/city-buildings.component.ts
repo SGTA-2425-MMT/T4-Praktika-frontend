@@ -1,7 +1,9 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, OnInit, OnDestroy, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { City, Building } from '../../../core/models/city.model';
 import { CityService } from '../../../core/services/city.service';
+import { TechnologyService } from '../../../core/services/technology.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-city-buildings',
@@ -10,14 +12,56 @@ import { CityService } from '../../../core/services/city.service';
   templateUrl: './city-buildings.component.html',
   styleUrl: './city-buildings.component.scss'
 })
-export class CityBuildingsComponent implements OnChanges {
+export class CityBuildingsComponent implements OnChanges, OnInit, OnDestroy {
   @Input() city: City | null = null;
   @Output() buildingSelected = new EventEmitter<string>();
   
   availableBuildings: Building[] = [];
   constructedBuildings: any[] = [];
+  private subscriptions: Subscription[] = [];
 
-  constructor(private cityService: CityService) {}
+  // Mantener registro de los edificios recién desbloqueados para resaltarlos
+  newlyUnlockedBuildings: string[] = [];
+  
+  constructor(
+    private cityService: CityService,
+    private technologyService: TechnologyService
+  ) {}
+  
+  ngOnInit(): void {
+    // Suscribirse a cambios en las tecnologías descubiertas para actualizar edificios disponibles
+    this.subscriptions.push(
+      this.technologyService.discoveredTechnologies$.subscribe(techs => {
+        if (techs && techs.length > 0 && this.city) {
+          console.log(`[CityBuildingsComponent] Actualizando edificios disponibles. Tecnologías descubiertas: ${techs.length}`);
+          
+          // Si hay una nueva tecnología, buscar edificios desbloqueados por ella
+          if (this.technologyService.lastCompletedTech) {
+            const tech = this.technologyService.lastCompletedTech;
+            console.log(`[CityBuildingsComponent] Última tecnología completada: ${tech.name}`);
+            
+            if (tech.unlocksBuildings && tech.unlocksBuildings.length > 0) {
+              this.newlyUnlockedBuildings = [...tech.unlocksBuildings];
+              console.log(`[CityBuildingsComponent] Nuevos edificios desbloqueados (${this.newlyUnlockedBuildings.length}):`, this.newlyUnlockedBuildings);
+              
+              // Forzar la actualización de la vista inmediatamente
+              this.updateBuildingLists();
+              
+              // Programar la limpieza del resaltado después de 15 segundos (ampliado para dar más tiempo)
+              setTimeout(() => {
+                console.log('[CityBuildingsComponent] Limpiando resaltado de nuevos edificios');
+                this.newlyUnlockedBuildings = [];
+                // Forzar la actualización de la vista
+                this.updateBuildingLists();
+              }, 15000);
+            }
+          }
+          
+          this.updateBuildingLists();
+        }
+      })
+    );
+  }
   
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['city'] && this.city) {
@@ -25,16 +69,41 @@ export class CityBuildingsComponent implements OnChanges {
     }
   }
   
+  ngOnDestroy(): void {
+    // Limpiar suscripciones
+    this.subscriptions.forEach(sub => sub.unsubscribe());
+  }
+  
   updateBuildingLists(): void {
     if (!this.city) return;
     
     // Obtener edificios disponibles para construir
-    this.availableBuildings = this.cityService.getAvailableBuildings(this.city);
+    const allAvailableBuildings = this.cityService.getAvailableBuildings(this.city);
+    
+    // Eliminar duplicados basándose en IDs
+    const buildingsMap = new Map<string, any>();
+    allAvailableBuildings.forEach(building => {
+      if (!buildingsMap.has(building.id)) {
+        buildingsMap.set(building.id, building);
+      }
+    });
+    
+    this.availableBuildings = Array.from(buildingsMap.values());
+    
+    console.log(`[CityBuildingsComponent] Edificios disponibles para ${this.city.name} (${this.availableBuildings.length}):`, 
+      this.availableBuildings.map(b => `${b.name} (ID: ${b.id})`).join(', '));
     
     // Formatear los edificios construidos para la vista
-    this.constructedBuildings = this.city.buildings
+    const constructedBuildingsMap = new Map<string, any>();
+    this.city.buildings
       .filter(building => building.currentLevel > 0)
-      .map(building => {
+      .forEach(building => {
+        if (!constructedBuildingsMap.has(building.id)) {
+          constructedBuildingsMap.set(building.id, building);
+        }
+      });
+    
+    this.constructedBuildings = Array.from(constructedBuildingsMap.values()).map(building => {
         const effectsArray = [];
         
         if (building.effects.food) {

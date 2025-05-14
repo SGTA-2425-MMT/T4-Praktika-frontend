@@ -148,84 +148,15 @@
 
         <h3>Unidades disponibles</h3>
         <div class="production-options">
-          <div class="production-item" (click)="selectProduction('warrior')">
-            <div class="production-icon warrior-icon">⚔️</div>
+          <div class="production-item" *ngFor="let unit of availableUnits" 
+               [class.disabled]="!unit.unlocked"
+               (click)="unit.unlocked && selectProduction(unit.type)">
+            <div class="production-icon" [ngClass]="unit.type + '-icon'">{{ unit.icon }}</div>
             <div class="production-details">
-              <h4>Guerrero</h4>
-              <p>Coste: 40 producción ({{ city.productionPerTurn > 0 ? Math.ceil(40 / city.productionPerTurn) : '?' }} turnos)</p>
-              <p>Unidad militar básica para defensa</p>
-            </div>
-          </div>
-
-          <div class="production-item" (click)="selectProduction('archer')">
-            <div class="production-icon archer-icon">🏹</div>
-            <div class="production-details">
-              <h4>Arquero</h4>
-              <p>Coste: 50 producción ({{ city.productionPerTurn > 0 ? Math.ceil(50 / city.productionPerTurn) : '?' }} turnos)</p>
-              <p>Ataque a distancia, buena para defensa</p>
-            </div>
-          </div>
-
-          <div class="production-item" (click)="selectProduction('horseman')">
-            <div class="production-icon horseman-icon">🐎</div>
-            <div class="production-details">
-              <h4>Jinete</h4>
-              <p>Coste: 70 producción ({{ city.productionPerTurn > 0 ? Math.ceil(70 / city.productionPerTurn) : '?' }} turnos)</p>
-              <p>Unidad rápida para explorar y atacar</p>
-            </div>
-          </div>
-
-          <div class="production-item" (click)="selectProduction('swordsman')">
-            <div class="production-icon swordsman-icon">🗡️</div>
-            <div class="production-details">
-              <h4>Espadachín</h4>
-              <p>Coste: 75 producción ({{ city.productionPerTurn > 0 ? Math.ceil(75 / city.productionPerTurn) : '?' }} turnos)</p>
-              <p>Unidad terrestre fuerte para combates</p>
-            </div>
-          </div>
-
-          <div class="production-item" (click)="selectProduction('catapult')">
-            <div class="production-icon catapult-icon">🧱</div>
-            <div class="production-details">
-              <h4>Catapulta</h4>
-              <p>Coste: 90 producción ({{ city.productionPerTurn > 0 ? Math.ceil(90 / city.productionPerTurn) : '?' }} turnos)</p>
-              <p>Ataque a distancia contra ciudades</p>
-            </div>
-          </div>
-
-          <div class="production-item" (click)="selectProduction('galley')">
-            <div class="production-icon galley-icon">⛵</div>
-            <div class="production-details">
-              <h4>Galera</h4>
-              <p>Coste: 65 producción ({{ city.productionPerTurn > 0 ? Math.ceil(65 / city.productionPerTurn) : '?' }} turnos)</p>
-              <p>Transporte naval para unidades</p>
-            </div>
-          </div>
-
-          <div class="production-item" (click)="selectProduction('scout')">
-            <div class="production-icon scout-icon">👁️</div>
-            <div class="production-details">
-              <h4>Explorador</h4>
-              <p>Coste: 35 producción ({{ city.productionPerTurn > 0 ? Math.ceil(35 / city.productionPerTurn) : '?' }} turnos)</p>
-              <p>Unidad rápida para exploración</p>
-            </div>
-          </div>
-
-          <div class="production-item" (click)="selectProduction('settler')">
-            <div class="production-icon settler-icon">🏕️</div>
-            <div class="production-details">
-              <h4>Colono</h4>
-              <p>Coste: 80 producción ({{ city.productionPerTurn > 0 ? Math.ceil(80 / city.productionPerTurn) : '?' }} turnos)</p>
-              <p>Funda nuevas ciudades</p>
-            </div>
-          </div>
-
-          <div class="production-item" (click)="selectProduction('worker')">
-            <div class="production-icon worker-icon">🔧</div>
-            <div class="production-details">
-              <h4>Trabajador</h4>
-              <p>Coste: 60 producción ({{ city.productionPerTurn > 0 ? Math.ceil(60 / city.productionPerTurn) : '?' }} turnos)</p>
-              <p>Mejora casillas del terreno</p>
+              <h4>{{ unit.name }}</h4>
+              <p>Coste: {{ unit.cost }} producción ({{ city.productionPerTurn > 0 ? Math.ceil(unit.cost / city.productionPerTurn) : '?' }} turnos)</p>
+              <p>{{ unit.description }}</p>
+              <p *ngIf="!unit.unlocked" class="locked-message">🔒 Necesita tecnología avanzada</p>
             </div>
           </div>
         </div>

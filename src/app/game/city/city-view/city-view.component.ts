@@ -1,9 +1,10 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { City } from '../../../core/models/city.model';
 import { CityBuildingsComponent } from '../city-buildings/city-buildings.component';
 import { CityService } from '../../../core/services/city.service';
 import { GameService } from '../../../core/services/game.service';
+import { TechnologyService } from '../../../core/services/technology.service';
 
 @Component({
   selector: 'app-city-view',
@@ -12,7 +13,7 @@ import { GameService } from '../../../core/services/game.service';
   templateUrl: './city-view.component.html',
   styleUrl: './city-view.component.scss'
 })
-export class CityViewComponent {
+export class CityViewComponent implements OnInit {
   @Input() city: City | null = null;
   @Output() close = new EventEmitter<void>();
   @Output() production = new EventEmitter<{type: string, name: string}>();
@@ -22,6 +23,9 @@ export class CityViewComponent {
 
   // Exponer Math como propiedad para usarlo en la plantilla
   Math = Math;
+
+  // Unidades disponibles para producir
+  availableUnits: {type: string, name: string, cost: number, unlocked: boolean, description: string, icon: string}[] = [];
 
   // Tipos de ciudadanos para la gestión
   citizenTypes = [
@@ -34,8 +38,20 @@ export class CityViewComponent {
 
   constructor(
     private cityService: CityService,
-    private gameService: GameService
+    private gameService: GameService,
+    private technologyService: TechnologyService
   ) {}
+  
+  ngOnInit(): void {
+    this.initializeAvailableUnits();
+    
+    // Suscribirse a cambios en las tecnologías descubiertas
+    this.technologyService.discoveredTechnologies$.subscribe(techs => {
+      if (techs && techs.length > 0) {
+        this.updateAvailableUnits(techs);
+      }
+    });
+  }
 
   // Método para cambiar entre pestañas
   changeTab(tab: 'overview' | 'production' | 'buildings' | 'citizens'): void {
@@ -58,48 +74,24 @@ export class CityViewComponent {
   // Método para seleccionar un elemento para producir
   selectProduction(type: string): void {
     if (!this.city) return;
-
-    let name = '';
-
-    switch (type) {
-      case 'warrior':
-        name = 'Guerrero';
-        break;
-      case 'settler':
-        name = 'Colono';
-        break;
-      case 'worker':
-        name = 'Trabajador';
-        break;
-      case 'archer':
-        name = 'Arquero';
-        break;
-      case 'horseman':
-        name = 'Jinete';
-        break;
-      case 'swordsman':
-        name = 'Espadachín';
-        break;
-      case 'catapult':
-        name = 'Catapulta';
-        break;
-      case 'galley':
-        name = 'Galera';
-        break;
-      case 'warship':
-        name = 'Barco de Guerra';
-        break;
-      case 'scout':
-        name = 'Explorador';
-        break;
-      default:
-        name = 'Desconocido';
+    
+    // Verificar si la unidad está desbloqueada
+    if (!this.isUnitUnlocked(type)) {
+      console.warn(`Intentando producir ${type}, pero esta unidad no está desbloqueada todavía.`);
+      return;
     }
-
+    
+    // Encontrar la unidad en la lista de unidades disponibles
+    const unitInfo = this.availableUnits.find(u => u.type === type);
+    if (!unitInfo) {
+      console.error(`Unidad ${type} no encontrada en la lista de unidades disponibles`);
+      return;
+    }
+    
     // Emitir evento para ser manejado por el componente padre
-    this.production.emit({type, name});
+    this.production.emit({type, name: unitInfo.name});
 
-    console.log(`Ciudad ${this.city.name} comenzó a producir: ${name}`);
+    console.log(`Ciudad ${this.city.name} comenzó a producir: ${unitInfo.name}`);
   }
 
   // Método para asignar un ciudadano a un rol
@@ -172,5 +164,76 @@ export class CityViewComponent {
       default:
         return 'Desconocida';
     }
+  }
+
+  // Inicializar las unidades disponibles
+  private initializeAvailableUnits(): void {
+    this.availableUnits = [
+      { type: 'warrior', name: 'Guerrero', cost: 40, unlocked: true, description: 'Unidad militar básica para defensa', icon: '⚔️' },
+      { type: 'archer', name: 'Arquero', cost: 50, unlocked: false, description: 'Ataque a distancia, buena para defensa', icon: '🏹' },
+      { type: 'horseman', name: 'Jinete', cost: 70, unlocked: false, description: 'Unidad rápida para explorar y atacar', icon: '🐎' },
+      { type: 'swordsman', name: 'Espadachín', cost: 75, unlocked: false, description: 'Unidad terrestre fuerte para combates', icon: '🗡️' },
+      { type: 'catapult', name: 'Catapulta', cost: 90, unlocked: false, description: 'Ataque a distancia contra ciudades', icon: '🧱' },
+      { type: 'galley', name: 'Galera', cost: 65, unlocked: false, description: 'Transporte naval para unidades', icon: '⛵' },
+      { type: 'warship', name: 'Barco de Guerra', cost: 100, unlocked: false, description: 'Unidad naval de combate', icon: '🚢' },
+      { type: 'scout', name: 'Explorador', cost: 35, unlocked: true, description: 'Unidad rápida para exploración', icon: '👁️' },
+      { type: 'settler', name: 'Colono', cost: 80, unlocked: true, description: 'Funda nuevas ciudades', icon: '🏕️' },
+      { type: 'worker', name: 'Trabajador', cost: 60, unlocked: true, description: 'Mejora casillas del terreno', icon: '🔧' }
+    ];
+    
+    // Actualizar estado inicial de desbloqueo basado en tecnologías
+    this.updateAvailableUnits(this.technologyService.discoveredTechnologies);
+  }
+  
+  // Actualizar unidades disponibles basado en tecnologías descubiertas
+  private updateAvailableUnits(techs: any[]): void {
+    if (!techs || techs.length === 0) return;
+    
+    console.log('Actualizando unidades disponibles basado en tecnologías descubiertas');
+    
+    // Mapeo de tecnologías a unidades
+    const unlockMap: { [key: string]: string[] } = {
+      'archery': ['archer'],
+      'horseback-riding': ['horseman'],
+      'iron-working': ['swordsman'],
+      'engineering': ['catapult'],
+      'sailing': ['galley'],
+      'gunpowder-warfare': ['warship']
+    };
+    
+    // Lista de todas las unidades desbloqueadas
+    let unlockedUnits: string[] = [];
+    
+    // Acumular todas las unidades desbloqueadas por tecnologías
+    techs.forEach(tech => {
+      if (tech.id in unlockMap) {
+        unlockedUnits = [...unlockedUnits, ...unlockMap[tech.id]];
+      }
+      
+      // También verificar unlocksUnits en la tecnología
+      if (tech.unlocksUnits && tech.unlocksUnits.length > 0) {
+        unlockedUnits = [...unlockedUnits, ...tech.unlocksUnits];
+      }
+    });
+    
+    // Actualizar estado de desbloqueo
+    this.availableUnits.forEach(unit => {
+      // Unidades básicas siempre desbloqueadas
+      if (['warrior', 'scout', 'settler', 'worker'].includes(unit.type)) {
+        unit.unlocked = true;
+      } else {
+        // Resto de unidades según tecnologías
+        unit.unlocked = unlockedUnits.includes(unit.type);
+      }
+    });
+    
+    console.log('Unidades disponibles actualizadas:', 
+      this.availableUnits.filter(u => u.unlocked).map(u => u.name).join(', '));
+  }
+  
+  // Verificar si una unidad está desbloqueada
+  isUnitUnlocked(type: string): boolean {
+    const unit = this.availableUnits.find(u => u.type === type);
+    return unit ? unit.unlocked : false;
   }
 }

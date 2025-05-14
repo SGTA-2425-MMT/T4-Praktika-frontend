@@ -10,7 +10,7 @@ export enum BuildingCategory {
 export enum Era {
   ANCIENT = 'ancient',
   MEDIEVAL = 'medieval',
-  AGE_OF_DISCOVERIES = 'age_of_discovery',
+  AGE_OF_DISCOVERY = 'age_of_discovery',
   MODERN = 'modern'
 }
 

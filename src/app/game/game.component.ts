@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MapViewComponent } from './map/map-view/map-view.component';
 import { TechTreeComponent } from './technology/tech-tree/tech-tree.component';
+import { NotificationPanelComponent } from './notification-panel/notification-panel.component';
 import { GameService, GameSession } from '../core/services/game.service';
 import { DebugService } from '../core/services/debug.service';
 import { Subscription } from 'rxjs';
@@ -10,7 +11,7 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-game',
   standalone: true,
-  imports: [CommonModule, MapViewComponent, TechTreeComponent],
+  imports: [CommonModule, MapViewComponent, TechTreeComponent, NotificationPanelComponent],
   templateUrl: './game.component.html',
   styleUrl: './game.component.scss'
 })

@@ -8,6 +8,9 @@ import { BehaviorSubject, Observable } from 'rxjs';
 export class TechnologyService {
   private availableTechnologies: Technology[] = [];
   private researchInProgress: ResearchProgress | null = null;
+  
+  // Propiedad para rastrear la última tecnología completada
+  private _lastCompletedTech: Technology | null = null;
 
   private researchProgressSubject = new BehaviorSubject<ResearchProgress | null>(null);
   private discoveredTechnologiesSubject = new BehaviorSubject<Technology[]>([]);
@@ -41,6 +44,11 @@ export class TechnologyService {
 
   get availableTechs(): Technology[] {
     return this.availableTechnologiesSubject.value;
+  }
+  
+  // Getter para la última tecnología completada
+  get lastCompletedTech(): Technology | null {
+    return this._lastCompletedTech;
   }
 
   // Inicializar las tecnologías del juego
@@ -324,25 +332,34 @@ export class TechnologyService {
 
     // Comprobar si se completó la investigación
     if (this.researchInProgress.progress >= this.researchInProgress.totalCost) {
+      console.log('[TechnologyService] Investigación completada. Buscando tecnología...');
+      
       // Encontrar la tecnología completada
       const completedTech = this.availableTechnologies.find(
         t => t.id === this.researchInProgress!.technologyId
       );
 
       if (!completedTech) {
-        console.error('No se encontró la tecnología que se estaba investigando');
+        console.error('[TechnologyService] Error: No se encontró la tecnología que se estaba investigando');
         return null;
       }
+      
+      console.log('[TechnologyService] Tecnología encontrada:', completedTech);
 
       // Añadir a descubiertas
       const discoveredTechs = [...this.discoveredTechnologies, completedTech];
       this.discoveredTechnologiesSubject.next(discoveredTechs);
+      console.log(`[TechnologyService] Tecnologías descubiertas actualizadas. Total: ${discoveredTechs.length}`);
 
       // Actualizar tecnologías disponibles
       this.updateAvailableTechnologies();
 
       // Notificar sobre edificios y unidades desbloqueados
       let unlockMessage = `Tecnología completada: ${completedTech.name}`;
+
+      // Verificar y registrar desbloqueos
+      console.log('[TechnologyService] Verificando desbloqueos de edificios:', completedTech.unlocksBuildings);
+      console.log('[TechnologyService] Verificando desbloqueos de unidades:', completedTech.unlocksUnits);
 
       if (completedTech.unlocksBuildings && completedTech.unlocksBuildings.length > 0) {
         unlockMessage += `\nEdificios desbloqueados: ${completedTech.unlocksBuildings.join(', ')}`;
@@ -356,8 +373,19 @@ export class TechnologyService {
       const completedResearch = this.researchInProgress;
       this.researchInProgress = null;
       this.researchProgressSubject.next(null);
+      console.log('[TechnologyService] Investigación actual limpiada.');
 
       console.log(unlockMessage);
+      
+      // Guardar referencia a la última tecnología completada
+      this._lastCompletedTech = completedTech;
+      console.log('[TechnologyService] Última tecnología completada actualizada:', this._lastCompletedTech?.name);
+      
+      // Programar que se limpie después de un tiempo razonable
+      setTimeout(() => {
+        this._lastCompletedTech = null;
+      }, 30000); // 30 segundos
+      
       return completedTech;
     }
 
@@ -412,6 +440,12 @@ export class TechnologyService {
     return technology?.unlocksBuildings || [];
   }
 
+  // Obtener las unidades desbloqueadas por una tecnología
+  getUnitsUnlockedByTech(techId: string): string[] {
+    const technology = this.getTechnologyById(techId);
+    return technology?.unlocksUnits || [];
+  }
+
   // Obtener todas las tecnologías disponibles para investigar
   getAvailableTechnologies(discoveredTechIds: string[]): Technology[] {
     // Obtener todas las tecnologías
@@ -439,6 +473,28 @@ export class TechnologyService {
   // Devuelve el árbol completo de tecnologías
   getTechnologyTree(): Technology[] {
     return [...this.availableTechnologies];
+  }
+  
+  // Sincronizar el estado de investigación con el GameService
+  syncResearchWithGame(gameResearch: any): void {
+    if (!gameResearch) {
+      this.researchInProgress = null;
+      this.researchProgressSubject.next(null);
+      return;
+    }
+    
+    const tech = this.getTechnologyById(gameResearch.currentTechnology);
+    if (!tech) return;
+    
+    this.researchInProgress = {
+      technologyId: gameResearch.currentTechnology,
+      name: tech.name,
+      progress: gameResearch.progress,
+      totalCost: gameResearch.totalCost,
+      turnsRemaining: gameResearch.turnsLeft
+    };
+    
+    this.researchProgressSubject.next(this.researchInProgress);
   }
 
   // Actualizar la era del juego/civilización basada en las tecnologías descubiertas

@@ -21,6 +21,8 @@ export class TechTreeComponent implements OnInit, OnDestroy {
 
   // Organización visual
   techsByEra: { [key: string]: Technology[] } = {};
+  // Lista ordenada de eras para mostrar en la interfaz
+  orderedErasList: {era: string, techs: Technology[]}[] = [];
 
   // Ciencia por turno
   sciencePerTurn: number = 0;
@@ -39,6 +41,7 @@ export class TechTreeComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Obtener todas las tecnologías
     this.technologies = this.techService.getTechnologyTree();
+    console.log('Tecnologías cargadas:', this.technologies.length);
 
     // Organizar tecnologías por era para la visualización
     this.organizeTechsByEra();
@@ -47,6 +50,9 @@ export class TechTreeComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.techService.availableTechnologies$.subscribe(techs => {
         this.availableTechnologies = techs;
+        // Reorganizar cada vez que cambian las tecnologías disponibles
+        this.organizeTechsByEra();
+        console.log('Tecnologías disponibles actualizadas:', techs.length);
       })
     );
 
@@ -54,6 +60,9 @@ export class TechTreeComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.techService.discoveredTechnologies$.subscribe(techs => {
         this.discoveredTechnologies = techs;
+        // Reorganizar cada vez que cambian las tecnologías descubiertas
+        this.organizeTechsByEra();
+        console.log('Tecnologías descubiertas actualizadas:', techs.length);
       })
     );
 
@@ -61,6 +70,7 @@ export class TechTreeComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.techService.researchProgress$.subscribe(research => {
         this.currentResearch = research;
+        console.log('Investigación actual actualizada:', research?.name);
       })
     );
 
@@ -82,6 +92,7 @@ export class TechTreeComponent implements OnInit, OnDestroy {
   // Organizar tecnologías por era para la visualización
   private organizeTechsByEra(): void {
     this.techsByEra = {};
+    this.orderedErasList = [];
 
     // Inicializar arreglos para cada era
     Object.values(TechEra).forEach(era => {
@@ -92,6 +103,26 @@ export class TechTreeComponent implements OnInit, OnDestroy {
     this.technologies.forEach(tech => {
       this.techsByEra[tech.era].push(tech);
     });
+    
+    // Definir orden explícito de las eras
+    const orderedEras = [
+      TechEra.ANCIENT,
+      TechEra.MEDIEVAL,
+      TechEra.AGE_OF_DISCOVERY,
+      TechEra.MODERN
+    ];
+    
+    // Crear arreglo ordenado para la visualización
+    orderedEras.forEach(era => {
+      if (this.techsByEra[era] && this.techsByEra[era].length > 0) {
+        this.orderedErasList.push({
+          era: era,
+          techs: this.techsByEra[era]
+        });
+      }
+    });
+    
+    console.log('Eras ordenadas:', this.orderedErasList.map(e => e.era));
   }
 
   // Obtener la ciencia por turno del jugador actual
@@ -123,26 +154,37 @@ export class TechTreeComponent implements OnInit, OnDestroy {
     }
 
     const tech = this.technologies.find(t => t.id === techId);
+    if (!tech) {
+      console.error(`No se encontró la tecnología con ID: ${techId}`);
+      return;
+    }
+    
     const success = this.techService.startResearch(techId, this.sciencePerTurn);
 
     if (success) {
-      console.log(`Comenzando a investigar: ${tech?.name || techId} con ${this.sciencePerTurn} ciencia por turno`);
+      console.log(`Comenzando a investigar: ${tech.name} con ${this.sciencePerTurn} ciencia por turno`);
 
       // Actualizar el estado del juego para reflejar la investigación en curso
       if (this.gameService.currentGame) {
         const game = this.gameService.currentGame;
-        if (!game.researchProgress) {
-          game.researchProgress = {
-            currentTechnology: techId,
-            progress: 0,
-            turnsLeft: Math.ceil((tech?.cost || 0) / Math.max(1, this.sciencePerTurn)),
-            totalCost: tech?.cost || 0
-          };
-          this.gameService.updateResearch();
+        
+        // Asegurarse de que la información en ambos servicios esté sincronizada
+        game.researchProgress = {
+          currentTechnology: techId,
+          progress: 0,
+          turnsLeft: Math.ceil(tech.cost / Math.max(1, this.sciencePerTurn)),
+          totalCost: tech.cost
+        };
+        
+        // Actualizar la era basada en las tecnologías descubiertas
+        const currentEra = this.techService.getGameEra();
+        if (game.era !== currentEra) {
+          game.era = currentEra;
+          console.log(`Era actualizada a: ${currentEra}`);
         }
       }
 
-      alert(`Comenzando a investigar: ${tech?.name || techId}.\nCiencia por turno: ${this.sciencePerTurn}\nTurnos estimados: ${Math.ceil((tech?.cost || 0) / Math.max(1, this.sciencePerTurn))}`);
+      alert(`Comenzando a investigar: ${tech.name}.\nCiencia por turno: ${this.sciencePerTurn}\nTurnos estimados: ${Math.ceil(tech.cost / Math.max(1, this.sciencePerTurn))}`);
     } else {
       console.error('No se pudo iniciar la investigación');
       alert('No se pudo iniciar la investigación. Verifica que la tecnología esté disponible y cumpla con los prerrequisitos.');

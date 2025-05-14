@@ -10,7 +10,7 @@
     <div *ngIf="currentResearch" class="current-research">
       <h3>Investigando: {{ currentResearch.name }}</h3>
       <div class="progress-bar">
-        <div class="progress-fill" [style.width.%]="(currentResearch.progress / currentResearch.totalCost) * 100"></div>
+        <div class="progress-fill" [style.width.%]="(currentResearch.progress / currentResearch.totalCost) * 100" [attr.data-progress]="((currentResearch.progress / currentResearch.totalCost) * 100).toFixed(0) + '%'"></div>
       </div>
       <div class="research-details">
         <span>{{ currentResearch.progress }} / {{ currentResearch.totalCost }}</span>
@@ -21,13 +21,12 @@
   
   <!-- Árbol tecnológico organizado por eras -->
   <div class="tech-tree-content">
-    @for (era of techsByEra | keyvalue; track era.key) {
-      @if (era.value.length > 0) {
-        <div class="era-section">
-          <h3 class="era-title">{{ getEraName(era.key) }}</h3>
-          
-          <div class="techs-grid">
-            @for (tech of era.value; track tech.id) {
+    @for (eraItem of orderedErasList; track eraItem.era) {
+      <div class="era-section">
+        <h3 class="era-title">{{ getEraName(eraItem.era) }}</h3>
+        
+        <div class="techs-grid">
+          @for (tech of eraItem.techs; track tech.id) {
               <div class="tech-card" 
                    [class.discovered]="isTechDiscovered(tech.id)"
                    [class.available]="isTechAvailable(tech.id)"
@@ -71,6 +70,33 @@
                   </span>
                 </div>
                 
+                <!-- Mostrar recompensas de la investigación -->
+                @if (tech.unlocksBuildings?.length || tech.unlocksUnits?.length) {
+                  <div class="tech-unlocks">
+                    @if (tech.unlocksBuildings?.length) {
+                      <div class="unlocks-section">
+                        <span class="unlocks-header">🏛️ Desbloquea edificios:</span>
+                        <div class="unlocks-list">
+                          @for (building of tech.unlocksBuildings; track building) {
+                            <span class="unlock-item building">{{ building }}</span>
+                          }
+                        </div>
+                      </div>
+                    }
+                    
+                    @if (tech.unlocksUnits?.length) {
+                      <div class="unlocks-section">
+                        <span class="unlocks-header">⚔️ Desbloquea unidades:</span>
+                        <div class="unlocks-list">
+                          @for (unit of tech.unlocksUnits; track unit) {
+                            <span class="unlock-item unit">{{ unit }}</span>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+                
                 <div class="tech-status">
                   @if (isTechDiscovered(tech.id)) {
                     <span class="status-discovered">Descubierta</span>
@@ -91,6 +117,5 @@
           </div>
         </div>
       }
-    }
   </div>
 </div>

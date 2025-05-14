@@ -9,6 +9,7 @@ import { TechnologyService } from './technology.service';
 import { TechEra } from '../models/technology.model';
 import { TileImprovementService } from './tile-improvement.service';
 import { UnitAction } from '../models/unit.model';
+import { NotificationService } from './notification.service';
 
 export interface GameSettings {
   gameName: string;
@@ -71,6 +72,11 @@ export class GameService {
     // Hacer que el servicio sea accesible globalmente para llamarlo desde cualquier componente
     // Esto es una solución temporal, en una aplicación real usaríamos un enfoque más adecuado
     (window as any).gameServiceInstance = this;
+  }
+
+  // Obtener el servicio de notificación usando Injector para evitar dependencia circular
+  private get notificationService() {
+    return this.injector.get(NotificationService);
   }
 
   get currentGame$(): Observable<GameSession | null> {
@@ -372,6 +378,9 @@ export class GameService {
       console.log('¡DISCREPANCIA DETECTADA! Corrigiendo...');
       game.sciencePerTurn = totalCalculatedScience;
     }
+    
+    // Sincronizar el estado de investigación entre GameService y TechnologyService
+    this.technologyService.syncResearchWithGame(game.researchProgress);
 
     // Añadir la ciencia generada por turno a la ciencia acumulada
     game.science += game.sciencePerTurn;
@@ -379,24 +388,52 @@ export class GameService {
 
     // Si hay una investigación en progreso, actualizar su avance
     if (game.researchProgress) {
-      // Actualizar el progreso con la ciencia generada este turno
-      game.researchProgress.progress += game.sciencePerTurn;
+      // Actualizar el progreso con la ciencia generada este turno usando TechnologyService
+      // Esto mantiene la coherencia entre los dos servicios
+      const completedTech = this.technologyService.updateResearchProgress(game.sciencePerTurn);
+      
       console.log(`Progreso de investigación: ${game.researchProgress.progress}/${game.researchProgress.totalCost} (${game.sciencePerTurn} añadidos este turno)`);
 
-      // Verificar si la investigación se ha completado
-      if (game.researchProgress.progress >= game.researchProgress.totalCost) {
+      // Si la investigación se completó, actualizar el estado del juego
+      if (completedTech) {
         const completedTechnology = game.researchProgress.currentTechnology;
+        console.log(`[GameService] Investigación completada de tecnología: ${completedTechnology}`);
 
-        game.discoveredTechnologies.push(completedTechnology);
-        this.updateAvailableTechnologies();
-        console.log(`¡Investigación completada: ${completedTechnology}!`);
+        // Verificar si la tecnología ya está en la lista para evitar duplicados
+        if (!game.discoveredTechnologies.includes(completedTechnology)) {
+          console.log(`[GameService] Añadiendo nueva tecnología a descubiertas: ${completedTechnology}`);
+          game.discoveredTechnologies.push(completedTechnology);
+          
+          this.updateAvailableTechnologies();
+          console.log(`[GameService] Lista de tecnologías disponibles actualizada`);
+          
+          // Información detallada sobre la tecnología completada
+          console.log(`[GameService] Detalles de tecnología completada:`);
+          console.log(`  - Nombre: ${completedTech.name}`);
+          console.log(`  - Edificios desbloqueados: ${completedTech.unlocksBuildings?.join(', ') || 'ninguno'}`);
+          console.log(`  - Unidades desbloqueadas: ${completedTech.unlocksUnits?.join(', ') || 'ninguna'}`);
 
-        // Notificar al jugador que la investigación se ha completado
-        // TODO: Implementar sistema de notificaciones
+          // Notificar al jugador que la investigación se ha completado usando el sistema de notificaciones
+          // Solo mostrar notificación si es la primera vez que se descubre
+          try {
+            console.log(`[GameService] Intentando mostrar notificación de investigación completada`);
+            const notificationId = this.notificationService.researchComplete(
+              completedTech.name,
+              completedTech.unlocksBuildings || [],
+              completedTech.unlocksUnits || []
+            );
+            console.log(`[GameService] Notificación mostrada con ID: ${notificationId}`);
+          } catch (e) {
+            console.error('[GameService] Error al mostrar notificación:', e);
+          }
+        } else {
+          console.log(`[GameService] La tecnología ya estaba descubierta: ${completedTechnology}`);
+        }
 
         // Limpiar la investigación actual
+        console.log(`[GameService] Limpiando investigación actual`);
         game.researchProgress = undefined;
-      } else {
+      } else if (game.researchProgress) {
         // Actualizar los turnos restantes
         game.researchProgress.turnsLeft = Math.ceil(
           (game.researchProgress.totalCost - game.researchProgress.progress) / Math.max(1, game.sciencePerTurn)

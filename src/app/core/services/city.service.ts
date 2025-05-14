@@ -269,7 +269,7 @@ export class CityService {
         category: BuildingCategory.GOLD,
         level: 1,
         maxLevel: 3,
-        era: Era.AGE_OF_DISCOVERIES,
+        era: Era.AGE_OF_DISCOVERY,
         cost: 220,
         upgradeCost: 440,
         maintenance: 3,
@@ -277,12 +277,72 @@ export class CityService {
         prerequisites: { building: 'market', technology: 'banking' },
         description: 'Aumenta significativamente la producción de oro',
         icon: '🏦'
+      },
+      {
+        id: 'theater',
+        name: 'Teatro',
+        category: BuildingCategory.CULTURE,
+        level: 1,
+        maxLevel: 3,
+        era: Era.MEDIEVAL,
+        cost: 150,
+        upgradeCost: 300,
+        maintenance: 2,
+        effects: { culture: 3, happiness: 1 },
+        prerequisites: { technology: 'education' },
+        description: 'Aumenta la producción cultural y la felicidad',
+        icon: '🎭'
+      },
+      {
+        id: 'aqueduct',
+        name: 'Acueducto',
+        category: BuildingCategory.FOOD,
+        level: 1,
+        maxLevel: 2,
+        era: Era.MEDIEVAL,
+        cost: 180,
+        upgradeCost: 360,
+        maintenance: 2,
+        effects: { food: 2, happiness: 1 },
+        prerequisites: { technology: 'engineering' },
+        description: 'Aumenta el crecimiento de la ciudad y su tamaño máximo',
+        icon: '🌊'
+      },
+      {
+        id: 'harbor',
+        name: 'Puerto',
+        category: BuildingCategory.GOLD,
+        level: 1,
+        maxLevel: 3,
+        era: Era.AGE_OF_DISCOVERY,
+        cost: 200,
+        upgradeCost: 400,
+        maintenance: 3,
+        effects: { gold: 3, production: 1 },
+        prerequisites: { technology: 'sailing' },
+        description: 'Mejora el comercio y permite construir unidades navales',
+        icon: '⚓'
+      },
+      {
+        id: 'factory',
+        name: 'Fábrica',
+        category: BuildingCategory.PRODUCTION,
+        level: 1,
+        maxLevel: 3,
+        era: Era.MODERN,
+        cost: 300,
+        upgradeCost: 600,
+        maintenance: 4,
+        effects: { production: 5 },
+        prerequisites: { building: 'workshop', technology: 'industrialization' },
+        description: 'Aumenta enormemente la producción industrial',
+        icon: '🏭'
       }
     ];
 
     // Filtrar edificios disponibles según la era actual o anteriores
     return allBuildings.filter(building => {
-      const eraOrder = [Era.ANCIENT, Era.MEDIEVAL, Era.AGE_OF_DISCOVERIES , Era.MODERN];
+      const eraOrder = [Era.ANCIENT, Era.MEDIEVAL, Era.AGE_OF_DISCOVERY, Era.MODERN];
       const currentEraIndex = eraOrder.indexOf(era);
       const buildingEraIndex = eraOrder.indexOf(building.era);
 
@@ -291,11 +351,43 @@ export class CityService {
   }
 
   // Obtener edificios disponibles para construir en una ciudad
+  // Obtener todos los edificios de todas las eras
+  private getAllEraBuildings(): Building[] {
+    // Obtenemos la lista completa de edificios solo una vez para evitar duplicados
+    const allBuildings = this.getAvailableBuildingsForEra(Era.MODERN);
+    
+    // Eliminamos cualquier duplicado basándonos en los IDs
+    const uniqueBuildings = Array.from(
+      new Map(allBuildings.map(building => [building.id, building])).values()
+    );
+    
+    console.log(`[CityService] Total de edificios únicos: ${uniqueBuildings.length}`);
+    return uniqueBuildings;
+  }
+  
   getAvailableBuildings(city: City): Building[] {
-    const availableForEra = this.getAvailableBuildingsForEra(city.era);
-
+    // Obtener edificios de todas las eras
+    const allEraBuildings = this.getAllEraBuildings();
+    
+    // Obtener tecnologías descubiertas
+    const discoveredTechs = this.technologyService.discoveredTechnologies || [];
+    
+    // Crear un mapa de los edificios desbloqueados por tecnologías
+    const techUnlocks = new Map<string, string[]>();
+    discoveredTechs.forEach(tech => {
+      if (tech.unlocksBuildings && tech.unlocksBuildings.length > 0) {
+        tech.unlocksBuildings.forEach(buildingId => {
+          console.log(`Tecnología ${tech.name} desbloquea edificio: ${buildingId}`);
+        });
+        techUnlocks.set(tech.id, tech.unlocksBuildings);
+      }
+    });
+    
+    // Lista de IDs de tecnologías descubiertas
+    const discoveredTechIds = discoveredTechs.map(tech => tech.id);
+    
     // Filtrar edificios que ya están construidos o no cumplen con los requisitos
-    return availableForEra.filter(building => {
+    return allEraBuildings.filter((building: Building) => {
       // Verificar si ya existe este edificio en la ciudad
       const existingBuilding = city.buildings.find(b => b.id === building.id);
       if (existingBuilding) {
@@ -307,22 +399,50 @@ export class CityService {
       if (city.buildingProductionQueue?.some(bp => bp.buildingId === building.id)) {
         return false;
       }
-
-      // Verificar prerrequisitos
-      if (building.prerequisites) {
-        // Verificar edificios prerrequisitos
-        if (building.prerequisites.building) {
-          const hasPrereqBuilding = city.buildings.some(b =>
-            b.id === building.prerequisites?.building && b.currentLevel > 0
-          );
-          if (!hasPrereqBuilding) return false;
+      
+      // Verificar si el edificio tiene un requisito tecnológico específico
+      if (building.prerequisites?.technology) {
+        if (!discoveredTechIds.includes(building.prerequisites.technology)) {
+          console.log(`Edificio ${building.name} requiere tecnología no descubierta: ${building.prerequisites.technology}`);
+          return false;
         }
+      }
 
-        // Verificar tecnologías prerrequisito
-        if (building.prerequisites.technology) {
-          const hasPrereqTech = this.technologyService.isTechnologyDiscovered(building.prerequisites.technology);
-          if (!hasPrereqTech) return false;
+      // Verificar edificios prerrequisitos
+      if (building.prerequisites?.building) {
+        const hasPrereqBuilding = city.buildings.some(b =>
+          b.id === building.prerequisites?.building && b.currentLevel > 0
+        );
+        if (!hasPrereqBuilding) {
+          console.log(`Edificio ${building.name} requiere edificio previo: ${building.prerequisites.building}`);
+          return false;
         }
+      }
+      
+      // Verificar si este edificio está desbloqueado por alguna tecnología descubierta
+      let isUnlockedByTech = false;
+      
+      // Edificios de la era antigua siempre están disponibles
+      if (building.era === Era.ANCIENT && !building.prerequisites?.technology) {
+        isUnlockedByTech = true;
+      } else {
+        // Para edificios de otras eras, verificar si han sido desbloqueados
+        for (const [techId, unlockedBuildings] of techUnlocks.entries()) {
+          if (unlockedBuildings.includes(building.id)) {
+            isUnlockedByTech = true;
+            break;
+          }
+        }
+        
+        // Si el edificio tiene un prerrequisito de tecnología específico y esa tecnología está descubierta
+        if (building.prerequisites?.technology && discoveredTechIds.includes(building.prerequisites.technology)) {
+          isUnlockedByTech = true;
+        }
+      }
+      
+      if (!isUnlockedByTech && building.era !== Era.ANCIENT) {
+        console.log(`Edificio ${building.name} (${building.id}) no está desbloqueado por ninguna tecnología descubierta`);
+        return false;
       }
 
       return true;
@@ -473,7 +593,7 @@ export class CityService {
     const eraValues: {[key in Era]: number} = {
       [Era.ANCIENT]: 1,
       [Era.MEDIEVAL]: 3,
-      [Era.AGE_OF_DISCOVERIES]: 4,
+      [Era.AGE_OF_DISCOVERY]: 4,
       [Era.MODERN]: 6
     };
     return eraValues[era];
@@ -555,7 +675,7 @@ export class CityService {
     // Idealmente tendríamos un servicio o repositorio dedicado a edificios
     return this.getAvailableBuildingsForEra(Era.ANCIENT)
       .concat(this.getAvailableBuildingsForEra(Era.MEDIEVAL))
-      .concat(this.getAvailableBuildingsForEra(Era.AGE_OF_DISCOVERIES))
+      .concat(this.getAvailableBuildingsForEra(Era.AGE_OF_DISCOVERY))
       .concat(this.getAvailableBuildingsForEra(Era.MODERN))
       .find(b => b.id === buildingId);
   }
