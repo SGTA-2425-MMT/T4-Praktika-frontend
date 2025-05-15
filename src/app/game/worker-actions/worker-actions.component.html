@@ -33,9 +33,13 @@
       <ul class="feature-list">
         <li>
           <button (click)="clearFeature(currentTile?.featureType || '')">
-            Eliminar {{ currentTile?.featureType }}
+            Eliminar {{ currentTile?.featureType === 'forest' ? 'bosque' : 
+                       currentTile?.featureType === 'jungle' ? 'jungla' : 
+                       currentTile?.featureType }}
           </button>
-          <span class="tooltip">Eliminar {{ currentTile?.featureType }} para permitir otras mejoras.</span>
+          <span class="tooltip">Eliminar {{ currentTile?.featureType === 'forest' ? 'bosque' : 
+                                          currentTile?.featureType === 'jungle' ? 'jungla' : 
+                                          currentTile?.featureType }} para permitir otras mejoras.</span>
         </li>
       </ul>
     </div>
