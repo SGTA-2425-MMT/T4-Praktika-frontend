@@ -560,11 +560,15 @@ export class GameService {
       const y = Math.floor(Math.random() * map.height);
 
       const tile = map.tiles[y][x];
-      if (tile.terrain === 'grassland' || tile.terrain === 'plains') {
+      // Verificar que el terreno sea adecuado Y no tenga bosque/jungla
+      if ((tile.terrain === 'grassland' || tile.terrain === 'plains') && 
+          tile.featureType !== 'forest' && tile.featureType !== 'jungle') {
+        console.log(`Posición inicial encontrada en (${x}, ${y}), terreno: ${tile.terrain}, característica: ${tile.featureType || 'ninguna'}`);
         return { x, y };
       }
     }
 
+    console.warn('No se encontró una posición inicial adecuada después de 100 intentos. Usando posición central.');
     return {
       x: Math.floor(map.width / 2),
       y: Math.floor(map.height / 2)

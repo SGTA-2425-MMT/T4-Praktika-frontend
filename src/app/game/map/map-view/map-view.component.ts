@@ -139,12 +139,13 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
       return;
     }
 
-    // Si estamos mostrando el menú de trabajador, cerrarlo al hacer clic en otra casilla
+    // Si estamos mostrando el menú de trabajador y hacemos clic en otra casilla (que no sea la del trabajador)
+    // cerramos el menú y continuamos con la acción normal de clic
     if (this.showWorkerActionsMenu &&
-        (!this.selectedUnit || tile.x !== this.selectedUnit.position.x || tile.y !== this.selectedUnit.position.y)) {
+        this.selectedUnit &&
+        (tile.x !== this.selectedUnit.position.x || tile.y !== this.selectedUnit.position.y)) {
+      console.log('Cerrando menú de trabajador por clic en otra casilla');
       this.showWorkerActionsMenu = false;
-      // Si sólo cerramos el menú, no hacer nada más
-      return;
     }
 
     // Si el tile no es válido o no está explorado, salir
@@ -168,11 +169,18 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
     if (unitOnTile && unitOnTile.owner === this.gameSession.currentPlayerId) {
       // Si ya está seleccionada esta unidad y es un trabajador, mostrar el menú de acciones
       if (this.selectedUnit && this.selectedUnit.id === unitOnTile.id && unitOnTile.type === 'worker') {
-        this.buildImprovement(); // Mostrar menú de acciones del trabajador
+        console.log('Trabajador seleccionado, mostrando menú de acciones');
+        this.showWorkerActionsMenu = true; // Directamente activar el menú
       } else {
         // Si hay una unidad del jugador actual en esta casilla, seleccionarla
         this.selectUnit(unitOnTile);
         this.highlightedTile = tile; // Mantenemos el seguimiento interno
+        
+        // Si es un trabajador, mostrar inmediatamente el menú
+        if (unitOnTile.type === 'worker') {
+          console.log('Nuevo trabajador seleccionado, mostrando menú de acciones');
+          this.showWorkerActionsMenu = true;
+        }
       }
     } else if (this.selectedUnit && this.isTileMovable(tile.x, tile.y)) {
       // Si hay una unidad seleccionada y el usuario hace clic en una casilla a la que se puede mover
@@ -650,7 +658,8 @@ moveSelectedUnit(targetTile: MapTile): void {
         this.selectedUnit.movementPoints = 0;
 
         console.log(`El trabajador comenzó a construir un camino en (${this.selectedUnit.position.x}, ${this.selectedUnit.position.y})`);
-        this.showWorkerActionsMenu = false; // Cerrar el menú después de seleccionar
+        // No cerramos el menú para que se siga mostrando después de seleccionar
+        // this.showWorkerActionsMenu = false;
       }
       // Verificar que la mejora se puede construir en esta casilla
       else if (improvementType.startsWith('build_')) {
@@ -671,9 +680,15 @@ moveSelectedUnit(targetTile: MapTile): void {
           this.selectedUnit.movementPoints = 0;
 
           console.log(`El trabajador comenzó a construir ${improvement} en (${this.selectedUnit.position.x}, ${this.selectedUnit.position.y})`);
-          this.showWorkerActionsMenu = false; // Cerrar el menú después de seleccionar
+          // No cerramos el menú para que se siga mostrando después de seleccionar
+          // this.showWorkerActionsMenu = false;
         } else {
-          console.log(`No se puede construir ${improvement} en este tipo de terreno.`);
+          // Comprobar si hay bosques o junglas que impidan la construcción
+          if (currentTile.featureType === 'forest' || currentTile.featureType === 'jungle') {
+            console.log(`No se puede construir ${improvement} porque hay un ${currentTile.featureType}. Debe eliminarse primero.`);
+          } else {
+            console.log(`No se puede construir ${improvement} en este tipo de terreno.`);
+          }
         }
       } else if (improvementType.startsWith('clear_')) {
         // Manejo de limpieza de características
@@ -686,15 +701,18 @@ moveSelectedUnit(targetTile: MapTile): void {
           this.selectedUnit.movementPoints = 0;
 
           console.log(`El trabajador comenzó a despejar ${featureType} en (${this.selectedUnit.position.x}, ${this.selectedUnit.position.y})`);
-          this.showWorkerActionsMenu = false; // Cerrar el menú después de seleccionar
+          // No cerramos el menú para que se siga mostrando después de seleccionar
+          // this.showWorkerActionsMenu = false;
         } else {
           console.log('No hay características para eliminar en esta casilla.');
         }
       }
-
-      this.clearSelection();
+      
+      // No limpiar la selección aquí para evitar que se cierre el menú antes de tiempo
+      // this.clearSelection();
     } else {
       // Si no se especifica el tipo, mostramos el menú de opciones para el trabajador
+      console.log('Mostrando menú de acciones del trabajador');
       this.showWorkerActionsMenu = true;
     }
   }

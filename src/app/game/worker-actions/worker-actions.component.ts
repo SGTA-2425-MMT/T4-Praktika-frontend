@@ -28,34 +28,51 @@ export class WorkerActionsComponent {
   }
 
   updateAvailableActions(): void {
+    console.log("Actualizando acciones disponibles del trabajador");
+    
     if (!this.worker || !this.currentTile) {
       this.availableImprovements = [];
       this.canRemoveFeature = false;
       return;
     }
 
-    // Solo mostrar mejoras si el trabajador puede construirlas en esta casilla
-    this.availableImprovements = this.improvementService.getValidImprovements(this.currentTile);
-    
     // Comprobar si se puede eliminar alguna característica
     this.canRemoveFeature = this.improvementService.canRemoveFeature(this.currentTile);
+    
+    console.log(`Casilla actual: ${this.currentTile.x},${this.currentTile.y}, tipo: ${this.currentTile.terrain}, característica: ${this.currentTile.featureType}`);
+    console.log(`¿Puede eliminar característica? ${this.canRemoveFeature}`);
+
+    // Obtener mejoras que se pueden construir independientemente del terreno
+    this.availableImprovements = this.improvementService.getValidImprovements(this.currentTile);
+    console.log(`Mejoras disponibles: ${this.availableImprovements.length}`);
+    
+    // Registramos los nombres de las mejoras disponibles
+    if (this.availableImprovements.length > 0) {
+      console.log('Mejoras disponibles:', this.availableImprovements.map(imp => imp.name).join(', '));
+    }
   }
 
   // Seleccionar construir una mejora
   buildImprovement(improvementType: string): void {
     const actionType = 'build_' + improvementType as UnitAction;
     this.actionSelected.emit(actionType);
+    // No cerramos el menú, sólo actualizamos las acciones disponibles
+    setTimeout(() => this.updateAvailableActions(), 100);
   }
 
   // Seleccionar eliminar una característica
   clearFeature(featureType: string): void {
     const actionType = 'clear_' + featureType.toLowerCase() as UnitAction;
     this.actionSelected.emit(actionType);
+    // No cerramos el menú, sólo actualizamos las acciones disponibles
+    setTimeout(() => this.updateAvailableActions(), 100);
   }
 
   // Construir camino
   buildRoad(): void {
     this.actionSelected.emit('build_road');
+    // No cerramos el menú, sólo actualizamos las acciones disponibles
+    setTimeout(() => this.updateAvailableActions(), 100);
   }
 
   // Cancelar la acción actual

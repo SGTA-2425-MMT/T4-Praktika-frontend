@@ -400,13 +400,28 @@ export class TechnologyService {
   // Actualizar la lista de tecnologías disponibles basadas en las descubiertas
   private updateAvailableTechnologies(): void {
     const discoveredTechIds = this.discoveredTechnologies.map(tech => tech.id);
-
+    
+    // Determinar la era actual del jugador
+    const currentEra = this.getGameEra();
+    console.log(`[TechnologyService] Era actual: ${currentEra}`);
+    
     // Una tecnología está disponible si:
     // 1. No ha sido descubierta aún
     // 2. Todos sus prerrequisitos han sido descubiertos
+    // 3. Pertenece a la era actual o a eras anteriores
     const availableTechs = this.availableTechnologies.filter(tech => {
       // No debe estar ya descubierta
       if (discoveredTechIds.includes(tech.id)) {
+        return false;
+      }
+
+      // Verificar que la tecnología no pertenezca a una era futura
+      const eraOrder = [TechEra.ANCIENT, TechEra.MEDIEVAL, TechEra.AGE_OF_DISCOVERY, TechEra.MODERN];
+      const currentEraIndex = eraOrder.indexOf(currentEra);
+      const techEraIndex = eraOrder.indexOf(tech.era);
+      
+      if (techEraIndex > currentEraIndex) {
+        console.log(`[TechnologyService] Tecnología ${tech.name} (${tech.era}) no disponible en era actual ${currentEra}`);
         return false;
       }
 
@@ -419,6 +434,7 @@ export class TechnologyService {
       return tech.prerequisites.every(prereqId => discoveredTechIds.includes(prereqId));
     });
 
+    console.log(`[TechnologyService] Tecnologías disponibles actualizadas: ${availableTechs.length}`);
     this.availableTechnologiesSubject.next(availableTechs);
   }
 

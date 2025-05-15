@@ -88,17 +88,23 @@ export class CityBuildingsComponent implements OnChanges, OnInit, OnDestroy {
       }
     });
     
-    this.availableBuildings = Array.from(buildingsMap.values());
+    // Filtrar edificios que estén en construcción para no mostrarlos como disponibles
+    const inConstructionIds = new Set(this.city.buildingProductionQueue?.map(bp => bp.buildingId) || []);
+    const availableBuildingsFiltered = Array.from(buildingsMap.values()).filter(building => !inConstructionIds.has(building.id));
+    
+    this.availableBuildings = availableBuildingsFiltered;
     
     console.log(`[CityBuildingsComponent] Edificios disponibles para ${this.city.name} (${this.availableBuildings.length}):`, 
       this.availableBuildings.map(b => `${b.name} (ID: ${b.id})`).join(', '));
     
     // Formatear los edificios construidos para la vista
+    // Asegurarse de filtrar también los que están en construcción o mejora
     const constructedBuildingsMap = new Map<string, any>();
     this.city.buildings
-      .filter(building => building.currentLevel > 0)
+      .filter(building => building.currentLevel > 0 && !building.isUpgrading)
       .forEach(building => {
-        if (!constructedBuildingsMap.has(building.id)) {
+        // No mostrar los edificios que están en construcción inicial
+        if (!constructedBuildingsMap.has(building.id) && !inConstructionIds.has(building.id)) {
           constructedBuildingsMap.set(building.id, building);
         }
       });

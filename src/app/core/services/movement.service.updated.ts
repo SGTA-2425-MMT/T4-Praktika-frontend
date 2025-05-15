@@ -131,7 +131,6 @@ export class MovementService {
     // excepto los trabajadores que son los únicos que pueden quitar los árboles
     if ((tile.featureType === 'forest' || tile.featureType === 'jungle') && 
         unit.type !== 'worker') {
-      console.log(`La unidad ${unit.type} no puede entrar en casillas con ${tile.featureType}`);
       return false;
     }
 

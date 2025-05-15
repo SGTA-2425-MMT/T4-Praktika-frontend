@@ -147,26 +147,41 @@ export class TileImprovementService {
   // Comprobar si una casilla puede recibir una mejora específica
   canBuildImprovement(improvement: ImprovementType, tile: MapTile): boolean {
     if (!tile || improvement === 'none') {
+      console.log(`No se puede construir ${improvement}: tile inválida o mejora es 'none'`);
       return false;
     }
 
     const imp = this.improvements[improvement];
+    if (!imp) {
+      console.log(`La mejora ${improvement} no está definida`);
+      return false;
+    }
     
     // Comprobar si el terreno es válido para esta mejora
     if (!imp.validTerrains.includes(tile.terrain)) {
+      console.log(`No se puede construir ${improvement} en terreno ${tile.terrain}`);
       return false;
     }
 
     // Comprobar si hay características del terreno que impidan la mejora
     if (tile.featureType && imp.invalidFeatures.includes(tile.featureType)) {
+      console.log(`No se puede construir ${improvement} debido a característica ${tile.featureType}`);
       return false;
+    }
+
+    // Verificar si hay bosques o junglas que deben eliminarse primero
+    if (tile.featureType === 'forest' || tile.featureType === 'jungle') {
+      console.log(`No se puede construir ${improvement}: hay ${tile.featureType} que debe eliminarse primero`);
+      return false; // No se puede construir hasta eliminar el bosque o jungla
     }
 
     // Si ya existe la misma mejora en la casilla, no se puede construir de nuevo
     if (tile.improvement === improvement) {
+      console.log(`No se puede construir ${improvement}: ya existe la misma mejora en la casilla`);
       return false;
     }
 
+    console.log(`Se puede construir ${improvement} en esta casilla`);
     return true;
   }
 
@@ -182,10 +197,22 @@ export class TileImprovementService {
 
   // Comprobar si es posible eliminar una característica de terreno
   canRemoveFeature(tile: MapTile): boolean {
-    if (!tile || !tile.featureType || tile.featureType === 'none' || tile.featureType === 'mountain') {
+    if (!tile) {
+      console.log("No se puede eliminar característica: tile es nulo");
       return false;
     }
     
+    if (!tile.featureType) {
+      console.log("No se puede eliminar característica: no hay featureType");
+      return false;
+    }
+    
+    if (tile.featureType === 'none' || tile.featureType === 'mountain') {
+      console.log(`No se puede eliminar característica ${tile.featureType}`);
+      return false;
+    }
+    
+    console.log(`Se puede eliminar la característica ${tile.featureType}`);
     return true;
   }
 
