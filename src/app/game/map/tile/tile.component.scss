@@ -333,6 +333,9 @@
   &.warrior::after {
     background-image: url('/assets/images/units/warrior_lvl1.png');
   }
+  &.warrior.right::after {
+    background-image: url('/assets/images/units/warrior_lvl1.png');
+  }
   &.warrior.lvl2::after {
     background-image: url('/assets/images/units/warrior_lvl2.png');
   }
@@ -384,6 +387,16 @@
     background-image: url('/assets/images/units/galley_lvl2.png');
   }
 
+
+    &.settler.left::after {
+        transform: scaleX(-1); // Flip the image horizontally
+  }
+
+      &.settler.right::after {
+        transform: scaleX(1); // Original direction
+      }
+
+
   &.city::after {
     background-image: url('/assets/images/cities/settlement.png');
   }
@@ -408,13 +421,6 @@
     background-image: url('/assets/images/features/dunes.png');
   }
 
-    &.left::after {
-        transform: scaleX(-1); // Flip the image horizontally
-  }
-
-      &.right::after {
-        transform: scaleX(1); // Original direction
-      }
 
 }
 

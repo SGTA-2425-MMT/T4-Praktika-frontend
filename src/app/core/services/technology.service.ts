@@ -8,7 +8,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 export class TechnologyService {
   private availableTechnologies: Technology[] = [];
   private researchInProgress: ResearchProgress | null = null;
-  
+
   // Propiedad para rastrear la última tecnología completada
   private _lastCompletedTech: Technology | null = null;
 
@@ -45,7 +45,7 @@ export class TechnologyService {
   get availableTechs(): Technology[] {
     return this.availableTechnologiesSubject.value;
   }
-  
+
   // Getter para la última tecnología completada
   get lastCompletedTech(): Technology | null {
     return this._lastCompletedTech;
@@ -131,6 +131,7 @@ export class TechnologyService {
         cost: 0,
         description: 'Desbloquea el trabajo con hierrro y mejorar las unidades militares',
         effects: ['Mejora el nivel de los guerreros', 'Mejora el nivel de los arqueros', 'Mejora el nivel de la caballería'],
+        unlocksUnits: ['warrior', 'archer', 'horseman'],
         icon: '⚔️'
       },
       {
@@ -141,7 +142,7 @@ export class TechnologyService {
         cost: 0,
         description: 'El desarrollo de técnicas avanzadas para construir máquinas de asedio',
         effects: ['Permite entrenar catapultas'],
-        unlocksUnits: ['catapult'],
+        unlocksUnits: ['artillery'],
         prerequisites: ['mathematics'],
         icon: '🏗️'
       },
@@ -165,7 +166,6 @@ export class TechnologyService {
         cost: 0,
         description: 'El estudio de números, cantidades y formas',
         effects: ['Permite construir catapultas', '+1 Ciencia en bibliotecas'],
-        unlocksUnits: ['catapult'],
         prerequisites: ['writing'],
         icon: '➗'
       },
@@ -204,7 +204,7 @@ export class TechnologyService {
         cost: 0,
         description: 'El uso de la pólvora para revolucionar las tácticas y armas de guerra',
         effects: ['Permite entrenar fusileros ', 'Permite construir cañones'],
-        unlocksUnits: ['musketeer', 'cannon'],
+        unlocksUnits: ['rifleman', 'artillery'],
         prerequisites: ['engineering'],
         icon: '💣'
       },
@@ -241,6 +241,7 @@ export class TechnologyService {
         description: 'La aparicion de maquinaria blindada para la guerra',
         effects: ['Permite la construccion de tanques'],
         unlocksBuildings: ['workshop'],
+        unlocksUnits: ['tank'],
         prerequisites: ['industrialization'],
         icon: '⚙️'
       },
@@ -253,6 +254,7 @@ export class TechnologyService {
         description: 'La aleación de hierro y carbono para crear acero',
         effects: ['Permite construir fábricas', 'Mejora unidad de fusileros'],
         unlocksBuildings: ['factory'],
+        unlocksUnits: ['artillery'],
         prerequisites: ['machinery'],
         icon: '🛠️'
       },
@@ -264,8 +266,9 @@ export class TechnologyService {
         category: TechCategory.PRODUCTION,
         cost: 200,
         description: 'La transformación de la producción mediante maquinaria y fábricas',
-        effects: ['Permite construir fábricas', '+20% producción de unidades militares'],
+        effects: ['Permite construir fábricas', 'Mejora de unidades militares'],
         unlocksBuildings: ['factory'],
+        unlocksUnits: ['rifleman'],
         prerequisites: ['steel'],
         icon: '🏭'
       }
@@ -333,7 +336,7 @@ export class TechnologyService {
     // Comprobar si se completó la investigación
     if (this.researchInProgress.progress >= this.researchInProgress.totalCost) {
       console.log('[TechnologyService] Investigación completada. Buscando tecnología...');
-      
+
       // Encontrar la tecnología completada
       const completedTech = this.availableTechnologies.find(
         t => t.id === this.researchInProgress!.technologyId
@@ -343,7 +346,7 @@ export class TechnologyService {
         console.error('[TechnologyService] Error: No se encontró la tecnología que se estaba investigando');
         return null;
       }
-      
+
       console.log('[TechnologyService] Tecnología encontrada:', completedTech);
 
       // Añadir a descubiertas
@@ -376,16 +379,16 @@ export class TechnologyService {
       console.log('[TechnologyService] Investigación actual limpiada.');
 
       console.log(unlockMessage);
-      
+
       // Guardar referencia a la última tecnología completada
       this._lastCompletedTech = completedTech;
       console.log('[TechnologyService] Última tecnología completada actualizada:', this._lastCompletedTech?.name);
-      
+
       // Programar que se limpie después de un tiempo razonable
       setTimeout(() => {
         this._lastCompletedTech = null;
       }, 30000); // 30 segundos
-      
+
       return completedTech;
     }
 
@@ -474,7 +477,7 @@ export class TechnologyService {
   getTechnologyTree(): Technology[] {
     return [...this.availableTechnologies];
   }
-  
+
   // Sincronizar el estado de investigación con el GameService
   syncResearchWithGame(gameResearch: any): void {
     if (!gameResearch) {
@@ -482,10 +485,10 @@ export class TechnologyService {
       this.researchProgressSubject.next(null);
       return;
     }
-    
+
     const tech = this.getTechnologyById(gameResearch.currentTechnology);
     if (!tech) return;
-    
+
     this.researchInProgress = {
       technologyId: gameResearch.currentTechnology,
       name: tech.name,
@@ -493,7 +496,7 @@ export class TechnologyService {
       totalCost: gameResearch.totalCost,
       turnsRemaining: gameResearch.turnsLeft
     };
-    
+
     this.researchProgressSubject.next(this.researchInProgress);
   }
 

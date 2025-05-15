@@ -1,3 +1,4 @@
+import { unitLevel } from './../models/unit.model';
 import { Injectable, Injector } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { GameMap, MapTile, ImprovementType} from '../models/map.model';
@@ -26,6 +27,7 @@ export interface GameSession {
   currentPlayerId: string;
   map: GameMap;
   units: UnitModel.Unit[];
+  unitLevelTracker: UnitModel.unitLevel[];
   cities: City[];
   playerCivilization: string;
   difficulty: string;
@@ -101,6 +103,7 @@ export class GameService {
       currentPlayerId: 'player1',
       map,
       units,
+      unitLevelTracker: UnitModel.UNIT_LEVEL_TRACKER,
       cities: [],
       playerCivilization: settings.civilization,
       difficulty: settings.difficulty,
@@ -378,7 +381,7 @@ export class GameService {
       console.log('¡DISCREPANCIA DETECTADA! Corrigiendo...');
       game.sciencePerTurn = totalCalculatedScience;
     }
-    
+
     // Sincronizar el estado de investigación entre GameService y TechnologyService
     this.technologyService.syncResearchWithGame(game.researchProgress);
 
@@ -391,7 +394,7 @@ export class GameService {
       // Actualizar el progreso con la ciencia generada este turno usando TechnologyService
       // Esto mantiene la coherencia entre los dos servicios
       const completedTech = this.technologyService.updateResearchProgress(game.sciencePerTurn);
-      
+
       console.log(`Progreso de investigación: ${game.researchProgress.progress}/${game.researchProgress.totalCost} (${game.sciencePerTurn} añadidos este turno)`);
 
       // Si la investigación se completó, actualizar el estado del juego
@@ -399,14 +402,26 @@ export class GameService {
         const completedTechnology = game.researchProgress.currentTechnology;
         console.log(`[GameService] Investigación completada de tecnología: ${completedTechnology}`);
 
+        // Mejorar nivel de unidades desbloqueadas por la tecnología
+        if (completedTech.unlocksUnits && completedTech.unlocksUnits.length > 0) {
+          completedTech.unlocksUnits.forEach(unitType => {
+            const trackerEntry = game.unitLevelTracker.find(u => String(u.unitType) === String(unitType));
+            if (trackerEntry) {
+              // Sube el nivel hasta un máximo de 3
+              trackerEntry.unitLevel = Math.min(Number(trackerEntry.unitLevel) + 1, 2);
+              console.log(`[GameService] Nivel de unidad '${unitType}' mejorado a ${trackerEntry.unitLevel}`);
+            }
+          });
+        }
+
         // Verificar si la tecnología ya está en la lista para evitar duplicados
         if (!game.discoveredTechnologies.includes(completedTechnology)) {
           console.log(`[GameService] Añadiendo nueva tecnología a descubiertas: ${completedTechnology}`);
           game.discoveredTechnologies.push(completedTechnology);
-          
+
           this.updateAvailableTechnologies();
           console.log(`[GameService] Lista de tecnologías disponibles actualizada`);
-          
+
           // Información detallada sobre la tecnología completada
           console.log(`[GameService] Detalles de tecnología completada:`);
           console.log(`  - Nombre: ${completedTech.name}`);
@@ -485,28 +500,32 @@ export class GameService {
 
   private createNewUnit(type: string, position: { x: number; y: number }, owner: string): UnitModel.Unit | null {
     const id = `${type}_${Date.now()}`;
-
+    const unitLevel = this.getUnitLevelByType(type); // Usar el método actualizado
+    if (!unitLevel || unitLevel < 1) {
+      console.error(`No se puede desarrollar unidad no desbloqueada: ${type}`);
+      return null;
+    }
     switch (type) {
       case 'warrior':
-        return UnitModel.createWarrior(owner , position.x, position.y, 1);
+        return UnitModel.createWarrior(owner , position.x, position.y, unitLevel);
       case 'settler':
-        return UnitModel.createSettler(owner , position.x, position.y, 1);
+        return UnitModel.createSettler(owner , position.x, position.y, unitLevel);
       case 'worker':
-        return UnitModel.createWorker(owner , position.x, position.y, 1);
+        return UnitModel.createWorker(owner , position.x, position.y, unitLevel);
       case 'archer':
-        return UnitModel.createArcher(owner , position.x, position.y, 1);
+        return UnitModel.createArcher(owner , position.x, position.y, unitLevel);
       case 'horseman':
-        return UnitModel.createHorseman(owner , position.x, position.y, 1);
+        return UnitModel.createHorseman(owner , position.x, position.y, unitLevel);
       case 'swordsman':
-        return UnitModel.createWarrior(owner , position.x, position.y, 2);
+        return UnitModel.createWarrior(owner , position.x, position.y, unitLevel); // Si hay un createSwordsman, cámbialo aquí
       case 'catapult':
-        return UnitModel.createCatapult(owner , position.x, position.y, 1);
+        return UnitModel.createCatapult(owner , position.x, position.y, unitLevel);
       case 'warship':
-        return UnitModel.createWarship(owner , position.x, position.y, 1);
+        return UnitModel.createWarship(owner , position.x, position.y, unitLevel);
       case 'cannon' :
-        return UnitModel.createCannon(owner , position.x, position.y, 1);
+        return UnitModel.createCannon(owner , position.x, position.y, unitLevel);
       case 'galley':
-        return UnitModel.createGalley(owner , position.x, position.y, 1);
+        return UnitModel.createGalley(owner , position.x, position.y, unitLevel);
       default:
         console.error(`Tipo de unidad desconocido: ${type}`);
         return null;
@@ -868,5 +887,14 @@ export class GameService {
     const updatedGame = {...this.currentGame};
     this.currentGameSubject.next(updatedGame);
     console.log('Estado del juego actualizado manualmente');
+  }
+
+  // Devuelve el nivel de una unidad según su tipo usando el tracker
+  getUnitLevelByType(unitType: string): number {
+    const game = this.currentGame;
+    if (!game) return 0;
+    // Permitir que unitType sea string o UnitType, normalizando a string
+    const entry = game.unitLevelTracker.find(u => String(u.unitType) === String(unitType));
+    return entry ? Number(entry.unitLevel) : 0;
   }
 }

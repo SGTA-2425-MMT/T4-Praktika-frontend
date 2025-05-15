@@ -42,12 +42,9 @@ export class FogOfWarService {
   // Determinar el rango de visión según el tipo de unidad
   private getVisionRange(unit: Unit): number {
     switch(unit.type as UnitType) {
-      case 'scout':
-        return 3; // Exploradores tienen mejor visión
       case 'warrior':
       case 'archer':
       case 'horseman':
-      case 'swordsman':
         return 2; // Unidades militares tienen visión estándar
       case 'settler':
       case 'worker':

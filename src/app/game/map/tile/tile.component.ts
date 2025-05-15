@@ -172,7 +172,7 @@ export class TileComponent implements OnInit, OnDestroy {
       'catapult': this.unitType === 'catapult',
       'galley': this.unitType === 'galley',
       'unit-left': this.direction === 'left', // Add direction class
-      'unit-right': this.direction === 'right',
+      'right': true,
       'has-road': this.tile.hasRoad === true, // Clase para casillas con camino
       'construction-in-progress': this.isConstructionInProgress(), // Casillas con construcción en progreso
 

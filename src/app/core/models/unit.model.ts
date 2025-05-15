@@ -1,15 +1,14 @@
 export type UnitType =
   // Unidades terrestres
-  'settler' | 'warrior' | 'archer' | 'horseman' | 'swordsman' | 'catapult' |
+  'settler' | 'warrior' | 'archer' | 'horseman' | 'artillery' | 'tank' | 'rifleman' |
   // Unidades navales
   'galley' | 'warship' |
   // Unidades aéreas (opcionales)
-  'fighter' | 'bomber' |
   // Especiales
-  'worker' | 'scout';
+  'worker' | 'catapult' | 'cannon';
 
-export type UnitAction = 'move' | 'attack' |'found_city' | 'build' | 'negotiate' | 'retreat' | 'navigate' | 
-  'build_farm' | 'build_mine' | 'build_plantation' | 'build_camp' | 'build_pasture' | 'build_fishing_boats' | 
+export type UnitAction = 'move' | 'attack' |'found_city' | 'build' | 'negotiate' | 'retreat' | 'navigate' |
+  'build_farm' | 'build_mine' | 'build_plantation' | 'build_camp' | 'build_pasture' | 'build_fishing_boats' |
   'clear_forest' | 'clear_jungle' | 'build_road';
 
 export interface Unit {
@@ -119,7 +118,7 @@ export const createWorker = (owner: string, x: number, y: number, level:number):
   attacksPerTurn: 0,
 
   isRanged: false,
-  availableActions: ['move', 'build_farm', 'build_mine', 'build_plantation', 'build_camp', 'build_pasture', 
+  availableActions: ['move', 'build_farm', 'build_mine', 'build_plantation', 'build_camp', 'build_pasture',
                      'build_fishing_boats', 'clear_forest', 'clear_jungle', 'build_road'],
   buildingImprovement: undefined,
   canMove: true,
@@ -208,10 +207,10 @@ export const createHorseman = (owner: string, x: number, y: number, level:number
 });
 
 // Ejemplo de creación de un Catapult:
-export const createCatapult = (owner: string, x: number, y: number, level:number): Unit => ({
-  id: `catapult_${Date.now()}`,
-  name: 'Catapult',
-  type: 'catapult',
+export const createArtillery = (owner: string, x: number, y: number, level:number): Unit => ({
+  id: `artillery_${Date.now()}`,
+  name: 'Artillery',
+  type: 'artillery',
   owner,
   position: { x, y },
 
@@ -235,84 +234,105 @@ export const createCatapult = (owner: string, x: number, y: number, level:number
   level: level,
 });
 
-// Ejemplo de cañon
-export const createCannon = (owner: string, x: number, y: number, level:number): Unit => ({
-  id: `cannon_${Date.now()}`,
-  name: 'Cannon',
+// Factory for Catapult (maps to artillery)
+export const createCatapult = (owner: string, x: number, y: number, level: number): Unit => ({
+  ...createArtillery(owner, x, y, level),
+  id: `catapult_${Date.now()}`,
+  name: 'Catapult',
   type: 'catapult',
+});
+
+// Factory for Warship
+export const createWarship = (owner: string, x: number, y: number, level: number): Unit => ({
+  id: `warship_${Date.now()}`,
+  name: 'Warship',
+  type: 'warship',
   owner,
   position: { x, y },
-
   turnsToComplete: 0,
   cost: 0,
-
-  movementPoints: 2,
-  maxMovementPoints: 2,
-  strength: 10 + 3 * level,
-  health: 100 + 10 * level,
-  maxHealth: 100 + 10 * level,
-
-  isRanged: true,
-  maxRange: 4,
+  movementPoints: 5,
+  maxMovementPoints: 5,
+  strength: 18 + 5 * level,
+  health: 120 + 15 * level,
+  maxHealth: 120 + 15 * level,
   attacksPerTurn: 1,
   maxattacksPerTurn: 1,
+  isRanged: false,
+  movementType: 'naval',
+  availableActions: ['move', 'attack', 'retreat'],
+  canMove: true,
+  isFortified: false,
+  level: level,
+});
 
+// Factory for Cannon
+export const createCannon = (owner: string, x: number, y: number, level: number): Unit => ({
+  id: `cannon_${Date.now()}`,
+  name: 'Cannon',
+  type: 'cannon',
+  owner,
+  position: { x, y },
+  turnsToComplete: 0,
+  cost: 0,
+  movementPoints: 2,
+  maxMovementPoints: 2,
+  strength: 14 + 4 * level,
+  health: 100 + 10 * level,
+  maxHealth: 100 + 10 * level,
+  isRanged: true,
+  maxRange: 3,
+  attacksPerTurn: 1,
+  maxattacksPerTurn: 1,
   availableActions: ['move', 'attack'],
   canMove: true,
   isFortified: false,
   level: level,
 });
 
-// Ejemplo de creación de un Galley:
-export const createGalley = (owner: string, x: number, y: number, level:number): Unit => ({
+// Factory for Galley
+export const createGalley = (owner: string, x: number, y: number, level: number): Unit => ({
   id: `galley_${Date.now()}`,
   name: 'Galley',
   type: 'galley',
   owner,
   position: { x, y },
-
   turnsToComplete: 0,
   cost: 0,
-
-  movementPoints: 3,
-  maxMovementPoints: 3,
-  strength: 5 + 2 * level,
-  health: 100 + 10 * level,
-  maxHealth: 100 + 10 * level,
-  attacksPerTurn: 1,
-  maxattacksPerTurn: 1,
-
-  isRanged: false,
-  availableActions: ['navigate', 'attack'],
-  canMove: true,
-  isFortified: false,
-  level: level,
-});
-
-// Ejemplo de buque de guerra
-export const createWarship = (owner: string, x: number, y: number, level:number): Unit => ({
-  id: `warship_${Date.now()}`,
-  name: 'Warship',
-  type: 'warship',
-  owner,
-  position: { x, y },
-
-  turnsToComplete: 0,
-  cost: 0,
-
   movementPoints: 4,
   maxMovementPoints: 4,
-  strength: 10 + 4 * level,
-  health: 100 + 15 * level,
-  maxHealth: 100 + 15 * level,
-
-  isRanged: true,
-  maxRange: 3,
+  strength: 6 + 2 * level,
+  health: 80 + 8 * level,
+  maxHealth: 80 + 8 * level,
   attacksPerTurn: 1,
   maxattacksPerTurn: 1,
-
-  availableActions: ['navigate', 'attack'],
+  isRanged: false,
+  movementType: 'naval',
+  availableActions: ['move', 'attack', 'retreat'],
   canMove: true,
   isFortified: false,
   level: level,
 });
+
+export interface unitLevel
+{
+  unitType: UnitType;
+  unitLevel: Number;
+}
+
+export const UNIT_LEVEL_TRACKER: unitLevel[] = [
+  { unitType: 'settler', unitLevel: 3 },
+  { unitType: 'worker', unitLevel: 1 },
+  { unitType: 'warrior', unitLevel: 4 },
+  { unitType: 'archer', unitLevel: 0 },
+  { unitType: 'horseman', unitLevel: 0 },
+  { unitType: 'artillery', unitLevel: 0 },
+  { unitType: 'tank', unitLevel: 0 },
+  { unitType: 'rifleman', unitLevel: 0 },
+  { unitType: 'galley', unitLevel: 0 },
+  { unitType: 'warship', unitLevel: 0 },
+  { unitType: 'catapult', unitLevel: 0 },
+  { unitType: 'cannon', unitLevel: 0 }
+];
+
+// Ejemplo de cañon
