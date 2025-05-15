@@ -89,7 +89,7 @@
     box-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
     z-index: 30;
   }
-  
+
   /* Estilo para casillas con caminos */
   &.has-road {
     &::after {
@@ -107,7 +107,7 @@
       z-index: 2;
     }
   }
-  
+
   /* Estilo para casillas con construcción en progreso */
   &.construction-in-progress {
     &::before {
@@ -127,7 +127,7 @@
       z-index: 3;
       animation: construction-pulse 2s infinite alternate;
     }
-    
+
     @keyframes construction-pulse {
       from { opacity: 0.4; }
       to { opacity: 0.8; }
@@ -309,47 +309,79 @@
     transition: transform 0.3s ease; // Transición suave para el cambio de orientación
   }
 
-   &.settler::after {
+
+  &.settler::after {
     background-image: url('/assets/images/units/settler_lvl1.png');
-        &.left {
-        transform: scaleX(-1); // Flip the image horizontally
   }
-
-      &.right {
-        transform: scaleX(1); // Original direction
-      }
-  }
-
-  &.settler2::after {
+  &.settler.lvl2::after {
     background-image: url('/assets/images/units/settler_lvl2.png');
+  }
+  &.settler.lvl3::after {
+    background-image: url('/assets/images/units/settler_lvl3.png');
   }
 
   &.worker::after {
     background-image: url('/assets/images/units/worker_lvl1.png');
   }
+  &.worker.lvl2::after {
+    background-image: url('/assets/images/units/worker_lvl2.png');
+  }
+  &.worker.lvl3::after {
+    background-image: url('/assets/images/units/worker_lvl3.png');
+  }
 
   &.warrior::after {
     background-image: url('/assets/images/units/warrior_lvl1.png');
+  }
+  &.warrior.lvl2::after {
+    background-image: url('/assets/images/units/warrior_lvl2.png');
+  }
+  &.warrior.lvl3::after {
+    background-image: url('/assets/images/units/warrior_lvl3.png');
   }
 
   &.horseman::after {
     background-image: url('/assets/images/units/horseman_lvl1.png');
   }
+  &.horseman.lvl2::after {
+    background-image: url('/assets/images/units/horseman_lvl2.png');
+  }
+  &.horseman.lvl3::after {
+    background-image: url('/assets/images/units/horseman_lvl3.png');
+  }
 
-    &.swordsman::after {
-      background-image: url('/assets/images/units/warrior_lvl2.png');
-    }
+  &.swordsman::after {
+    background-image: url('/assets/images/units/warrior_lvl2.png');
+  }
+  &.swordsman.lvl2::after {
+    background-image: url('/assets/images/units/warrior_lvl3.png');
+  }
 
   &.archer::after {
     background-image: url('/assets/images/units/archer_lvl1.png');
+  }
+  &.archer.lvl2::after {
+    background-image: url('/assets/images/units/archer_lvl2.png');
+  }
+  &.archer.lvl3::after {
+    background-image: url('/assets/images/units/archer_lvl3.png');
   }
 
   &.catapult::after {
     background-image: url('/assets/images/units/catapult.png');
   }
+  &.catapult.lvl2::after {
+    background-image: url('/assets/images/units/artillery_lvl2.png');
+  }
+  &.catapult.lvl3::after {
+    background-image: url('/assets/images/units/artillery_lvl3.png');
+  }
 
   &.galley::after {
     background-image: url('/assets/images/units/galley.png');
+  }
+  &.galley.lvl2::after {
+    background-image: url('/assets/images/units/galley_lvl2.png');
   }
 
   &.city::after {
@@ -528,7 +560,7 @@
     opacity: 0.8;
     z-index: 2;
   }
-  
+
   /* Efecto para resaltar mejoras recién construidas */
   &.improvement-new {
     &::before {
@@ -542,34 +574,34 @@
       animation: pulse 2s infinite;
       z-index: 1;
     }
-    
+
     @keyframes pulse {
       0% { opacity: 0.7; }
       50% { opacity: 0.3; }
       100% { opacity: 0.7; }
     }
   }
-  
+
   &.improvement-farm::after {
     background-image: url('/assets/images/improvements/farm.png');
   }
-  
+
   &.improvement-mine::after {
     background-image: url('/assets/images/improvements/mine.png');
   }
-  
+
   &.improvement-plantation::after {
     background-image: url('/assets/images/improvements/plantation.png');
   }
-  
+
   &.improvement-camp::after {
     background-image: url('/assets/images/improvements/camp.png');
   }
-  
+
   &.improvement-pasture::after {
     background-image: url('/assets/images/improvements/pasture.png');
   }
-  
+
   &.improvement-fishing_boats::after {
     background-image: url('/assets/images/improvements/fishing_boats.png');
   }
@@ -591,14 +623,14 @@
   z-index: 20;
   height: 6px;
   pointer-events: none;
-  
+
   .construction-progress-bar {
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     border-radius: 3px;
     overflow: hidden;
-    
+
     .construction-progress {
       height: 100%;
       background: linear-gradient(to right, #ffd700, #ff9500);

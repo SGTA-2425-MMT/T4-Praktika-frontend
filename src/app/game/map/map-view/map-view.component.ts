@@ -392,6 +392,18 @@ moveSelectedUnit(targetTile: MapTile): void {
     return unit ? unit.type : '';
   }
 
+  getUnitLevelAt(x: number, y: number): number {
+
+    if (!this.gameSession) return 1;
+
+    const unit = this.gameSession.units.find(unit =>
+      unit.position.x === x &&
+      unit.position.y === y
+    );
+
+    return unit ? unit.level : 1;
+  }
+
   // Actualiza la visibilidad para una unidad
   updateUnitVisibility(unit: Unit): void {
     if (!this.gameSession) return;
