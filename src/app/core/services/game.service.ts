@@ -11,6 +11,7 @@ import { TechEra } from '../models/technology.model';
 import { TileImprovementService } from './tile-improvement.service';
 import { UnitAction } from '../models/unit.model';
 import { NotificationService } from './notification.service';
+import { SharedWarGameService } from './shared-war-game.service';
 
 export interface GameSettings {
   gameName: string;
@@ -51,6 +52,28 @@ export interface GameSession {
   culturePerTurn: number;
   happiness: number;
   era: 'ancient'  | 'medieval' | 'age_of_discovery' | 'modern';
+  players: {
+    id: string;
+    name: string;
+    civilization: string;
+    resources: {
+      gold: number;
+      goldPerTurn: number;
+      science: number;
+      sciencePerTurn: number;
+      culture: number;
+      culturePerTurn: number;
+      happiness: number;
+    };
+    research: {
+      progress: number;
+      turnsRemaining: number;
+    };
+    technologies: string[];
+    availableTechnologies: string[];
+    era: 'ancient' | 'medieval' | 'age_of_discovery' | 'modern';
+  }[];
+  settings: GameSettings; // Agregar los ajustes del juego al estado de la sesión
 }
 
 @Injectable({
@@ -65,6 +88,7 @@ export class GameService {
   public tileUpdate$ = this.tileUpdateSubject.asObservable();
 
   constructor(
+    private sharedWarGameService: SharedWarGameService,
     private mapGeneratorService: MapGeneratorService,
     private cityService: CityService,
     private technologyService: TechnologyService,
@@ -118,12 +142,37 @@ export class GameService {
       culture: 0,
       culturePerTurn: 0,
       happiness: 0,
-      era: 'ancient'
+      era: 'ancient',
+      players: [
+        {
+          id: 'player1',
+          name: 'Player 1',
+          civilization: settings.civilization,
+          resources: {
+            gold: 0,
+            goldPerTurn: 0,
+            science: 0,
+            sciencePerTurn: 0,
+            culture: 0,
+            culturePerTurn: 0,
+            happiness: 0
+          },
+          research: {
+            progress: 0,
+            turnsRemaining: 0
+          },
+          technologies: [],
+          availableTechnologies: [],
+          era: 'ancient'
+        }
+      ],
+      settings // Almacenar los ajustes del juego en el estado de la sesión
     };
 
     this.currentGameSubject.next(gameSession);
 
     this.revealInitialMap(gameSession);
+    this.createRivalCivilizations();
 
     return gameSession;
   }
@@ -320,7 +369,41 @@ export class GameService {
   }
 
   private processAI(): void {
-    // Placeholder for AI logic
+    const game = this.currentGame;
+    if (!game) return;
+
+    game.units
+      .filter(unit => unit.owner !== game.currentPlayerId && unit.owner !== 'neutral')
+      .forEach(rivalUnit => {
+        // Encontrar la unidad enemiga más cercana
+        const nearestEnemy = game.units
+          .filter(unit => unit.owner === game.currentPlayerId)
+          .reduce((closest: UnitModel.Unit | null, current: UnitModel.Unit) => {
+            const distanceToCurrent = Math.abs(rivalUnit.position.x - current.position.x) +
+                                      Math.abs(rivalUnit.position.y - current.position.y);
+            const distanceToClosest = closest ? Math.abs(rivalUnit.position.x - closest.position.x) +
+                                               Math.abs(rivalUnit.position.y - closest.position.y) : Infinity;
+            return distanceToCurrent < distanceToClosest ? current : closest;
+          }, null);
+
+        if (nearestEnemy) {
+          const dx = Math.sign(nearestEnemy.position.x - rivalUnit.position.x);
+          const dy = Math.sign(nearestEnemy.position.y - rivalUnit.position.y);
+
+          // Moverse un casillero hacia el enemigo más cercano
+          rivalUnit.position.x += dx;
+          rivalUnit.position.y += dy;
+
+          // Atacar si está en rango
+          if (this.isUnitInRange(rivalUnit, nearestEnemy)) {
+            this.attackUnit(rivalUnit, nearestEnemy);
+          }
+        }
+      });
+  }
+
+  attackUnit(attacker: UnitModel.Unit, defender: UnitModel.Unit): boolean {
+    return this.sharedWarGameService.attackUnit(attacker, defender);
   }
 
   private updateAvailableActions(): void {
@@ -328,29 +411,36 @@ export class GameService {
     if (!game) return;
 
     game.units.forEach(unit => {
-      if (unit.owner === game.currentPlayerId && unit.movementPoints > 0) {
-        const availableActions: UnitModel.UnitAction[] = ['move'];
+        if (unit.owner === game.currentPlayerId && unit.movementPoints > 0) {
+            const availableActions: UnitModel.UnitAction[] = ['move'];
 
-        if (unit.type === 'settler' && unit.movementPoints > 0) {
-          availableActions.push('found_city');
+            if (unit.type === 'settler' && unit.movementPoints > 0) {
+                availableActions.push('found_city');
+            }
+
+            if (unit.type === 'worker' && unit.movementPoints > 0) {
+                availableActions.push('build');
+            }
+
+            if ((unit.type === 'warrior' || unit.type === 'archer') && unit.movementPoints > 0) {
+                const enemyUnitsInRange = game.units.some(otherUnit => 
+                    otherUnit.owner !== game.currentPlayerId && // Asegurarse de que no sea del jugador actual
+                    otherUnit.owner !== 'neutral' && // Excluir unidades neutrales
+                    this.isUnitInRange(unit, otherUnit)
+                );
+
+                if (enemyUnitsInRange) {
+                    availableActions.push('attack');
+                }
+            }
+
+            unit.availableActions = availableActions;
         }
-
-        if (unit.type === 'worker' && unit.movementPoints > 0) {
-          availableActions.push('build');
-        }
-
-        if (unit.type === 'warrior' && unit.movementPoints > 0) {
-          availableActions.push('attack');
-
-        }
-
-        if (unit.type === 'archer' && unit.movementPoints > 0) {
-          availableActions.push('attack');
-        }
-
-        unit.availableActions = availableActions;
-      }
     });
+  }
+
+  isUnitInRange(attacker: UnitModel.Unit, target: UnitModel.Unit): boolean {
+    return this.sharedWarGameService.isUnitInRange(attacker, target);
   }
 
   updateResearch(): void {
@@ -900,5 +990,74 @@ export class GameService {
     // Permitir que unitType sea string o UnitType, normalizando a string
     const entry = game.unitLevelTracker.find(u => String(u.unitType) === String(unitType));
     return entry ? Number(entry.unitLevel) : 0;
+  }
+
+  private createRivalCivilizations(): void {
+    const game = this.currentGame;
+    if (!game) return;
+
+    // Inicializar la lista de jugadores si no está definida
+    if (!game.players) {
+        game.players = [];
+    }
+
+    const availableCivilizations = [
+        'aztecs', 'egyptians', 'romans', 'greeks', 'chinese', 'indians', 'japanese', 'mongols'
+    ];
+
+    for (let i = 0; i < game.settings.numberOfOpponents; i++) {
+        const civilization = availableCivilizations[i % availableCivilizations.length];
+        const rivalId = `rival${i + 1}`;
+        const rivalName = `Civilización ${i + 1}`;
+
+        const startingPosition = this.findSuitableStartingPosition(game.map);
+
+        // Crear una ciudad inicial para la civilización rival
+        const settler = UnitModel.createSettler(rivalId, startingPosition.x, startingPosition.y, 1);
+        const city = this.cityService.foundCity(
+            `Ciudad ${rivalName}`,
+            settler,
+            game.map,
+            game.turn
+        );
+
+        if (city) {
+            city.ownerId = rivalId;
+            game.cities.push(city);
+        }
+
+        // Crear unidades iniciales para la civilización rival
+        const units = [
+            UnitModel.createWarrior(rivalId, startingPosition.x, startingPosition.y, 1),
+            UnitModel.createArcher(rivalId, startingPosition.x, startingPosition.y, 1)
+        ];
+
+        game.units.push(...units);
+
+        // Añadir la civilización rival al estado del juego
+        game.players.push({
+            id: rivalId,
+            name: rivalName,
+            civilization: civilization,
+            resources: {
+                gold: 50,
+                goldPerTurn: 2,
+                science: 0,
+                sciencePerTurn: 1,
+                culture: 0,
+                culturePerTurn: 1,
+                happiness: 0
+            },
+            research: {
+                progress: 0,
+                turnsRemaining: 0
+            },
+            technologies: [],
+            availableTechnologies: ['agriculture', 'mining', 'sailing'],
+            era: 'ancient'
+        });
+    }
+
+    this.currentGameSubject.next({ ...game });
   }
 }

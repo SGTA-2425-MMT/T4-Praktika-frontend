@@ -357,7 +357,8 @@ moveSelectedUnit(targetTile: MapTile): void {
     if (!this.gameSession) return null;
 
     return this.gameSession.units.find(unit =>
-      unit.position.x === x && unit.position.y === y
+      unit.position.x === x &&
+      unit.position.y === y
     ) || null;
   }
 
@@ -813,11 +814,21 @@ moveSelectedUnit(targetTile: MapTile): void {
   visualizeUnitAttack(attacker: Unit, defender: Unit, damage: number): void {
     console.log(`Visualizing attack: ${attacker.name} -> ${defender.name}, Damage: ${damage}`);
 
-    // Calculate pixel coordinates for the defender's position
+    // Mostrar barra de vida si no está visible
+    if (!defender.healthBarVisible) {
+        defender.healthBarVisible = true;
+    }
+
+    // Actualizar la barra de vida
+    const healthPercentage = (defender.health / defender.maxHealth) * 100;
+    const healthBarElement = document.getElementById(`health-bar-${defender.id}`) as HTMLElement | null;
+    if (healthBarElement) {
+        healthBarElement.style.width = `${healthPercentage}%`;
+    }
+
+    // Lógica existente para animar el daño
     const x = defender.position.x * 120 + 60; // Center of the tile
     const y = defender.position.y * 120 + 60;
-
-    // Create a temporary DOM element to display the damage
     const damageElement = document.createElement('div');
     damageElement.textContent = `-${damage}`;
     damageElement.style.position = 'absolute';
@@ -830,8 +841,8 @@ moveSelectedUnit(targetTile: MapTile): void {
     damageElement.style.zIndex = '1000';
     this.mapContainer.nativeElement.appendChild(damageElement);
 
-    // Animate the damage text (move up and fade out)
-    const animationDuration = 1000; // 1 second
+    // Animar el texto de daño
+    const animationDuration = 1000; // 1 segundo
     const startTime = performance.now();
     const animate = (time: number) => {
         const elapsed = time - startTime;
@@ -841,7 +852,7 @@ moveSelectedUnit(targetTile: MapTile): void {
         if (progress < 1) {
             requestAnimationFrame(animate);
         } else {
-            damageElement.remove(); // Remove the element after animation
+            damageElement.remove(); // Eliminar el elemento después de la animación
         }
     };
     requestAnimationFrame(animate);
@@ -892,6 +903,14 @@ moveSelectedUnit(targetTile: MapTile): void {
     if (unitOnTile) {
       // Puede ser útil para ciertas visualizaciones relacionadas con las unidades
       console.log(`Unidad ${unitOnTile.name} (${unitOnTile.id}) en casilla actualizada (${tile.x}, ${tile.y})`);
+    }
+  }
+
+  // Método para actualizar la barra de vida de una unidad
+  updateHealthBar(unitId: string, healthPercentage: number): void {
+    const healthBarElement = document.querySelector(`.unit-health-bar[data-unit-id="${unitId}"]`);
+    if (healthBarElement) {
+      (healthBarElement as HTMLElement).style.width = `${healthPercentage}%`;
     }
   }
 }

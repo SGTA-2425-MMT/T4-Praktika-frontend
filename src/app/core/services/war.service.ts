@@ -1,8 +1,8 @@
 import { Injectable, EventEmitter } from '@angular/core';
 import { Unit } from '../models/unit.model';
 import { City } from '../models/city.model';
-import { GameService } from './game.service';
 import { AnimationService } from './animation.service';
+import { SharedWarGameService } from './shared-war-game.service';
 
 @Injectable({
   providedIn: 'root',
@@ -11,7 +11,10 @@ export class WarService {
   unitAttackEvent = new EventEmitter<{ attacker: Unit; defender: Unit; damage: number }>();
   cityAttackEvent = new EventEmitter<{ attacker: Unit; city: City; damage: number }>();
 
-  constructor(private gameService: GameService, private animationService: AnimationService) {}
+  constructor(
+    private sharedWarGameService: SharedWarGameService,
+    private animationService: AnimationService
+  ) {}
 
   // Handle unit vs unit combat
   attackUnit(attacker: Unit, defender: Unit): boolean {
@@ -20,31 +23,14 @@ export class WarService {
       return false;
     }
 
-    // Calculate damage
     const damage = this.calculateDamage(attacker, defender);
-
-    // Apply damage to the defender
-    defender.health -= damage;
-
-    // Display damage animation
-    this.triggerAttackAnimation(
-      defender.position.x * 120 + 60, // Center of the tile
-      defender.position.y * 120 + 60,
-      damage,
-      attacker.isRanged ? 'ranged' : 'melee'
-    );
-
-    // Decrement attacksPerTurn
-    if (attacker.attacksPerTurn && attacker.attacksPerTurn > 0) {
-      attacker.attacksPerTurn -= 1;
-    }
+    this.sharedWarGameService.applyDamageToUnit(defender, damage);
 
     // Emit event for visualization
     this.unitAttackEvent.emit({ attacker, defender, damage });
 
     console.log(`${attacker.name} attacked ${defender.name} for ${damage} damage!`);
 
-    // Check if the defender is dead
     if (defender.health <= 0) {
       this.removeUnit(defender);
       console.log(`${defender.name} has been defeated!`);
@@ -64,7 +50,7 @@ export class WarService {
     const damage = attacker.strength;
 
     // Apply damage to the city
-    city.health -= damage;
+    this.sharedWarGameService.applyDamageToCity(city, damage);
 
     // Decrement attacksPerTurn
     if (attacker.attacksPerTurn && attacker.attacksPerTurn > 0) {
@@ -91,19 +77,15 @@ export class WarService {
     console.log('Attacker:', attacker);
     console.log('Defender:', defender);
 
-    // Allow attacking own units for now
-    // Remove this condition to allow friendly fire
-    // if (attacker.owner === defender.owner) return false;
-
     if (!attacker.attacksPerTurn || attacker.attacksPerTurn <= 0) {
       console.error('Attack not allowed: Attacker has no attacks left this turn.');
       return false; // No attacks left this turn
     }
 
-    if (attacker.isRanged){
+    if (attacker.isRanged) {
       const aDistance = this.getDistance(attacker.position, defender.position);
-      console.log('Ranged atack: ', aDistance);
-      if (attacker.maxRange! < aDistance) {
+      console.log('Ranged attack: ', aDistance);
+      if (!this.isUnitInRange(attacker, defender)) {
         console.error('Attack not allowed: Target is out of range for ranged units.');
         return false; // Out of range for ranged units
       }
@@ -159,25 +141,21 @@ export class WarService {
 
   // Remove a unit from the game
   private removeUnit(unit: Unit): void {
-    const game = this.gameService.currentGame;
-    if (!game) return;
-
-    game.units = game.units.filter(u => u.id !== unit.id);
+    this.sharedWarGameService.removeUnitFromGame(unit);
   }
 
   // Capture a city
   private captureCity(attacker: Unit, city: City): void {
-    const game = this.gameService.currentGame;
-    if (!game) return;
-
-    city.ownerId = attacker.owner; // Change ownership
-    city.health = 50; // Reset city health
-    console.log(`${city.name} is now owned by ${attacker.owner}`);
+    this.sharedWarGameService.captureCity(attacker, city);
   }
 
   // Calculate distance between two positions
   private getDistance(pos1: { x: number; y: number }, pos2: { x: number; y: number }): number {
     return Math.abs(pos1.x - pos2.x) + Math.abs(pos1.y - pos2.y); // Manhattan distance
+  }
+
+  isUnitInRange(attacker: Unit, target: Unit): boolean {
+    return this.sharedWarGameService.isUnitInRange(attacker, target);
   }
 
   triggerAttackAnimation(x: number, y: number, damage: number, attackType: 'melee' | 'ranged' | 'explosion'): void {

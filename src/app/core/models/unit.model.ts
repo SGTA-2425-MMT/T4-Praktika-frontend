@@ -45,6 +45,8 @@ export interface Unit {
   targetPosition?: {x: number, y: number}; // Posición objetivo para acciones como moverse
   isAutoExploring?: boolean; // Si la unidad está en modo exploración automática
   promotions?: string[]; // Promociones/mejoras que tiene la unidad
+  attackRange: number; // Alcance de ataque de la unidad, predeterminado a 1
+  healthBarVisible?: boolean; // Indica si la barra de vida es visible
 }
 
 // Nuevas interfaces para mejorar la jugabilidad
@@ -95,6 +97,7 @@ export const createSettler = (owner: string, x: number, y: number, level:number)
   canMove: true,
   isFortified: false,
   level: level,
+  attackRange: 1,
 });
 
 //Ejemplo de Worker
@@ -124,6 +127,7 @@ export const createWorker = (owner: string, x: number, y: number, level:number):
   canMove: true,
   isFortified: false,
   level: level,
+  attackRange: 1,
 });
 
 // Ejemplo de creación de un Warrior:
@@ -146,6 +150,7 @@ export const createWarrior = (owner: string, x: number, y: number, level:number)
   maxattacksPerTurn: 1,
 
   isRanged: false,
+  attackRange: 1, // Valor predeterminado
   availableActions: ['move', 'attack', 'retreat'],
   canMove: true,
   isFortified: false,
@@ -178,6 +183,7 @@ export const createArcher = (owner: string, x: number, y: number, level:number):
   canMove: true,
   isFortified: false,
   level: level,
+  attackRange: 2,
 });
 
 // Ejemplo de creación de un Horseman:
@@ -204,6 +210,7 @@ export const createHorseman = (owner: string, x: number, y: number, level:number
   canMove: true,
   isFortified: false,
   level: level,
+  attackRange: 1,
 });
 
 // Ejemplo de creación de un Catapult:
@@ -232,6 +239,7 @@ export const createArtillery = (owner: string, x: number, y: number, level:numbe
   canMove: true,
   isFortified: false,
   level: level,
+  attackRange: 1,
 });
 
 // Factory for Catapult (maps to artillery)
@@ -264,6 +272,7 @@ export const createWarship = (owner: string, x: number, y: number, level: number
   canMove: true,
   isFortified: false,
   level: level,
+  attackRange: 1,
 });
 
 // Factory for Cannon
@@ -288,6 +297,7 @@ export const createCannon = (owner: string, x: number, y: number, level: number)
   canMove: true,
   isFortified: false,
   level: level,
+  attackRange: 1,
 });
 
 // Factory for Galley
@@ -312,6 +322,7 @@ export const createGalley = (owner: string, x: number, y: number, level: number)
   canMove: true,
   isFortified: false,
   level: level,
+  attackRange: 1,
 });
 
 export interface unitLevel
