@@ -39,9 +39,9 @@ export class CityViewComponent implements OnInit {
   ];
 
   constructor(
-    private cityService: CityService,
-    private gameService: GameService,
-    private technologyService: TechnologyService
+    private readonly cityService: CityService,
+    private readonly gameService: GameService,
+    private readonly technologyService: TechnologyService
   ) {}
 
   ngOnInit(): void {
@@ -179,10 +179,10 @@ export class CityViewComponent implements OnInit {
       { type: 'warrior', name: 'Guerrero', cost: 40, unlocked: true, description: 'Unidad militar básica para defensa', icon: '⚔️' },
       { type: 'archer', name: 'Arquero', cost: 50, unlocked: this.isUnitUnlocked('archer'), description: 'Ataque a distancia, buena para defensa', icon: '🏹' },
       { type: 'horseman', name: 'Jinete', cost: 70, unlocked: this.isUnitUnlocked('horseman'), description: 'Unidad rápida para explorar y atacar', icon: '🐎' },
+      { type: 'catapult', name: 'Catapulta', cost: 80, unlocked: this.isUnitUnlocked('catapult'), description: 'Unidad de asedio básica', icon: '🏰' },
       { type: 'artillery', name: 'Artilleria', cost: 110, unlocked: this.isUnitUnlocked('artillery'), description: 'Unidad de asedio avanzada', icon: '💣' },
       { type: 'rifleman', name: 'Fusilero', cost: 80, unlocked: this.isUnitUnlocked('rifleman'), description: 'Unidad de combate avanzada', icon: '🔫' },
       { type: 'galley', name: 'Galera', cost: 65, unlocked: this.isUnitUnlocked('galley'), description: 'Transporte naval para unidades', icon: '⛵' },
-      { type: 'warship', name: 'Barco de Guerra', cost: 100, unlocked: this.isUnitUnlocked('galley'), description: 'Unidad naval de combate', icon: '🚢' },
       { type: 'tank', name: 'Tanque', cost: 150, unlocked: this.isUnitUnlocked('tank'), description: 'Unidad de combate moderna', icon: '🚀' },
     ];
 
