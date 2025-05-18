@@ -10,7 +10,8 @@
     <div *ngIf="currentResearch" class="current-research">
       <h3>Investigando: {{ currentResearch.name }}</h3>
       <div class="progress-bar">
-        <div class="progress-fill" [style.width.%]="(currentResearch.progress / currentResearch.totalCost) * 100" [attr.data-progress]="((currentResearch.progress / currentResearch.totalCost) * 100).toFixed(0) + '%'"></div>
+        <div class="progress-fill" [style.width.%]="(currentResearch.progress / currentResearch.totalCost) * 100"
+          [attr.data-progress]="((currentResearch.progress / currentResearch.totalCost) * 100).toFixed(0) + '%'"></div>
       </div>
       <div class="research-details">
         <span>{{ currentResearch.progress }} / {{ currentResearch.totalCost }}</span>
@@ -18,104 +19,103 @@
       </div>
     </div>
   </div>
-  
+
   <!-- Árbol tecnológico organizado por eras -->
   <div class="tech-tree-content">
     @for (eraItem of orderedErasList; track eraItem.era) {
-      <div class="era-section">
-        <h3 class="era-title">{{ getEraName(eraItem.era) }}</h3>
-        
-        <div class="techs-grid">
-          @for (tech of eraItem.techs; track tech.id) {
-              <div class="tech-card" 
-                   [class.discovered]="isTechDiscovered(tech.id)"
-                   [class.available]="isTechAvailable(tech.id)"
-                   [class.researching]="isCurrentlyResearching(tech.id)"
-                   [style.border-color]="getCategoryColor(tech.category)"
-                   (click)="isTechAvailable(tech.id) ? startResearch(tech.id) : null">
-                <div class="tech-header">
-                  <span class="tech-icon">{{ tech.icon }}</span>
-                  <h4 class="tech-name">{{ tech.name }}</h4>
-                </div>
-                
-                <div class="tech-description">
-                  <p>{{ tech.description }}</p>
-                </div>
-                
-                <div class="tech-effects">
-                  @for (effect of tech.effects; track effect) {
-                    <span class="effect-badge">{{ effect }}</span>
-                  }
-                </div>
-                
-                <div class="tech-connections">
-                  @if (tech.prerequisites?.length) {
-                    <div class="prerequisites">
-                      <span>Requiere:</span>
-                      <div class="prereq-list">
-                        @for (prereq of tech.prerequisites; track prereq) {
-                          <span class="prereq-item" [class.discovered]="isTechDiscovered(prereq)">
-                            {{ getTechName(prereq) }}
-                          </span>
-                        }
-                      </div>
-                    </div>
-                  }
-                </div>
-                
-                <div class="tech-cost">
-                  <span>Costo: {{ tech.cost }} 🔬</span>
-                  <span *ngIf="sciencePerTurn > 0">
-                    ({{ Math.ceil(tech.cost / sciencePerTurn) }} turnos)
-                  </span>
-                </div>
-                
-                <!-- Mostrar recompensas de la investigación -->
-                @if (tech.unlocksBuildings?.length || tech.unlocksUnits?.length) {
-                  <div class="tech-unlocks">
-                    @if (tech.unlocksBuildings?.length) {
-                      <div class="unlocks-section">
-                        <span class="unlocks-header">🏛️ Desbloquea edificios:</span>
-                        <div class="unlocks-list">
-                          @for (building of tech.unlocksBuildings; track building) {
-                            <span class="unlock-item building">{{ building }}</span>
-                          }
-                        </div>
-                      </div>
-                    }
-                    
-                    @if (tech.unlocksUnits?.length) {
-                      <div class="unlocks-section">
-                        <span class="unlocks-header">⚔️ Desbloquea unidades:</span>
-                        <div class="unlocks-list">
-                          @for (unit of tech.unlocksUnits; track unit) {
-                            <span class="unlock-item unit">{{ unit }}</span>
-                          }
-                        </div>
-                      </div>
-                    }
-                  </div>
+    <div class="era-section">
+      <h3 class="era-title">{{ getEraName(eraItem.era) }}</h3>
+
+      <div class="techs-grid">
+        @for (tech of eraItem.techs; track tech.id) {
+        <div class="tech-card" [class.discovered]="isTechDiscovered(tech.id)"
+          [class.available]="isTechAvailable(tech.id)" [class.researching]="isCurrentlyResearching(tech.id)"
+          [style.border-color]="getCategoryColor(tech.category)"
+          (click)="isTechAvailable(tech.id) ? startResearch(tech.id) : null"
+          (keydown)="onTechCardKeyDown($event, tech)">
+          <div class="tech-header">
+            <span class="tech-icon">{{ tech.icon }}</span>
+            <h4 class="tech-name">{{ tech.name }}</h4>
+          </div>
+
+          <div class="tech-description">
+            <p>{{ tech.description }}</p>
+          </div>
+
+          <div class="tech-effects">
+            @for (effect of tech.effects; track effect) {
+            <span class="effect-badge">{{ effect }}</span>
+            }
+          </div>
+
+          <div class="tech-connections">
+            @if (tech.prerequisites?.length) {
+            <div class="prerequisites">
+              <span>Requiere:</span>
+              <div class="prereq-list">
+                @for (prereq of tech.prerequisites; track prereq) {
+                <span class="prereq-item" [class.discovered]="isTechDiscovered(prereq)">
+                  {{ getTechName(prereq) }}
+                </span>
                 }
-                
-                <div class="tech-status">
-                  @if (isTechDiscovered(tech.id)) {
-                    <span class="status-discovered">Descubierta</span>
-                  } @else {
-                    @if (isCurrentlyResearching(tech.id)) {
-                      <span class="status-researching">Investigando</span>
-                    } @else {
-                      @if (isTechAvailable(tech.id)) {
-                        <span class="status-available">Disponible</span>
-                      } @else {
-                        <span class="status-locked">Bloqueada</span>
-                      }
-                    }
-                  }
-                </div>
               </div>
+            </div>
+            }
+          </div>
+
+          <div class="tech-cost">
+            <span>Costo: {{ tech.cost }} 🔬</span>
+            <span *ngIf="sciencePerTurn > 0">
+              ({{ Math.ceil(tech.cost / sciencePerTurn) }} turnos)
+            </span>
+          </div>
+
+          <!-- Mostrar recompensas de la investigación -->
+          @if (tech.unlocksBuildings?.length || tech.unlocksUnits?.length) {
+          <div class="tech-unlocks">
+            @if (tech.unlocksBuildings?.length) {
+            <div class="unlocks-section">
+              <span class="unlocks-header">🏛️ Desbloquea edificios:</span>
+              <div class="unlocks-list">
+                @for (building of tech.unlocksBuildings; track building) {
+                <span class="unlock-item building">{{ building }}</span>
+                }
+              </div>
+            </div>
+            }
+
+            @if (tech.unlocksUnits?.length) {
+            <div class="unlocks-section">
+              <span class="unlocks-header">⚔️ Desbloquea unidades:</span>
+              <div class="unlocks-list">
+                @for (unit of tech.unlocksUnits; track unit) {
+                <span class="unlock-item unit">{{ unit }}</span>
+                }
+              </div>
+            </div>
+            }
+          </div>
+          }
+
+          <div class="tech-status">
+            @if (isTechDiscovered(tech.id)) {
+            <span class="status-discovered">Descubierta</span>
+            } @else {
+            @if (isCurrentlyResearching(tech.id)) {
+            <span class="status-researching">Investigando</span>
+            } @else {
+            @if (isTechAvailable(tech.id)) {
+            <span class="status-available">Disponible</span>
+            } @else {
+            <span class="status-locked">Bloqueada</span>
+            }
+            }
             }
           </div>
         </div>
-      }
+        }
+      </div>
+    </div>
+    }
   </div>
 </div>

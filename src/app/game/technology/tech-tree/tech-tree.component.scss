@@ -57,7 +57,7 @@
           animation: progressGlow 2s ease infinite;
           transition: width 0.3s ease;
           position: relative;
-          
+
           &::after {
             content: attr(data-progress);
             position: absolute;
@@ -70,18 +70,26 @@
             text-shadow: 0px 0px 1px #fff;
             white-space: nowrap;
           }
-          
+
           &[style*="width: 100%"] {
             background: linear-gradient(90deg, #4caf50, #8bc34a, #4caf50);
             animation: completeGlow 1s ease infinite;
           }
         }
       }
-      
+
       @keyframes completeGlow {
-        0% { box-shadow: 0 0 5px #4caf50; }
-        50% { box-shadow: 0 0 15px #4caf50; }
-        100% { box-shadow: 0 0 5px #4caf50; }
+        0% {
+          box-shadow: 0 0 5px #4caf50;
+        }
+
+        50% {
+          box-shadow: 0 0 15px #4caf50;
+        }
+
+        100% {
+          box-shadow: 0 0 5px #4caf50;
+        }
       }
 
       .research-details {
@@ -121,17 +129,17 @@
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.3s;
     position: relative;
-    
+
     &:hover {
       transform: translateY(-3px);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
-    
+
     &.discovered {
       border-left-color: #4caf50;
       background-color: #2d3b2d;
     }
-    
+
     &.available {
       border-left-color: #ffeb3b;
       background-color: #3b392d;
@@ -142,7 +150,7 @@
         cursor: pointer;
       }
     }
-    
+
     &.researching {
       border-left-color: #ff9800;
       background-color: #3b352d;
@@ -154,35 +162,35 @@
       display: flex;
       align-items: center;
       margin-bottom: 10px;
-      
+
       .tech-icon {
         font-size: 1.5em;
         margin-right: 10px;
       }
-      
+
       .tech-name {
         margin: 0;
         font-weight: 500;
         color: #add8e6;
       }
     }
-    
+
     .tech-description {
       margin-bottom: 12px;
       font-size: 0.9em;
       color: #b0bec5;
-      
+
       p {
         margin: 0;
       }
     }
-    
+
     .tech-effects {
       display: flex;
       flex-wrap: wrap;
       gap: 5px;
       margin-bottom: 12px;
-      
+
       .effect-badge {
         background-color: #3a3a5a;
         border-radius: 4px;
@@ -191,27 +199,27 @@
         color: #ffffff;
       }
     }
-    
+
     .tech-connections {
       margin-bottom: 12px;
       font-size: 0.85em;
-      
+
       .prerequisites {
-        > span {
+        >span {
           color: #b0bec5;
         }
-        
+
         .prereq-list {
           display: flex;
           flex-wrap: wrap;
           gap: 5px;
           margin-top: 5px;
-          
+
           .prereq-item {
             background-color: #3c3c5a;
             border-radius: 4px;
             padding: 2px 6px;
-            
+
             &.discovered {
               background-color: #2d3b2d;
               color: #a5d6a7;
@@ -220,19 +228,19 @@
         }
       }
     }
-    
+
     .tech-cost {
       font-size: 0.9em;
       color: #b0bec5;
       margin-bottom: 10px;
     }
-    
+
     .tech-unlocks {
       margin-bottom: 12px;
-      
+
       .unlocks-section {
         margin-bottom: 8px;
-        
+
         .unlocks-header {
           font-size: 0.85em;
           color: #ffeb3b;
@@ -240,22 +248,22 @@
           display: block;
           margin-bottom: 4px;
         }
-        
+
         .unlocks-list {
           display: flex;
           flex-wrap: wrap;
           gap: 4px;
-          
+
           .unlock-item {
             background-color: #3a3a5a;
             border-radius: 4px;
             padding: 2px 6px;
             font-size: 0.8em;
-            
+
             &.building {
               border-left: 2px solid #29b6f6;
             }
-            
+
             &.unit {
               border-left: 2px solid #e53935;
             }
@@ -263,26 +271,26 @@
         }
       }
     }
-    
+
     .tech-status {
       position: absolute;
       top: 10px;
       right: 10px;
       font-size: 0.8em;
       font-weight: 500;
-      
+
       .status-discovered {
         color: #4caf50;
       }
-      
+
       .status-researching {
         color: #ff9800;
       }
-      
+
       .status-available {
         color: #ffeb3b;
       }
-      
+
       .status-locked {
         color: #b0bec5;
       }
@@ -296,6 +304,7 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -306,9 +315,11 @@
   0% {
     box-shadow: 0 0 0 0 rgba(255, 235, 59, 0.4);
   }
+
   70% {
     box-shadow: 0 0 0 10px rgba(255, 235, 59, 0);
   }
+
   100% {
     box-shadow: 0 0 0 0 rgba(255, 235, 59, 0);
   }
@@ -318,9 +329,11 @@
   0% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
+
   100% {
     background-position: 0% 50%;
   }
