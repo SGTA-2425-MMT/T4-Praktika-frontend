@@ -39,10 +39,10 @@ export interface PlayerState {
   providedIn: 'root'
 })
 export class PlayerService {
-  private playerStateSubject = new BehaviorSubject<PlayerState | null>(null);
+  private readonly playerStateSubject = new BehaviorSubject<PlayerState | null>(null);
 
   // Definición de las tecnologías disponibles
-  private availableTechnologies: Technology[] = [
+  private readonly availableTechnologies: Technology[] = [
     {
       id: 'agriculture',
       name: 'Agricultura',
@@ -163,7 +163,7 @@ export class PlayerService {
   // Procesar la investigación en un turno
   processResearch(): void {
     const playerState = this.playerState;
-    if (!playerState || !playerState.research.currentTechnology) return;
+    if (!playerState?.research.currentTechnology) return;
 
     const technology = this.availableTechnologies.find(
       tech => tech.id === playerState.research.currentTechnology

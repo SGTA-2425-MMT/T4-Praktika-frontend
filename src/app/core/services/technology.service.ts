@@ -12,9 +12,9 @@ export class TechnologyService {
   // Propiedad para rastrear la última tecnología completada
   private _lastCompletedTech: Technology | null = null;
 
-  private researchProgressSubject = new BehaviorSubject<ResearchProgress | null>(null);
-  private discoveredTechnologiesSubject = new BehaviorSubject<Technology[]>([]);
-  private availableTechnologiesSubject = new BehaviorSubject<Technology[]>([]);
+  private readonly researchProgressSubject = new BehaviorSubject<ResearchProgress | null>(null);
+  private readonly discoveredTechnologiesSubject = new BehaviorSubject<Technology[]>([]);
+  private readonly availableTechnologiesSubject = new BehaviorSubject<Technology[]>([]);
 
   constructor() {
     this.initializeTechnologies();
@@ -63,7 +63,7 @@ export class TechnologyService {
         cost: 0,
         description: 'El cultivo sistemático de plantas para obtener alimentos',
         effects: ['Permite construir Granjas', 'Las granjas producen +5 de alimento por turno'],
-        unlocksBuildings: ['granary'],
+        unlocksBuildings: ['granary', 'farm'],
         icon: '🌾'
       },
       {
@@ -132,6 +132,7 @@ export class TechnologyService {
         description: 'Desbloquea el trabajo con hierrro y mejorar las unidades militares',
         effects: ['Mejora el nivel de los guerreros', 'Mejora el nivel de los arqueros', 'Mejora el nivel de la caballería'],
         unlocksUnits: ['warrior', 'archer', 'horseman'],
+        unlocksBuildings: ['gold_mine'],
         icon: '⚔️'
       },
       {
@@ -142,7 +143,7 @@ export class TechnologyService {
         cost: 0,
         description: 'El desarrollo de técnicas avanzadas para construir máquinas de asedio',
         effects: ['Permite entrenar catapultas'],
-        unlocksUnits: ['artillery'],
+        unlocksUnits: ['catapult'],
         prerequisites: ['mathematics'],
         icon: '🏗️'
       },
@@ -194,6 +195,7 @@ export class TechnologyService {
         description: 'El arte de dirigir embarcaciones usando el viento',
         effects: ['Permite la creacion de puertos', 'Permite unidades navales', 'Permite atravesar océanos costeros'],
         unlocksUnits: ['galley'],
+        unlocksBuildings: ['port'],
         icon: '⛵'
       },
       {
@@ -233,29 +235,16 @@ export class TechnologyService {
         icon: '🌍'
       },
       {
-        id: 'machinery',
-        name: 'Maquinaria',
-        era: TechEra.MODERN,
-        category: TechCategory.PRODUCTION,
-        cost: 140,
-        description: 'La aparicion de maquinaria blindada para la guerra',
-        effects: ['Permite la construccion de tanques'],
-        unlocksBuildings: ['workshop'],
-        unlocksUnits: ['tank'],
-        prerequisites: ['industrialization'],
-        icon: '⚙️'
-      },
-      {
         id: 'steel',
         name: 'Acero',
         era: TechEra.MODERN,
         category: TechCategory.PRODUCTION,
-        cost: 160,
+        cost: 0,
         description: 'La aleación de hierro y carbono para crear acero',
         effects: ['Permite construir fábricas', 'Mejora unidad de fusileros'],
         unlocksBuildings: ['factory'],
         unlocksUnits: ['artillery'],
-        prerequisites: ['machinery'],
+        prerequisites: ['gunpowder-warfare'],
         icon: '🛠️'
       },
       // Construccion de industrias
@@ -264,13 +253,26 @@ export class TechnologyService {
         name: 'Industrialización',
         era: TechEra.MODERN,
         category: TechCategory.PRODUCTION,
-        cost: 200,
+        cost: 0,
         description: 'La transformación de la producción mediante maquinaria y fábricas',
         effects: ['Permite construir fábricas', 'Mejora de unidades militares'],
         unlocksBuildings: ['factory'],
         unlocksUnits: ['rifleman'],
         prerequisites: ['steel'],
         icon: '🏭'
+      },
+      {
+        id: 'machinery',
+        name: 'Maquinaria',
+        era: TechEra.MODERN,
+        category: TechCategory.PRODUCTION,
+        cost: 0,
+        description: 'La aparicion de maquinaria blindada para la guerra',
+        effects: ['Permite la construccion de tanques'],
+        unlocksBuildings: ['workshop'],
+        unlocksUnits: ['tank', 'galley'],
+        prerequisites: ['industrialization'],
+        icon: '⚙️'
       }
     ];
 
@@ -393,18 +395,18 @@ export class TechnologyService {
     }
 
     // Actualizar observable con progreso
-    this.researchProgressSubject.next({...this.researchInProgress});
+    this.researchProgressSubject.next({ ...this.researchInProgress });
     return null;
   }
 
   // Actualizar la lista de tecnologías disponibles basadas en las descubiertas
   private updateAvailableTechnologies(): void {
     const discoveredTechIds = this.discoveredTechnologies.map(tech => tech.id);
-    
+
     // Determinar la era actual del jugador
     const currentEra = this.getGameEra();
     console.log(`[TechnologyService] Era actual: ${currentEra}`);
-    
+
     // Una tecnología está disponible si:
     // 1. No ha sido descubierta aún
     // 2. Todos sus prerrequisitos han sido descubiertos
@@ -419,7 +421,7 @@ export class TechnologyService {
       const eraOrder = [TechEra.ANCIENT, TechEra.MEDIEVAL, TechEra.AGE_OF_DISCOVERY, TechEra.MODERN];
       const currentEraIndex = eraOrder.indexOf(currentEra);
       const techEraIndex = eraOrder.indexOf(tech.era);
-      
+
       if (techEraIndex > currentEraIndex) {
         console.log(`[TechnologyService] Tecnología ${tech.name} (${tech.era}) no disponible en era actual ${currentEra}`);
         return false;
@@ -517,47 +519,62 @@ export class TechnologyService {
   }
 
   // Actualizar la era del juego/civilización basada en las tecnologías descubiertas
-  getGameEra(): TechEra {
-    // Contar tecnologías descubiertas por era
-    const techs = this.discoveredTechnologies;
-    if (techs.length === 0) return TechEra.ANCIENT;
+  /* getGameEra(gameSession?: any): TechEra {
+     // Si se pasa un GameSession, usar sus tecnologías descubiertas
+     let techIds: string[] = [];
+     if (gameSession?.discoveredTechnologies) {
+       techIds = gameSession.discoveredTechnologies;
+     } else {
+       // Fallback: usar las tecnologías globales del servicio
+       techIds = this.discoveredTechnologies.map(t => t.id);
+     }
+     if (techIds.length === 0) return TechEra.ANCIENT;
+   }*/
 
+  getGameEra(gameSession?: any): TechEra {
+    // Si se pasa un GameSession, usar sus tecnologías descubiertas
+    let techIds: string[] = [];
+    if (gameSession?.discoveredTechnologies) {
+      techIds = gameSession.discoveredTechnologies;
+    } else {
+      // Fallback: usar las tecnologías globales del servicio
+      techIds = this.discoveredTechnologies.map(t => t.id);
+    }
+    if (techIds.length === 0) return TechEra.ANCIENT;
+
+    // Contar tecnologías descubiertas por era
+    const allTechs = this.getTechnologyTree();
     const eraCount = {
       [TechEra.ANCIENT]: 0,
       [TechEra.MEDIEVAL]: 0,
       [TechEra.AGE_OF_DISCOVERY]: 0,
       [TechEra.MODERN]: 0
     };
-
-    techs.forEach(tech => {
-      eraCount[tech.era]++;
+    techIds.forEach(id => {
+      const tech = allTechs.find(t => t.id === id);
+      if (tech) eraCount[tech.era]++;
     });
 
     // Criterios para avanzar a una era:
-    // - Renaissance: Al menos 2 tecnologías de Renaissance y 3 de Medieval
-    // - Industrial: Al menos 2 tecnologías de Industrial y 3 de Renaissance
-    // - Modern: Al menos 2 tecnologías de Modern y 3 de Industrial
-    // - Medieval: Al menos 3 tecnologías de Medieval y 4 de Classical
-    // - Classical: Al menos 5 tecnologías de Ancient y 2 de Classical
+    // - Modern: Al menos 3 tecnologías de Age of Discovery
+    // - Age of Discovery: Al menos 3 tecnologías de Medieval
+    // - Medieval: Al menos 3 tecnologías de Ancient
     // - Por defecto: Ancient
 
-    if (eraCount[TechEra.MODERN] >= 2 && eraCount[TechEra.AGE_OF_DISCOVERY] >= 3) {
+    if (eraCount[TechEra.AGE_OF_DISCOVERY] >= 3) {
       return TechEra.MODERN;
-    }
-     else if (eraCount[TechEra.AGE_OF_DISCOVERY] >= 2 && eraCount[TechEra.MEDIEVAL] >= 3) {
+    } else if (eraCount[TechEra.MEDIEVAL] >= 3) {
       return TechEra.AGE_OF_DISCOVERY;
-    } else if (eraCount[TechEra.MEDIEVAL] >= 3 && eraCount[TechEra.ANCIENT] >= 4) {
+    } else if (eraCount[TechEra.ANCIENT] >= 3) {
       return TechEra.MEDIEVAL;
-    }
-    else {
+    } else {
       return TechEra.ANCIENT;
     }
   }
 
-  // Determinar la era basada en las tecnologías descubiertas
   determineEra(discoveredTechs: (Technology | undefined)[]): TechEra {
     // Eliminar posibles valores undefined
-    const validTechs = discoveredTechs.filter(tech => tech !== undefined) as Technology[];
+    const validTechs = discoveredTechs.filter(tech => tech !== undefined);
 
     // Si no hay tecnologías descubiertas, es la era antigua
     if (validTechs.length === 0) return TechEra.ANCIENT;
@@ -571,9 +588,9 @@ export class TechnologyService {
     ];
 
     for (const era of erasToCheck) {
-      // Para pasar a una era, necesitamos al menos 2 tecnologías de esa era
+      // Para pasar a una era, necesitamos al menos 3 tecnologías de esa era (igual que getGameEra)
       const techsInEra = validTechs.filter(tech => tech.era === era);
-      if (techsInEra.length >= 2) {
+      if (techsInEra.length >= 3) {
         return era;
       }
     }

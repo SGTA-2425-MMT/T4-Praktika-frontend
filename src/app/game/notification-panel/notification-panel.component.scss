@@ -20,19 +20,19 @@
   border-left: 4px solid;
   margin-bottom: 10px;
   animation: slide-in 0.3s ease-out;
-  
+
   &.notification-success {
     border-color: #4caf50;
   }
-  
+
   &.notification-info {
     border-color: #2196f3;
   }
-  
+
   &.notification-warning {
     border-color: #ff9800;
   }
-  
+
   &.notification-error {
     border-color: #f44336;
   }
@@ -64,7 +64,7 @@
   color: rgba(255, 255, 255, 0.7);
   padding: 0 4px;
   line-height: 1;
-  
+
   &:hover {
     color: white;
   }
@@ -111,6 +111,7 @@
     transform: translateX(100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;

@@ -22,21 +22,21 @@ export class TechTreeComponent implements OnInit, OnDestroy {
   // Organización visual
   techsByEra: { [key: string]: Technology[] } = {};
   // Lista ordenada de eras para mostrar en la interfaz
-  orderedErasList: {era: string, techs: Technology[]}[] = [];
+  orderedErasList: { era: string, techs: Technology[] }[] = [];
 
   // Ciencia por turno
   sciencePerTurn: number = 0;
 
   // Suscripciones
-  private subscriptions: Subscription[] = [];
+  private readonly subscriptions: Subscription[] = [];
 
   // Exponer Math para usar en la plantilla
   Math = Math;
 
   constructor(
-    private techService: TechnologyService,
-    private gameService: GameService
-  ) {}
+    private readonly techService: TechnologyService,
+    private readonly gameService: GameService
+  ) { }
 
   ngOnInit(): void {
     // Obtener todas las tecnologías
@@ -103,7 +103,7 @@ export class TechTreeComponent implements OnInit, OnDestroy {
     this.technologies.forEach(tech => {
       this.techsByEra[tech.era].push(tech);
     });
-    
+
     // Definir orden explícito de las eras
     const orderedEras = [
       TechEra.ANCIENT,
@@ -111,7 +111,7 @@ export class TechTreeComponent implements OnInit, OnDestroy {
       TechEra.AGE_OF_DISCOVERY,
       TechEra.MODERN
     ];
-    
+
     // Crear arreglo ordenado para la visualización
     orderedEras.forEach(era => {
       if (this.techsByEra[era] && this.techsByEra[era].length > 0) {
@@ -121,7 +121,7 @@ export class TechTreeComponent implements OnInit, OnDestroy {
         });
       }
     });
-    
+
     console.log('Eras ordenadas:', this.orderedErasList.map(e => e.era));
   }
 
@@ -158,7 +158,7 @@ export class TechTreeComponent implements OnInit, OnDestroy {
       console.error(`No se encontró la tecnología con ID: ${techId}`);
       return;
     }
-    
+
     const success = this.techService.startResearch(techId, this.sciencePerTurn);
 
     if (success) {
@@ -167,7 +167,7 @@ export class TechTreeComponent implements OnInit, OnDestroy {
       // Actualizar el estado del juego para reflejar la investigación en curso
       if (this.gameService.currentGame) {
         const game = this.gameService.currentGame;
-        
+
         // Asegurarse de que la información en ambos servicios esté sincronizada
         game.researchProgress = {
           currentTechnology: techId,
@@ -175,7 +175,7 @@ export class TechTreeComponent implements OnInit, OnDestroy {
           turnsLeft: Math.ceil(tech.cost / Math.max(1, this.sciencePerTurn)),
           totalCost: tech.cost
         };
-        
+
         // Actualizar la era basada en las tecnologías descubiertas
         const currentEra = this.techService.getGameEra();
         if (game.era !== currentEra) {

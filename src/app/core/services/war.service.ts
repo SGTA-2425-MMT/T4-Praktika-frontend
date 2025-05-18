@@ -12,8 +12,8 @@ export class WarService {
   cityAttackEvent = new EventEmitter<{ attacker: Unit; city: City; damage: number }>();
 
   constructor(
-    private sharedWarGameService: SharedWarGameService,
-    private animationService: AnimationService
+    private readonly sharedWarGameService: SharedWarGameService,
+    private readonly animationService: AnimationService
   ) {}
 
   // Handle unit vs unit combat
@@ -82,10 +82,10 @@ export class WarService {
       return false; // No attacks left this turn
     }
 
-    if (attacker.isRanged) {
+    if (attacker.isRanged){
       const aDistance = this.getDistance(attacker.position, defender.position);
-      console.log('Ranged attack: ', aDistance);
-      if (!this.isUnitInRange(attacker, defender)) {
+      console.log('Ranged atack: ', aDistance);
+      if (attacker.maxRange! < aDistance) {
         console.error('Attack not allowed: Target is out of range for ranged units.');
         return false; // Out of range for ranged units
       }
@@ -113,7 +113,7 @@ export class WarService {
     let multiplier = 1.0;
     switch (diceRoll) {
         case 1:
-            multiplier = 1.0; // No multiplier
+            // No multiplier
             break;
         case 2:
             multiplier = 1.2;

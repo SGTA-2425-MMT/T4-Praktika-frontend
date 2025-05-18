@@ -37,10 +37,10 @@
 
 .settings-form {
   padding: 30px;
-  
+
   .settings-section {
     margin-bottom: 30px;
-    
+
     h2 {
       color: #f1c40f;
       margin-bottom: 20px;
@@ -49,17 +49,18 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
   }
-  
+
   .form-group {
     margin-bottom: 20px;
-    
+
     label {
       display: block;
       margin-bottom: 8px;
       color: #bdc3c7;
     }
-    
-    select, input {
+
+    select,
+    input {
       width: 100%;
       padding: 12px;
       border: 1px solid rgba(255, 255, 255, 0.2);
@@ -67,22 +68,22 @@
       background-color: rgba(0, 0, 0, 0.5);
       color: #fff;
       font-size: 16px;
-      
+
       &:focus {
         outline: none;
         border-color: #f1c40f;
       }
     }
-    
+
     &.checkbox {
       display: flex;
       align-items: center;
-      
+
       input[type="checkbox"] {
         width: auto;
         margin-right: 10px;
       }
-      
+
       label {
         margin-bottom: 0;
       }
@@ -94,7 +95,7 @@
   display: flex;
   justify-content: space-between;
   margin-top: 30px;
-  
+
   button {
     padding: 12px 25px;
     border: none;
@@ -102,21 +103,21 @@
     font-size: 16px;
     cursor: pointer;
     transition: all 0.2s ease;
-    
+
     &.btn-primary {
       background-color: #f1c40f;
       color: #000;
-      
+
       &:hover {
         background-color: #f39c12;
       }
     }
-    
+
     &.btn-secondary {
       background-color: transparent;
       border: 1px solid #7f8c8d;
       color: #7f8c8d;
-      
+
       &:hover {
         background-color: rgba(127, 140, 141, 0.1);
       }

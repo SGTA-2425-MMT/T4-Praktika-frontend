@@ -15,6 +15,8 @@ import { City } from '../../../core/models/city.model';
 import { TileComponent } from '../tile/tile.component';
 import { WorkerActionsComponent } from '../../worker-actions/worker-actions.component';
 import { CityViewComponent } from '../../city/city-view/city-view.component';
+import { BUILDING_TEMPLATES, BuildingType, Building } from '../../../core/models/building.model';
+import { BuildingsService } from '../../../core/services/buildings.service';
 
 @Component({
   selector: 'app-map-view',
@@ -40,16 +42,17 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
   movableTiles: { x: number, y: number }[] = [];
   attackMode: boolean = false; // New property to track attack mode
   attackableTiles: { x: number, y: number }[] = []; // Tiles with units that can be attacked
-  private phaserScene!: Phaser.Scene;
+  private readonly phaserScene!: Phaser.Scene;
   showWorkerActionsMenu = false; // New property for worker actions menu
 
   constructor(
-    private movementService: MovementService,
-    private fogOfWarService: FogOfWarService,
-    private gameService: GameService,
-    private animationService: AnimationService,
-    private warService: WarService,
-    private injector: Injector
+    private readonly movementService: MovementService,
+    private readonly fogOfWarService: FogOfWarService,
+    private readonly gameService: GameService,
+    private readonly animationService: AnimationService,
+    private readonly warService: WarService,
+    private readonly injector: Injector,
+    private readonly buildingsService: BuildingsService // <--- INJECTED
   ) {}
 
   ngOnInit(): void {
@@ -79,7 +82,7 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
 
   ngAfterViewInit(): void {
     // Asegurarse de que el contenedor del mapa puede recibir el foco
-    if (this.mapContainer && this.mapContainer.nativeElement) {
+    if (this.mapContainer?.nativeElement) {
       this.mapContainer.nativeElement.focus();
       // Centrar la cámara en la posición inicial del jugador
       if (this.gameSession) {
@@ -92,13 +95,13 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
       }
     }
       setTimeout(() => {
-        this.animationService.initPhaser(this.mapContainer.nativeElement);
+        this.animationService.initPhaser(this.mapContainer?.nativeElement);
       }, 500);
   }
 
   // Centra la cámara en una posición del mapa
   centerCameraOnPosition(x: number, y: number): void {
-    if (!this.mapContainer || !this.mapContainer.nativeElement) return;
+    if (!this.mapContainer?.nativeElement) return;
 
     const TILE_SIZE = 120; // Assuming each tile is 120px
     const container = this.mapContainer.nativeElement as HTMLElement;
@@ -113,7 +116,7 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
 
   // Add a method to center the map on the position of a newly created unit
   centerOnUnitCreation(unit: Unit): void {
-    if (unit && unit.position) {
+    if (unit?.position) {
       this.centerCameraOnPosition(unit.position.x, unit.position.y);
     }
   }
@@ -133,6 +136,7 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
 
   // Maneja el clic en una casilla
   onTileClick(tile: MapTile): void {
+    console.log(tile.building)
     // Si estamos en modo ataque, manejarlo
     if (this.attackMode) {
       this.handleAttackTileClick(tile);
@@ -175,7 +179,7 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
         // Si hay una unidad del jugador actual en esta casilla, seleccionarla
         this.selectUnit(unitOnTile);
         this.highlightedTile = tile; // Mantenemos el seguimiento interno
-        
+
         // Si es un trabajador, mostrar inmediatamente el menú
         if (unitOnTile.type === 'worker') {
           console.log('Nuevo trabajador seleccionado, mostrando menú de acciones');
@@ -413,6 +417,12 @@ moveSelectedUnit(targetTile: MapTile): void {
     return unit ? unit.level : 1;
   }
 
+  // Devuelve el tipo de edificio en una casilla, o '' si no hay, o 'process' si está en construcción
+  getBuildingTypeAt(x: number, y: number): string {
+    if (!this.gameSession) return '';
+    return this.buildingsService.getBuildingTypeAt(x, y, this.gameSession);
+  }
+
   // Actualiza la visibilidad para una unidad
   updateUnitVisibility(unit: Unit): void {
     if (!this.gameSession) return;
@@ -526,19 +536,22 @@ moveSelectedUnit(targetTile: MapTile): void {
       case 'horseman':
         cost = 0;
         break;
-      case 'swordsman':
-        cost = 0;
-        break;
       case 'catapult':
+        cost = 0;
+        break;  
+      case 'artillery':
         cost = 0;
         break;
       case 'galley':
         cost = 0;
         break;
+      case 'rifleman':
+        cost = 0;
+        break;
       case 'warship':
         cost = 0;
         break;
-      case 'scout':
+      case 'tank':
         cost = 0;
         break;
       case 'settler':
@@ -569,39 +582,49 @@ moveSelectedUnit(targetTile: MapTile): void {
   }
 
   // Manejar la construcción de un edificio en una ciudad
-  onCityBuildBuilding(buildingId: string): void {
+  onCityBuildBuilding(buildingType: string): void {
     if (!this.selectedCity || !this.gameSession) return;
 
-    const currentTurn = this.gameSession.turn;
-    const cityService = this.gameService.getCityService();
+    // Buscar la posición de la ciudad seleccionada (o podrías usar otra lógica para la posición)
+    const x = this.selectedCity.position.x;
+    const y = this.selectedCity.position.y;
 
-    // Construir el edificio
-    const success = cityService.constructBuilding(this.selectedCity, buildingId, currentTurn);
+    // Usar el servicio de edificios para validar
+    const result = this.buildingsService.canBuildBuilding(
+      buildingType as BuildingType,
+      x,
+      y,
+      this.gameSession
+    );
 
-    if (success) {
-      console.log(`Iniciando construcción del edificio ${buildingId} en ${this.selectedCity.name}`);
-
-      // Actualizar la ciudad en el gameSession
-      const cityIndex = this.gameSession.cities.findIndex(c => c.id === this.selectedCity!.id);
-      if (cityIndex !== -1) {
-        this.gameSession.cities[cityIndex] = this.selectedCity;
-
-        // Actualizar también en el GameService
-        this.gameService.updateCity(this.selectedCity);
-      }
-    } else {
-      console.error(`No se pudo iniciar la construcción del edificio ${buildingId}`);
+    if (!result.canBuild) {
+      alert(result.reason || 'No se puede construir aquí');
+      return;
     }
+
+    // Crear el edificio usando la plantilla
+    const template = BUILDING_TEMPLATES.find((b: Building) => b.type === buildingType);
+    if (!template) {
+      alert('Tipo de edificio no soportado');
+      return;
+    }
+    const newBuilding: Building = {
+      ...template,
+      id: template.type + '_' + Date.now(),
+      cityId: result.nearestCity?.id || '',
+      position: { x, y },
+      built: false,
+    };
+    this.buildingsService.addBuilding(newBuilding);
   }
 
   // Verificar si la unidad puede realizar una acción específica
   canUnitPerformAction(unit: Unit, action: UnitAction): boolean {
-    if (!unit || !unit.availableActions) return false;
-    return unit.availableActions.includes(action);
+    return unit?.availableActions?.includes(action) ?? false;
   }
 
   // Realizar una acción con la unidad seleccionada
-  performUnitAction(action: UnitAction): void {
+  performUnitAction(action: UnitAction, buildingType?:BuildingType): void {
     console.log(`Intentando realizar acción: ${action}`);
     if (!this.selectedUnit || !this.gameSession) {
       console.error('No hay unidad seleccionada o sesión de juego');
@@ -619,7 +642,14 @@ moveSelectedUnit(targetTile: MapTile): void {
         this.foundCity();
         break;
       case 'build':
-        this.buildImprovement();
+        const tileImprovementService = this.injector.get(TileImprovementService);
+        if(!buildingType) {
+          console.error('No se ha especificado un tipo de edificio');
+          return;
+        }
+        else{
+          this.buildImprovement(); // <-- Aquí se llama correctamente con el tipo de mejora recibido
+        }
         break;
       case 'attack':
         this.enableAttackMode();
@@ -634,92 +664,18 @@ moveSelectedUnit(targetTile: MapTile): void {
   }
 
   // Método para construir una mejora de terreno con un trabajador
-  buildImprovement(improvementType?: string): void {
+   buildImprovement(): void {
+    alert('Construyendo mejora de terreno...'+this.selectedUnit?.buildingImprovement);
     if (!this.selectedUnit || !this.gameSession || this.selectedUnit.type !== 'worker') {
+      console.warn('[buildImprovement] No hay unidad seleccionada, no hay sesión de juego, o la unidad no es trabajador');
       return;
-    }
-
-    if (improvementType) {
-      // Si se especifica el tipo de mejora, iniciamos la construcción directamente
-      const tileImprovementService = this.injector.get(TileImprovementService);
-      const currentTile = this.gameSession.map.tiles[this.selectedUnit.position.y][this.selectedUnit.position.x];
-
-      // Caso especial para construir camino
-      if (improvementType === 'build_road') {
-        // Verificar si ya existe un camino
-        if (currentTile.hasRoad) {
-          console.log('Esta casilla ya tiene un camino.');
-          this.showWorkerActionsMenu = false;
-          return;
-        }
-
-        // Construcción de camino
-        this.selectedUnit.currentAction = 'build_road';
-        this.selectedUnit.turnsToComplete = 3; // Tiempo estándar para construir camino
-        this.selectedUnit.movementPoints = 0;
-
-        console.log(`El trabajador comenzó a construir un camino en (${this.selectedUnit.position.x}, ${this.selectedUnit.position.y})`);
-        // No cerramos el menú para que se siga mostrando después de seleccionar
-        // this.showWorkerActionsMenu = false;
-      }
-      // Verificar que la mejora se puede construir en esta casilla
-      else if (improvementType.startsWith('build_')) {
-        const improvement = improvementType.replace('build_', '') as ImprovementType;
-
-        // Verificar si ya existe esta mejora
-        if (currentTile.improvement === improvement) {
-          console.log(`Esta casilla ya tiene una mejora de tipo ${improvement}.`);
-          this.showWorkerActionsMenu = false;
-          return;
-        }
-
-        if (tileImprovementService.canBuildImprovement(improvement, currentTile)) {
-          // Establecer la acción y tiempo necesario
-          this.selectedUnit.currentAction = improvementType as UnitAction;
-          this.selectedUnit.buildingImprovement = improvement;
-          this.selectedUnit.turnsToComplete = tileImprovementService.getImprovementInfo(improvement)?.turnsToComplete || 3;
-          this.selectedUnit.movementPoints = 0;
-
-          console.log(`El trabajador comenzó a construir ${improvement} en (${this.selectedUnit.position.x}, ${this.selectedUnit.position.y})`);
-          // No cerramos el menú para que se siga mostrando después de seleccionar
-          // this.showWorkerActionsMenu = false;
-        } else {
-          // Comprobar si hay bosques o junglas que impidan la construcción
-          if (currentTile.featureType === 'forest' || currentTile.featureType === 'jungle') {
-            console.log(`No se puede construir ${improvement} porque hay un ${currentTile.featureType}. Debe eliminarse primero.`);
-          } else {
-            console.log(`No se puede construir ${improvement} en este tipo de terreno.`);
-          }
-        }
-      } else if (improvementType.startsWith('clear_')) {
-        // Manejo de limpieza de características
-        if (tileImprovementService.canRemoveFeature(currentTile)) {
-          // Obtener el tipo de característica a eliminar
-          const featureType = currentTile.featureType;
-
-          this.selectedUnit.currentAction = improvementType as UnitAction;
-          this.selectedUnit.turnsToComplete = improvementType === 'clear_forest' ? 3 : 4; // Valores predeterminados
-          this.selectedUnit.movementPoints = 0;
-
-          console.log(`El trabajador comenzó a despejar ${featureType} en (${this.selectedUnit.position.x}, ${this.selectedUnit.position.y})`);
-          // No cerramos el menú para que se siga mostrando después de seleccionar
-          // this.showWorkerActionsMenu = false;
-        } else {
-          console.log('No hay características para eliminar en esta casilla.');
-        }
-      }
-      
-      // No limpiar la selección aquí para evitar que se cierre el menú antes de tiempo
-      // this.clearSelection();
-    } else {
-      // Si no se especifica el tipo, mostramos el menú de opciones para el trabajador
-      console.log('Mostrando menú de acciones del trabajador');
-      this.showWorkerActionsMenu = true;
     }
   }
 
+
   // Cancelar la acción actual del trabajador
   cancelWorkerAction(): void {
+    /*
     if (!this.selectedUnit || !this.gameSession || this.selectedUnit.type !== 'worker') {
       return;
     }
@@ -733,7 +689,7 @@ moveSelectedUnit(targetTile: MapTile): void {
       this.selectedUnit.movementPoints = 1; // Permitir al menos un movimiento
     }
 
-    console.log(`Acción del trabajador cancelada`);
+    console.log(`Acción del trabajador cancelada`);*/
     this.showWorkerActionsMenu = false;
   }
 
@@ -815,13 +771,11 @@ moveSelectedUnit(targetTile: MapTile): void {
     console.log(`Visualizing attack: ${attacker.name} -> ${defender.name}, Damage: ${damage}`);
 
     // Mostrar barra de vida si no está visible
-    if (!defender.healthBarVisible) {
-        defender.healthBarVisible = true;
-    }
+    defender.healthBarVisible ??= true;
 
     // Actualizar la barra de vida
     const healthPercentage = (defender.health / defender.maxHealth) * 100;
-    const healthBarElement = document.getElementById(`health-bar-${defender.id}`) as HTMLElement | null;
+    const healthBarElement = document.getElementById(`health-bar-${defender.id}`);
     if (healthBarElement) {
         healthBarElement.style.width = `${healthPercentage}%`;
     }
@@ -911,6 +865,19 @@ moveSelectedUnit(targetTile: MapTile): void {
     const healthBarElement = document.querySelector(`.unit-health-bar[data-unit-id="${unitId}"]`);
     if (healthBarElement) {
       (healthBarElement as HTMLElement).style.width = `${healthPercentage}%`;
+    }
+  }
+
+  // Elimina un trabajador en una posición específica
+  private removeWorkerAt(x: number, y: number): void {
+    if (!this.gameSession) return;
+    const idx = this.gameSession.units.findIndex(u => u.type === 'worker' && u.position.x === x && u.position.y === y);
+    if (idx !== -1) {
+      this.gameSession.units.splice(idx, 1);
+    }
+    // Si el trabajador eliminado estaba seleccionado, limpiar selección
+    if (this.selectedUnit && this.selectedUnit.type === 'worker' && this.selectedUnit.position.x === x && this.selectedUnit.position.y === y) {
+      this.clearSelection();
     }
   }
 }

@@ -10,7 +10,7 @@ export interface MapTile {
   terrain: TerrainType;
   featureType?: FeatureType;
   resource?: ResourceType;
-  improvement?: ImprovementType;
+  building: ImprovementType;
   hasRoad?: boolean; // Indica si hay un camino en la casilla
   movementCost: number;
   defense: number;
@@ -49,7 +49,7 @@ export type ResourceType =
   | 'wheat' | 'cattle' | 'sheep' | 'bananas' | 'deer' | 'fish' // alimentos
   | 'gold' | 'silver' | 'gems' | 'marble' | 'ivory' | 'silk' | 'spices'; // lujo
 
-export type ImprovementType = 'farm' | 'mine' | 'plantation' | 'camp' | 'pasture' | 'fishing_boats' | 'none';
+export type ImprovementType = 'farm' | 'gold_mine' | 'road' | 'port' | 'build' | 'none';
 
 export interface GameMap {
   width: number;

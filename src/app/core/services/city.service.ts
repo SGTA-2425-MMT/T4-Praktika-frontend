@@ -8,7 +8,7 @@ import { TechnologyService } from './technology.service';
   providedIn: 'root'
 })
 export class CityService {
-  constructor(private technologyService: TechnologyService) {}
+  constructor(private readonly technologyService: TechnologyService) {}
 
   // Función para crear una nueva ciudad a partir de un colono
   foundCity(
@@ -436,7 +436,7 @@ export class CityService {
       
       // Buscar entre las tecnologías descubiertas si alguna desbloquea este edificio
       for (const [techId, unlockedBuildings] of techUnlocks.entries()) {
-        if (unlockedBuildings && unlockedBuildings.includes(building.id)) {
+        if (unlockedBuildings?.includes(building.id)) {
           console.log(`Edificio ${building.name} desbloqueado por tecnología con ID: ${techId}`);
           isUnlockedByTech = true;
           break;
@@ -814,9 +814,7 @@ export class CityService {
     };
 
     // Inicializar la cola de producción de edificios si no existe
-    if (!city.buildingProductionQueue) {
-      city.buildingProductionQueue = [];
-    }
+    city.buildingProductionQueue ??= [];
 
     // Añadir el edificio a la cola
     city.buildingProductionQueue.push(buildingProduction);
@@ -827,7 +825,7 @@ export class CityService {
 
   // Procesar la construcción de edificios al final de un turno
   processBuildingConstruction(city: City, currentTurn: number): void {
-    if (!city || !city.buildingProductionQueue || city.buildingProductionQueue.length === 0) return;
+    if (!city?.buildingProductionQueue?.length) return;
 
     // Obtener el primer edificio de la cola
     const currentBuilding = city.buildingProductionQueue[0];
@@ -908,9 +906,7 @@ export class CityService {
     };
 
     // Inicializar la cola de producción de edificios si no existe
-    if (!city.buildingProductionQueue) {
-      city.buildingProductionQueue = [];
-    }
+    city.buildingProductionQueue ??= [];
 
     // Marcar el edificio como en actualización
     existingBuilding.isUpgrading = true;

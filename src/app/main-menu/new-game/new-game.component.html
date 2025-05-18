@@ -13,33 +13,31 @@
             <h2>Elige tu civilización</h2>
             <div class="civilization-grid">
               @for (civ of civilizations; track civ.value) {
-                <div class="civilization-option"
-                    [class.selected]="newGameForm.get('civilization')?.value === civ.value"
-                    (click)="selectCivilization(civ.value)">
-                  <span>{{civ.label}}</span>
-                </div>
+              <div class="civilization-option" [class.selected]="newGameForm.get('civilization')?.value === civ.value"
+                (click)="selectCivilization(civ.value)" (keydown)="onCivilizationOptionKeyDown($event, civ.value)">
+                <span>{{civ.label}}</span>
+              </div>
               }
             </div>
           </div>
 
           <div class="civilization-preview">
             @if (selectedCivilizationImage) {
-              <div class="civilization-image">
-                <img [src]="selectedCivilizationImage" [alt]="getSelectedCivilizationName()">
-              </div>
-              <div class="civilization-description">
-                <h3>{{ getSelectedCivilizationName() }}</h3>
-                <p>{{ getSelectedCivilizationDescription() }}</p>
-              </div>
+            <div class="civilization-image">
+              <img [src]="selectedCivilizationImage" [alt]="getSelectedCivilizationName()">
+            </div>
+            <div class="civilization-description">
+              <h3>{{ getSelectedCivilizationName() }}</h3>
+              <p>{{ getSelectedCivilizationDescription() }}</p>
+            </div>
             }
           </div>
         </div>
 
         <div class="step-actions">
           <button type="button" class="btn-secondary" (click)="returnToMainMenu()">Cancelar</button>
-          <button type="button" class="btn-primary"
-                  [disabled]="!newGameForm.get('civilization')?.value"
-                  (click)="nextStep()">Continuar</button>
+          <button type="button" class="btn-primary" [disabled]="!newGameForm.get('civilization')?.value"
+            (click)="nextStep()">Continuar</button>
         </div>
       </div>
 
@@ -50,38 +48,32 @@
             <h2>Nombra a tu líder</h2>
             <div class="form-group">
               <label for="leaderName">Nombre del Líder</label>
-              <input
-                type="text"
-                id="leaderName"
-                formControlName="gameName"
-                placeholder="Introduce un nombre"
-              >
+              <input type="text" id="leaderName" formControlName="gameName" placeholder="Introduce un nombre">
               @if (newGameForm.get('gameName')?.invalid && newGameForm.get('gameName')?.touched) {
-                <div class="error-message">
-                  <span>El nombre debe tener al menos 3 caracteres</span>
-                </div>
+              <div class="error-message">
+                <span>El nombre debe tener al menos 3 caracteres</span>
+              </div>
               }
             </div>
           </div>
 
           <div class="leader-preview">
             @if (selectedLeaderImage) {
-              <div class="leader-image">
-                <img [src]="selectedLeaderImage" [alt]="getSelectedCivilizationName() + '_leader'">
-              </div>
-              <div class="leader-title">
-                <h3>{{ newGameForm.get('gameName')?.value || 'Tu Líder' }}</h3>
-                <p>Gobernante de {{ getSelectedCivilizationName() }}</p>
-              </div>
+            <div class="leader-image">
+              <img [src]="selectedLeaderImage" [alt]="getSelectedCivilizationName() + '_leader'">
+            </div>
+            <div class="leader-title">
+              <h3>{{ newGameForm.get('gameName')?.value || 'Tu Líder' }}</h3>
+              <p>Gobernante de {{ getSelectedCivilizationName() }}</p>
+            </div>
             }
           </div>
         </div>
 
         <div class="step-actions">
           <button type="button" class="btn-secondary" (click)="previousStep()">Atrás</button>
-          <button type="button" class="btn-primary"
-                  [disabled]="newGameForm.get('gameName')?.invalid"
-                  (click)="nextStep()">Continuar</button>
+          <button type="button" class="btn-primary" [disabled]="newGameForm.get('gameName')?.invalid"
+            (click)="nextStep()">Continuar</button>
         </div>
       </div>
 
@@ -94,20 +86,14 @@
             <label for="mapSize">Tamaño del Mapa</label>
             <select id="mapSize" formControlName="mapSize" class="form-control">
               @for (size of mapSizes; track size.value) {
-                <option [value]="size.value">{{size.label}}</option>
+              <option [value]="size.value">{{size.label}}</option>
               }
             </select>
           </div>
 
           <div class="form-group">
             <label for="numberOfOpponents">Número de Oponentes</label>
-            <input
-              type="number"
-              id="numberOfOpponents"
-              formControlName="numberOfOpponents"
-              min="1"
-              max="7"
-            >
+            <input type="number" id="numberOfOpponents" formControlName="numberOfOpponents" min="1" max="7">
           </div>
         </div>
 
@@ -124,13 +110,13 @@
 
           <div class="difficulty-selector">
             <button type="button" [class.active]="newGameForm.get('difficulty')?.value === 'easy'"
-                    (click)="newGameForm.get('difficulty')?.setValue('easy')">Fácil</button>
+              (click)="newGameForm.get('difficulty')?.setValue('easy')">Fácil</button>
             <button type="button" [class.active]="newGameForm.get('difficulty')?.value === 'normal'"
-                    (click)="newGameForm.get('difficulty')?.setValue('normal')">Normal</button>
+              (click)="newGameForm.get('difficulty')?.setValue('normal')">Normal</button>
             <button type="button" [class.active]="newGameForm.get('difficulty')?.value === 'hard'"
-                    (click)="newGameForm.get('difficulty')?.setValue('hard')">Difícil</button>
+              (click)="newGameForm.get('difficulty')?.setValue('hard')">Difícil</button>
             <button type="button" [class.active]="newGameForm.get('difficulty')?.value === 'expert'"
-                    (click)="newGameForm.get('difficulty')?.setValue('expert')">Experto</button>
+              (click)="newGameForm.get('difficulty')?.setValue('expert')">Experto</button>
           </div>
 
           <div class="difficulty-description">
@@ -176,9 +162,8 @@
 
         <div class="step-actions">
           <button type="button" class="btn-secondary" (click)="previousStep()">Atrás</button>
-          <button type="button" class="btn-primary"
-                  [disabled]="newGameForm.invalid"
-                  (click)="startGame()">¡Comenzar Partida!</button>
+          <button type="button" class="btn-primary" [disabled]="newGameForm.invalid" (click)="startGame()">¡Comenzar
+            Partida!</button>
         </div>
       </div>
     </form>

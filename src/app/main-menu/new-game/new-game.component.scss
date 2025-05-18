@@ -50,7 +50,7 @@
 
   .civilization-options {
     flex: 1;
-    
+
     h2 {
       color: #f1c40f;
       margin-bottom: 20px;
@@ -64,7 +64,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    
+
     .civilization-image {
       width: 250px;
       height: 150px;
@@ -72,7 +72,7 @@
       border: 2px solid #f1c40f;
       border-radius: 4px;
       margin-bottom: 20px;
-      
+
       img {
         width: 100%;
         height: 100%;
@@ -82,13 +82,13 @@
 
     .civilization-description {
       text-align: center;
-      
+
       h3 {
         color: #f1c40f;
         margin-bottom: 10px;
         font-size: 24px;
       }
-      
+
       p {
         color: #bdc3c7;
         line-height: 1.5;
@@ -110,12 +110,12 @@
     cursor: pointer;
     color: #bdc3c7;
     transition: all 0.2s ease;
-    
+
     &:hover {
       background-color: rgba(255, 255, 255, 0.1);
       color: #fff;
     }
-    
+
     &.selected {
       border: 2px solid #f1c40f;
       background-color: rgba(241, 196, 15, 0.1);
@@ -129,24 +129,24 @@
 .leader-setup {
   display: flex;
   gap: 30px;
-  
+
   .leader-form {
     flex: 1;
-    
+
     h2 {
       color: #f1c40f;
       margin-bottom: 20px;
       font-size: 22px;
     }
   }
-  
+
   .leader-preview {
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    
+
     .leader-image {
       width: 200px;
       height: 300px;
@@ -154,23 +154,23 @@
       border: 2px solid #f1c40f;
       border-radius: 4px;
       margin-bottom: 20px;
-      
+
       img {
         width: 100%;
         height: 100%;
         object-fit: cover;
       }
     }
-    
+
     .leader-title {
       text-align: center;
-      
+
       h3 {
         color: #f1c40f;
         margin-bottom: 5px;
         font-size: 24px;
       }
-      
+
       p {
         color: #bdc3c7;
       }
@@ -181,7 +181,7 @@
 /* Estilos para configuración de mapa */
 .map-setup {
   padding: 20px 0;
-  
+
   h2 {
     color: #f1c40f;
     margin-bottom: 30px;
@@ -192,18 +192,18 @@
 /* Estilos para selección de dificultad */
 .difficulty-setup {
   padding: 20px 0;
-  
+
   h2 {
     color: #f1c40f;
     margin-bottom: 30px;
     font-size: 22px;
   }
-  
+
   .difficulty-selector {
     display: flex;
     justify-content: space-between;
     margin-bottom: 30px;
-    
+
     button {
       flex: 1;
       padding: 15px;
@@ -213,11 +213,11 @@
       color: #bdc3c7;
       cursor: pointer;
       transition: all 0.2s ease;
-      
+
       &:hover {
         background-color: rgba(255, 255, 255, 0.1);
       }
-      
+
       &.active {
         border-color: #f1c40f;
         color: #f1c40f;
@@ -225,17 +225,17 @@
       }
     }
   }
-  
+
   .difficulty-description {
     padding: 15px;
     border-radius: 4px;
     background-color: rgba(255, 255, 255, 0.05);
-    
+
     h3 {
       color: #f1c40f;
       margin-bottom: 10px;
     }
-    
+
     p {
       color: #bdc3c7;
       line-height: 1.5;
@@ -246,36 +246,36 @@
 /* Estilos para resumen */
 .game-summary {
   padding: 20px 0;
-  
+
   h2 {
     color: #f1c40f;
     margin-bottom: 30px;
     font-size: 22px;
   }
-  
+
   .summary-details {
     background-color: rgba(255, 255, 255, 0.05);
     border-radius: 4px;
     padding: 20px;
-    
+
     .summary-item {
       display: flex;
       margin-bottom: 15px;
       padding-bottom: 15px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      
+
       &:last-child {
         border-bottom: none;
         margin-bottom: 0;
         padding-bottom: 0;
       }
-      
+
       .summary-label {
         flex: 1;
         font-weight: bold;
         color: #bdc3c7;
       }
-      
+
       .summary-value {
         flex: 2;
         color: #f1c40f;
@@ -286,14 +286,15 @@
 
 .form-group {
   margin-bottom: 20px;
-  
+
   label {
     display: block;
     margin-bottom: 8px;
     color: #bdc3c7;
   }
-  
-  input, select {
+
+  input,
+  select {
     width: 100%;
     padding: 12px;
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -301,7 +302,7 @@
     background-color: rgba(0, 0, 0, 0.5);
     color: #fff;
     font-size: 16px;
-    
+
     &:focus {
       outline: none;
       border-color: #f1c40f;
@@ -319,7 +320,7 @@
   display: flex;
   justify-content: space-between;
   margin-top: 40px;
-  
+
   button {
     padding: 12px 25px;
     border: none;
@@ -327,26 +328,26 @@
     font-size: 16px;
     cursor: pointer;
     transition: all 0.2s ease;
-    
+
     &.btn-primary {
       background-color: #f1c40f;
       color: #000;
-      
+
       &:hover {
         background-color: #f39c12;
       }
-      
+
       &:disabled {
         background-color: #7f8c8d;
         cursor: not-allowed;
       }
     }
-    
+
     &.btn-secondary {
       background-color: transparent;
       border: 1px solid #7f8c8d;
       color: #7f8c8d;
-      
+
       &:hover {
         background-color: rgba(127, 140, 141, 0.1);
       }
@@ -355,6 +356,13 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

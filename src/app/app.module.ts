@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { AppComponent } from './app.component';
 
 @NgModule({
@@ -9,11 +9,13 @@ import { AppComponent } from './app.component';
   ],
   imports: [
     BrowserModule,
-    HttpClientModule,
+    // HttpClientModule removed as it is deprecated,
     // ...otros módulos como AuthModule, GameModule, etc...
     // AppComponent is standalone and should not be imported here
   ],
-  providers: []
+  providers: [
+    provideHttpClient(withInterceptorsFromDi())
+  ]
   // Standalone components are bootstrapped using bootstrapApplication, not the bootstrap array
 })
 export class AppModule { }

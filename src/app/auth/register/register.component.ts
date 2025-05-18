@@ -23,9 +23,9 @@ export class RegisterComponent {
   get confirmPassword() { return this.registerForm.get('confirmPassword'); }
   
   constructor(
-    private fb: FormBuilder,
-    private router: Router,
-    private authService: AuthService
+    private readonly fb: FormBuilder,
+    private readonly router: Router,
+    private readonly authService: AuthService
   ) {
     this.registerForm = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
@@ -71,11 +71,11 @@ export class RegisterComponent {
         }
       } else if (typeof detail === 'string') {
         // Legacy: try to extract JSON from string, fallback to string
-        const match = detail.match(/\{.*\}/);
+        const match = RegExp(/\{.*\}/).exec(detail);
         if (match) {
           try {
             const json = JSON.parse(match[0]);
-            msg = json.error_description || json.error || match[0];
+            msg = (json.error_description ?? json.error ?? match[0]);
           } catch {
             msg = detail;
           }
