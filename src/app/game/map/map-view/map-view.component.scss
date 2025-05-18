@@ -7,11 +7,14 @@
   box-sizing: border-box;
 
   /* Hide scrollbars but keep scrolling functionality */
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 
   &::-webkit-scrollbar {
-    display: none; /* Chrome, Safari and Opera */
+    display: none;
+    /* Chrome, Safari and Opera */
   }
 }
 
@@ -29,29 +32,36 @@
   width: 100%;
   height: 100%;
   overflow: auto;
-  outline: none; /* Evita el recuadro de foco predeterminado */
+  outline: none;
+  /* Evita el recuadro de foco predeterminado */
 
   /* Hide scrollbars but keep scrolling functionality */
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 
   &::-webkit-scrollbar {
-    display: none; /* Chrome, Safari and Opera */
+    display: none;
+    /* Chrome, Safari and Opera */
   }
 
   &:focus {
-    outline: 2px solid rgba(0, 123, 255, 0.5); /* Un indicador sutil de foco */
+    outline: 2px solid rgba(0, 123, 255, 0.5);
+    /* Un indicador sutil de foco */
   }
 
   transition: margin-left 0.3s ease-in-out;
-  transition: margin-right 0.3s ease-in-out; /* Transición para margen derecho */
+  transition: margin-right 0.3s ease-in-out;
+  /* Transición para margen derecho */
 }
 
 .map-grid {
   display: table;
   border-collapse: separate;
   border-spacing: 0;
-  background-size: 200px 200px; /* Tamaño más pequeño para repetirla */
+  background-size: 200px 200px;
+  /* Tamaño más pequeño para repetirla */
   background-repeat: repeat;
 }
 
@@ -78,9 +88,6 @@ app-tile {
   font-size: 24px;
   z-index: 20;
   pointer-events: none;
-
-  &.selected {
-  }
 }
 
 .settler-marker {
@@ -121,7 +128,7 @@ app-tile {
   width: 230px;
   background: #23243a;
   border-radius: 12px;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.18);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.18);
   padding: 20px 18px;
   border: none;
 
@@ -155,10 +162,11 @@ app-tile {
       color: #fff;
       font-weight: 600;
       cursor: pointer;
-      box-shadow: 0 2px 8px rgba(78,84,200,0.18);
+      box-shadow: 0 2px 8px rgba(78, 84, 200, 0.18);
       transition: background 0.18s, transform 0.1s;
 
-      &:hover, &:focus {
+      &:hover,
+      &:focus {
         background: linear-gradient(90deg, #8f94fb 0%, #4e54c8 100%);
         outline: none;
         transform: translateY(-2px) scale(1.04);
@@ -251,6 +259,7 @@ app-tile {
       &:first-child {
         background-color: #44485e; // Darker cancel button
         color: #fff;
+
         &:hover {
           background-color: #55596f; // Slightly lighter on hover
         }
@@ -259,6 +268,7 @@ app-tile {
       &:last-child {
         background-color: #4e54c8; // Gradient-like blue for confirm
         color: white;
+
         &:hover {
           background-color: #6a70e0; // Lighter blue on hover
         }
@@ -274,7 +284,7 @@ app-tile {
 
 .unit-panel {
   .current-action {
-    background-color: rgba(0,0,0,0.1);
+    background-color: rgba(0, 0, 0, 0.1);
     border-radius: 5px;
     padding: 8px;
     margin: 10px 0;
@@ -310,19 +320,23 @@ app-tile {
 .lateral-sidebar {
   position: fixed;
   top: 0;
-  right: -280px; /* Oculta por defecto - ahora a la derecha */
+  right: -280px;
+  /* Oculta por defecto - ahora a la derecha */
   width: 280px;
   height: 100vh;
   background: #23243a;
   z-index: 100;
-  box-shadow: -4px 0 10px rgba(0, 0, 0, 0.2); /* Sombra al lado izquierdo */
-  transition: right 0.3s ease-in-out; /* Transición para right en lugar de left */
+  box-shadow: -4px 0 10px rgba(0, 0, 0, 0.2);
+  /* Sombra al lado izquierdo */
+  transition: right 0.3s ease-in-out;
+  /* Transición para right en lugar de left */
   color: #fff;
   display: flex;
   flex-direction: column;
 
   &.visible {
-    right: 0; /* Visible cuando está activo - ahora desde la derecha */
+    right: 0;
+    /* Visible cuando está activo - ahora desde la derecha */
   }
 
   .sidebar-header {
@@ -398,7 +412,8 @@ app-tile {
       box-shadow: 0 2px 8px rgba(78, 84, 200, 0.18);
       transition: background 0.18s, transform 0.1s;
 
-      &:hover, &:focus {
+      &:hover,
+      &:focus {
         background: linear-gradient(90deg, #8f94fb 0%, #4e54c8 100%);
         outline: none;
         transform: translateY(-2px);
@@ -413,12 +428,14 @@ app-tile {
 
 /* Ajustes para la vista del mapa con la barra lateral */
 .game-container:has(.lateral-sidebar.visible) .map-viewport {
-  margin-right: 280px; /* Desplaza el mapa cuando la barra lateral es visible */
+  margin-right: 280px;
+  /* Desplaza el mapa cuando la barra lateral es visible */
 }
 
 /* Ajustar posición del botón de fin de turno cuando la barra lateral está visible */
-.lateral-sidebar.visible ~ .end-turn-button {
-  right: 300px; /* Mover el botón a la izquierda cuando la barra está visible */
+.lateral-sidebar.visible~.end-turn-button {
+  right: 300px;
+  /* Mover el botón a la izquierda cuando la barra está visible */
 }
 
 .phaser-container {
@@ -427,8 +444,10 @@ app-tile {
   left: 0;
   width: 100%;
   height: 100%;
-  pointer-events: none; /* Para que los clicks pasen a través */
-  z-index: 10; /* Asegúrate de que esté por encima del mapa */
+  pointer-events: none;
+  /* Para que los clicks pasen a través */
+  z-index: 10;
+  /* Asegúrate de que esté por encima del mapa */
 }
 
 .unit-indicator.left::after {
@@ -441,19 +460,82 @@ app-tile {
 
 // Estilos para la superposición del menú de acciones del trabajador
 .worker-actions-overlay {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background-color: rgba(0, 0, 0, 0.7);
-  border-radius: 8px;
-  padding: 20px;
-  max-width: 400px;
-  width: 90%;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  z-index: 1100;
+  pointer-events: auto;
+  padding-top: 6vh;
+
   app-worker-actions {
-    width: 100%;
+    background: #23243a;
+    border-radius: 8px;
+    padding: 12px 16px 10px 16px;
+    width: 540px;
+    min-width: 340px;
+    max-width: 98vw;
+    margin-left: 7vw;
+    margin-right: auto;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    color: #d3d6e0;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #4e54c8;
+    font-size: 0.92em;
+    width: 750px;
+  }
+
+  .worker-actions-close-btn {
+    align-self: flex-end;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.3em;
+    cursor: pointer;
+    margin-bottom: 2px;
+    margin-right: 2px;
+    transition: color 0.15s;
+
+    &:hover {
+      color: #ff4c4c;
+    }
+  }
+
+  .buildings-grid {
+    grid-template-columns: repeat(2, minmax(160px, 1fr));
+    gap: 10px;
+  }
+
+  .building-card {
+    padding: 6px 4px 6px 4px;
+    min-height: 60px;
+    font-size: 0.95em;
+  }
+
+  .building-icon {
+    font-size: 1.1em;
+    margin-bottom: 2px;
+  }
+
+  .building-info h4 {
+    font-size: 1em;
+    margin-bottom: 2px;
+  }
+
+  .building-description,
+  .build-turns {
+    font-size: 0.92em;
+    margin-bottom: 2px;
+  }
+
+  button {
+    font-size: 0.95em;
+    padding: 4px 0;
   }
 }
