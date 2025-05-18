@@ -70,7 +70,7 @@
   font-size: 4.5rem;
   font-family: 'Trajan Pro', 'Times New Roman', serif;
   text-transform: uppercase;
-  text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
   letter-spacing: 2px;
   pointer-events: none;
   line-height: 1;
@@ -85,7 +85,7 @@
   font-family: 'Trajan Pro', 'Times New Roman', serif;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  text-shadow: 1px 1px 6px rgba(0,0,0,0.5);
+  text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.5);
   margin-top: 0.3em;
   pointer-events: none;
 }
@@ -93,7 +93,8 @@
 .main-menu-actions {
   margin-top: 30px;
 
-  button, a {
+  button,
+  a {
     width: 100%;
     padding: 14px;
     background: linear-gradient(to bottom, #c9a45b 0%, #8c6d2e 100%);
