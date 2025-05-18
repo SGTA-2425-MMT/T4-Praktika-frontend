@@ -541,7 +541,7 @@ export class GameService {
             const trackerEntry = game.unitLevelTracker.find(u => String(u.unitType) === String(unitType));
             if (trackerEntry) {
               // Sube el nivel hasta un máximo de 2
-              alert("UnitLevel"+trackerEntry.unitLevel);
+              console.log(`[GameService] Nivel de unidad actual: ${trackerEntry.unitLevel}`);
               trackerEntry.unitLevel = Math.min(Number(trackerEntry.unitLevel) + 1, 2);
               console.log(`[GameService] Nivel de unidad '${unitType}' mejorado a ${trackerEntry.unitLevel}`);
             }
