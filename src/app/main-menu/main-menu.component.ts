@@ -12,8 +12,8 @@ import { AuthService } from '../core/services/auth.service';
 })
 export class MainMenuComponent {
   constructor(
-    private router: Router,
-    private authService: AuthService
+    private readonly router: Router,
+    private readonly authService: AuthService
   ) {}
 
   newGame() {
