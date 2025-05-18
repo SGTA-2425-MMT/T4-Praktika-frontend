@@ -21,17 +21,19 @@ export class TileComponent implements OnInit, OnDestroy {
   @Input() unitCanMove: boolean = false;
   @Input() unitType: string = '';
   @Input() unitLevel: number = 1;
+  @Input() era: string = ''; // Nueva propiedad para la era de la ciudad
   @Input() isMovableTile: boolean = false; // Nueva propiedad para casillas a las que se puede mover
   @Input() isAttackable: boolean = false; // New input for attackable tiles
   @Input() direction: 'left' | 'right' | null = null; // New input for unit direction
+  @Input() buildingType: string = ''; // Nueva propiedad para el tipo de edificio
   @Output() tileClick = new EventEmitter<void>();
 
   private tileUpdateSubscription: Subscription | null = null;
 
   constructor(
-    private gameService: GameService,
-    private tileImprovementService: TileImprovementService
-  ) {}
+    private readonly gameService: GameService,
+    private readonly tileImprovementService: TileImprovementService
+  ) { }
 
   ngOnInit(): void {
     // Suscribirse a actualizaciones de casillas
@@ -52,7 +54,7 @@ export class TileComponent implements OnInit, OnDestroy {
 
   // Método para actualizar los datos de la casilla
   updateTileData(updatedTile: MapTile): void {
-    this.tile = {...updatedTile};
+    this.tile = { ...updatedTile };
   }
 
   // Verifica si hay construcción en progreso en esta casilla
@@ -74,6 +76,7 @@ export class TileComponent implements OnInit, OnDestroy {
 
   // Obtiene el porcentaje de progreso de la construcción
   getConstructionProgress(): number {
+
     if (!this.gameService.currentGame) return 0;
 
     const worker = this.gameService.currentGame.units.find(unit =>
@@ -85,21 +88,24 @@ export class TileComponent implements OnInit, OnDestroy {
       unit.turnsToComplete > 0
     );
 
-    if (!worker || !worker.currentAction || worker.turnsToComplete === undefined) return 0;
+    if (!worker?.currentAction || worker.turnsToComplete === undefined) return 0;
 
     // Obtener el tiempo total de construcción según el tipo de mejora
     let totalTurns = 0;
 
     if (worker.currentAction === 'build_road') {
       totalTurns = 3;
-    } else if (worker.currentAction.startsWith('build_')) {
-      const improvementType = worker.currentAction.replace('build_', '') as string;
+    } else if (worker.currentAction.startsWith('build_road')) {
+      const improvementType = worker.currentAction.replace('build_', '');
       const improvement = this.tileImprovementService.getImprovementInfo(improvementType as any);
-      totalTurns = improvement?.turnsToComplete || 3;
-    } else if (worker.currentAction === 'clear_forest') {
+      totalTurns = 1;
+    } else if (worker.currentAction === 'build_farm') {
       totalTurns = 3;
-    } else if (worker.currentAction === 'clear_jungle') {
-      totalTurns = 4;
+    } else if (worker.currentAction === 'build_mine') {
+      totalTurns = 5;
+    }
+    else if (worker.currentAction === 'build_port') {
+      totalTurns = 8;
     }
 
     if (totalTurns === 0) return 0;
@@ -114,17 +120,18 @@ export class TileComponent implements OnInit, OnDestroy {
 
   getUnitSymbol(): string {
     // Devuelve un símbolo según el tipo de unidad
-    switch(this.unitType) {
+    switch (this.unitType) {
       case 'settler': return 'S';
       case 'warrior': return 'W';
       case 'worker': return 'T';
       case 'archer': return 'A';
       case 'horseman': return 'H';
-      case 'swordsman': return 'E';
+      case 'rifleman': return 'R';
+      case 'artillery': return 'Ar';
       case 'catapult': return 'C';
       case 'galley': return 'G';
       case 'warship': return 'B';
-      case 'scout': return 'X';
+      case 'tank': return 'T';
       default: return '•';
     }
   }
@@ -168,23 +175,31 @@ export class TileComponent implements OnInit, OnDestroy {
       'worker': this.unitType === 'worker',
       'archer': this.unitType === 'archer',
       'horseman': this.unitType === 'horseman',
-      'swordsman': this.unitType === 'swordsman',
+      'rifleman': this.unitType === 'rifleman',
       'catapult': this.unitType === 'catapult',
+      'artillery': this.unitType === 'artillery',
       'galley': this.unitType === 'galley',
+      'tank': this.unitType === 'tank',
       'unit-left': this.direction === 'left', // Add direction class
       'right': true,
-      'has-road': this.tile.hasRoad === true, // Clase para casillas con camino
-      'construction-in-progress': this.isConstructionInProgress(), // Casillas con construcción en progreso
+      //'has-road': this.tile.hasRoad === true, // Clase para casillas con camino
+      //'construction-in-progress': this.isConstructionInProgress(), // Casillas con construcción en progreso
 
       'lvl1': this.unitLevel === 1,
       'lvl2': this.unitLevel === 2,
-      'lvl3': this.unitLevel === 3,
+
+
+      'build': this.buildingType === 'none', // Clase para casillas con construcción en progreso
+      'road': this.buildingType === 'road', // Clase para casillas con camino
+      'farm': this.buildingType === 'farm', // Clase para casillas con granja
+      'mine': this.buildingType === 'gold_mine', // Clase para casillas con mina
+      'port': this.buildingType === 'port', // Clase para casillas con puerto
     };
 
     // Si hay una mejora en el terreno, añadir la clase correspondiente
-    if (this.tile.improvement && this.tile.improvement !== 'none') {
+    if (this.tile.building && this.tile.building !== 'none') {
       classes['has-improvement'] = true;
-      classes[`improvement-${this.tile.improvement}`] = true;
+      classes[`improvement-${this.tile.building}`] = true;
 
       // Añadir clase especial para mejoras recién construidas
       const worker = this.gameService.currentGame?.units.find(unit =>
@@ -204,14 +219,39 @@ export class TileComponent implements OnInit, OnDestroy {
     if (this.tile.featureType && this.tile.featureType !== 'none') {
       classes[this.tile.featureType] = true;
     }
-
     // Añadir la clase 'city' solo si el tile tiene una ciudad válida
     if (this.tile.city && this.tile.city.id !== '0') {
-      classes['city'] = true;
+      switch (this.era) {
+        case 'ancient':
+          classes['city_lvl1'] = true;
+          break;
+        case 'medieval':
+          classes['city_lvl2'] = true;
+          break;
+        case 'age_of_discovery':
+          classes['city_lvl3'] = true;
+          break;
+        case 'modern':
+          classes['city_lvl4'] = true;
+          break;
+        default:
+          classes['city_lvl1'] = true;
+          break;
+      }
+
+    }
+
+    classes['build'] = true;
+
+
+    // Añadir clases para el tipo de edificio
+    if (this.buildingType === 'none') {
+      classes['build'] = true;
+      //if (this.buildingType === 'build') {
+      //classes['building-in-progress'] = true;
+      //}
     }
 
     return classes;
   }
 }
-
-

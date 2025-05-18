@@ -5,12 +5,12 @@
   justify-content: center;
   align-items: center;
   box-sizing: border-box;
-  //border: 2px solid #000;
   width: 120px;
   height: 120px;
   margin: 0px;
   cursor: pointer;
-/*
+
+  /*
   transform: scale(1) skewY(-15deg);
     .map-grid {
       display: flex;
@@ -75,6 +75,7 @@
       opacity: 0.6;
       background-color: rgba(0, 0, 0, 0.3);
     }
+
     filter: grayscale(0.5);
   }
 
@@ -103,7 +104,6 @@
       background-size: 80% 80%;
       background-position: center;
       background-repeat: no-repeat;
-      opacity: 0.7;
       z-index: 2;
     }
   }
@@ -117,185 +117,222 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: repeating-linear-gradient(
-        45deg,
-        rgba(255, 230, 0, 0.2),
-        rgba(255, 230, 0, 0.2) 10px,
-        rgba(255, 165, 0, 0.2) 10px,
-        rgba(255, 165, 0, 0.2) 20px
-      );
+      background: repeating-linear-gradient(45deg,
+          rgba(255, 230, 0, 0.2),
+          rgba(255, 230, 0, 0.2) 10px,
+          rgba(255, 165, 0, 0.2) 10px,
+          rgba(255, 165, 0, 0.2) 20px);
       z-index: 3;
       animation: construction-pulse 2s infinite alternate;
     }
 
     @keyframes construction-pulse {
-      from { opacity: 0.4; }
-      to { opacity: 0.8; }
+      from {
+        opacity: 0.4;
+      }
+
+      to {
+        opacity: 0.8;
+      }
     }
   }
 
-/* Características adicionales */
-&.water {
-  background-color: aqua;
-  background-image: url('/assets/images/tiles/water.png');
-}
-&.waterocean {
-  background-color: blue;
-  background-image: url('/assets/images/tiles/waterocean.png');
-}
-&.grassland {
-  background-color: green;
-  background-image: url('/assets/images/tiles/grassland.jpg');
+  /* Características adicionales */
+  &.water {
+    background-color: aqua;
+    background-image: url('/assets/images/tiles/water.png');
+  }
 
-}
-&.plains {
-  background-color: yellowgreen;
-  background-image: url('/assets/images/tiles/plains.png');
+  &.waterocean {
+    background-color: blue;
+    background-image: url('/assets/images/tiles/waterocean.png');
+  }
 
-}
-&.desert {
-  background-color: orange;
-  background-image: url('/assets/images/tiles/desert.png');
+  &.grassland {
+    background-color: green;
+    background-image: url('/assets/images/tiles/grassland.jpg');
 
-}
-&.rocky {
-  background-color: grey;
-  background-image: url('/assets/images/tiles/rocky.png');
-}
-&.snow {
-  background-color: white;
-  background-image: url('/assets/images/tiles/snow.png');
-}
-&.snowy_rocky {
-  background-color: white;
-  background-image: url('/assets/images/tiles/snowy_rocky.png');
-}
-&.sandy_rocky {
-  background-color: white;
-  background-image: url('/assets/images/tiles/sandy_rocky.png');
-}
+  }
 
-&.coast_top {
-  background-image: url('/assets/images/tiles/coast11.png');
-}
+  &.plains {
+    background-color: yellowgreen;
+    background-image: url('/assets/images/tiles/plains.png');
 
-&.coast_right {
-  background-image: url('/assets/images/tiles/coast12.png');
-}
+  }
 
-&.coast_down {
-  background-image: url('/assets/images/tiles/coast13.png');
-  background-color: black;
-}
+  &.desert {
+    background-color: orange;
+    background-image: url('/assets/images/tiles/desert.png');
 
-&.coast_left {
-  background-image: url('/assets/images/tiles/coast14.png');
-}
+  }
 
-&.coast15 {
-  background-image: url('/assets/images/tiles/coast15.png');
-}
+  &.rocky {
+    background-color: grey;
+    background-image: url('/assets/images/tiles/rocky.png');
+  }
 
-&.coast16 {
-  background-image: url('/assets/images/tiles/coast16.png');
-}
+  &.snow {
+    background-color: white;
+    background-image: url('/assets/images/tiles/snow.png');
+  }
 
-&.coast17 {
-  background-image: url('/assets/images/tiles/coast17.png');
-}
+  &.snowy_rocky {
+    background-color: white;
+    background-image: url('/assets/images/tiles/snowy_rocky.png');
+  }
 
-&.coast18 {
-  background-image: url('/assets/images/tiles/coast18.png');
-}
+  &.sandy_rocky {
+    background-color: white;
+    background-image: url('/assets/images/tiles/sandy_rocky.png');
+  }
 
-&.coast19 {
-  background-image: url('/assets/images/tiles/coast19.png');
-}
-&.coast20 {
-  background-image: url('/assets/images/tiles/coast20.png');
-}
-&.coast21 {
-  background-image: url('/assets/images/tiles/coast21.png');
-}
-&.coast22 {
-  background-image: url('/assets/images/tiles/coast22.png');
-}
-&.coast23 {
-  background-image: url('/assets/images/tiles/coast23.png');
-}
-&.coast24 {
-  background-image: url('/assets/images/tiles/coast24.png');
-}
-&.coast25 {
-  background-image: url('/assets/images/tiles/coast25.png');
-}
-&.coast26 {
-  background-image: url('/assets/images/tiles/coast26.png');
-}
-&.coast27 {
-  background-image: url('/assets/images/tiles/coast27.png');
-}
-&.coast28 {
-  background-image: url('/assets/images/tiles/coast28.png');
-}
-&.coast29 {
-  background-image: url('/assets/images/tiles/coast29.png');
-}
-&.coast30 {
-  background-image: url('/assets/images/tiles/coast30.png');
-}
-&.coast31 {
-  background-image: url('/assets/images/tiles/coast31.png');
-}
-&.coast32 {
-  background-image: url('/assets/images/tiles/coast32.png');
-}
-&.coast33 {
-  background-image: url('/assets/images/tiles/coast33.png');
-}
-&.coast34 {
-  background-image: url('/assets/images/tiles/coast34.png');
-}
+  &.coast_top {
+    background-image: url('/assets/images/tiles/coast11.png');
+  }
 
-&.water_ocean1 {
-  background-image: url('/assets/images/tiles/water-ocean1.png');
-}
-&.water_ocean2 {
-  background-image: url('/assets/images/tiles/water-ocean2.png');
-}
-&.water_ocean3 {
-  background-image: url('/assets/images/tiles/water-ocean3.png');
-}
-&.water_ocean4 {
-  background-image: url('/assets/images/tiles/water-ocean4.png');
-}
-&.water_ocean5 {
-  background-image: url('/assets/images/tiles/water-ocean5.png');
-}
-&.water_ocean6 {
-  background-image: url('/assets/images/tiles/water-ocean6.png');
-}
-&.water_ocean7 {
-  background-image: url('/assets/images/tiles/water-ocean7.png');
-}
-&.water_ocean8 {
-  background-image: url('/assets/images/tiles/water-ocean8.png');
-}
-&.water_ocean9 {
-  background-image: url('/assets/images/tiles/water-ocean9.png');
-}
-&.water_ocean10 {
-  background-image: url('/assets/images/tiles/water-ocean10.png');
-}
-&.water_ocean11 {
-  background-image: url('/assets/images/tiles/water-ocean11.png');
-}
-&.water_ocean12 {
-  background-image: url('/assets/images/tiles/water-ocean12.png');
-}
+  &.coast_right {
+    background-image: url('/assets/images/tiles/coast12.png');
+  }
+
+  &.coast_down {
+    background-image: url('/assets/images/tiles/coast13.png');
+    background-color: black;
+  }
+
+  &.coast_left {
+    background-image: url('/assets/images/tiles/coast14.png');
+  }
+
+  &.coast15 {
+    background-image: url('/assets/images/tiles/coast15.png');
+  }
+
+  &.coast16 {
+    background-image: url('/assets/images/tiles/coast16.png');
+  }
+
+  &.coast17 {
+    background-image: url('/assets/images/tiles/coast17.png');
+  }
+
+  &.coast18 {
+    background-image: url('/assets/images/tiles/coast18.png');
+  }
+
+  &.coast19 {
+    background-image: url('/assets/images/tiles/coast19.png');
+  }
+
+  &.coast20 {
+    background-image: url('/assets/images/tiles/coast20.png');
+  }
+
+  &.coast21 {
+    background-image: url('/assets/images/tiles/coast21.png');
+  }
+
+  &.coast22 {
+    background-image: url('/assets/images/tiles/coast22.png');
+  }
+
+  &.coast23 {
+    background-image: url('/assets/images/tiles/coast23.png');
+  }
+
+  &.coast24 {
+    background-image: url('/assets/images/tiles/coast24.png');
+  }
+
+  &.coast25 {
+    background-image: url('/assets/images/tiles/coast25.png');
+  }
+
+  &.coast26 {
+    background-image: url('/assets/images/tiles/coast26.png');
+  }
+
+  &.coast27 {
+    background-image: url('/assets/images/tiles/coast27.png');
+  }
+
+  &.coast28 {
+    background-image: url('/assets/images/tiles/coast28.png');
+  }
+
+  &.coast29 {
+    background-image: url('/assets/images/tiles/coast29.png');
+  }
+
+  &.coast30 {
+    background-image: url('/assets/images/tiles/coast30.png');
+  }
+
+  &.coast31 {
+    background-image: url('/assets/images/tiles/coast31.png');
+  }
+
+  &.coast32 {
+    background-image: url('/assets/images/tiles/coast32.png');
+  }
+
+  &.coast33 {
+    background-image: url('/assets/images/tiles/coast33.png');
+  }
+
+  &.coast34 {
+    background-image: url('/assets/images/tiles/coast34.png');
+  }
+
+  &.water_ocean1 {
+    background-image: url('/assets/images/tiles/water-ocean1.png');
+  }
+
+  &.water_ocean2 {
+    background-image: url('/assets/images/tiles/water-ocean2.png');
+  }
+
+  &.water_ocean3 {
+    background-image: url('/assets/images/tiles/water-ocean3.png');
+  }
+
+  &.water_ocean4 {
+    background-image: url('/assets/images/tiles/water-ocean4.png');
+  }
+
+  &.water_ocean5 {
+    background-image: url('/assets/images/tiles/water-ocean5.png');
+  }
+
+  &.water_ocean6 {
+    background-image: url('/assets/images/tiles/water-ocean6.png');
+  }
+
+  &.water_ocean7 {
+    background-image: url('/assets/images/tiles/water-ocean7.png');
+  }
+
+  &.water_ocean8 {
+    background-image: url('/assets/images/tiles/water-ocean8.png');
+  }
+
+  &.water_ocean9 {
+    background-image: url('/assets/images/tiles/water-ocean9.png');
+  }
+
+  &.water_ocean10 {
+    background-image: url('/assets/images/tiles/water-ocean10.png');
+  }
+
+  &.water_ocean11 {
+    background-image: url('/assets/images/tiles/water-ocean11.png');
+  }
+
+  &.water_ocean12 {
+    background-image: url('/assets/images/tiles/water-ocean12.png');
+  }
 
 
-    &::after {
+  &::after {
     content: '';
     position: absolute;
     top: 0;
@@ -305,7 +342,8 @@
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    pointer-events: none; /* Asegura que no bloquee interacciones */
+    pointer-events: none;
+    /* Asegura que no bloquee interacciones */
     transition: transform 0.3s ease; // Transición suave para el cambio de orientación
   }
 
@@ -313,19 +351,19 @@
   &.settler::after {
     background-image: url('/assets/images/units/settler_lvl1.png');
   }
+
   &.settler.lvl2::after {
-    background-image: url('/assets/images/units/settler_lvl2.png');
-  }
-  &.settler.lvl3::after {
-    background-image: url('/assets/images/units/settler_lvl3.png');
+    background-image: url('/assets/images/units/settler.png');
   }
 
   &.worker::after {
     background-image: url('/assets/images/units/worker_lvl1.png');
   }
+
   &.worker.lvl2::after {
     background-image: url('/assets/images/units/worker_lvl2.png');
   }
+
   &.worker.lvl3::after {
     background-image: url('/assets/images/units/worker_lvl3.png');
   }
@@ -333,73 +371,115 @@
   &.warrior::after {
     background-image: url('/assets/images/units/warrior_lvl1.png');
   }
+
   &.warrior.right::after {
     background-image: url('/assets/images/units/warrior_lvl1.png');
   }
+
   &.warrior.lvl2::after {
     background-image: url('/assets/images/units/warrior_lvl2.png');
-  }
-  &.warrior.lvl3::after {
-    background-image: url('/assets/images/units/warrior_lvl3.png');
   }
 
   &.horseman::after {
     background-image: url('/assets/images/units/horseman_lvl1.png');
   }
+
   &.horseman.lvl2::after {
     background-image: url('/assets/images/units/horseman_lvl2.png');
-  }
-  &.horseman.lvl3::after {
-    background-image: url('/assets/images/units/horseman_lvl3.png');
-  }
-
-  &.swordsman::after {
-    background-image: url('/assets/images/units/warrior_lvl2.png');
-  }
-  &.swordsman.lvl2::after {
-    background-image: url('/assets/images/units/warrior_lvl3.png');
   }
 
   &.archer::after {
     background-image: url('/assets/images/units/archer_lvl1.png');
   }
+
   &.archer.lvl2::after {
     background-image: url('/assets/images/units/archer_lvl2.png');
   }
-  &.archer.lvl3::after {
-    background-image: url('/assets/images/units/archer_lvl3.png');
+
+  &.rifleman::after {
+    background-image: url('/assets/images/units/rifleman_lvl1.png');
+  }
+
+  &.rifleman.lvl2::after {
+    background-image: url('/assets/images/units/rifleman_lvl2.png');
   }
 
   &.catapult::after {
     background-image: url('/assets/images/units/catapult.png');
   }
-  &.catapult.lvl2::after {
-    background-image: url('/assets/images/units/artillery_lvl2.png');
+
+  &.artillery.lvl1::after {
+    background-image: url('/assets/images/units/cannon_lvl1.png');
   }
-  &.catapult.lvl3::after {
-    background-image: url('/assets/images/units/artillery_lvl3.png');
+
+  &.artillery.lvl2::after {
+    background-image: url('/assets/images/units/cannon_lvl2.png');
   }
 
   &.galley::after {
     background-image: url('/assets/images/units/galley.png');
   }
+
   &.galley.lvl2::after {
     background-image: url('/assets/images/units/galley_lvl2.png');
   }
 
-
-    &.settler.left::after {
-        transform: scaleX(-1); // Flip the image horizontally
+  &.tank::after {
+    background-image: url('/assets/images/units/tank.png');
   }
 
-      &.settler.right::after {
-        transform: scaleX(1); // Original direction
-      }
 
-
-  &.city::after {
+  &.city_lvl1::after {
     background-image: url('/assets/images/cities/settlement.png');
   }
+
+  &.city_lvl2::after {
+    background-image: url('/assets/images/cities/city_lvl2.png');
+  }
+
+  &.city_lvl3::after {
+    background-image: url('/assets/images/cities/city_lvl3.png');
+  }
+
+  &.city_lvl4::after {
+    background-image: url('/assets/images/cities/city_lvl4.png');
+  }
+
+
+  /* === BUILDINGS === */
+  &.building-port::after {
+    background-image: url('/assets/images/buildings/port.png');
+  }
+
+  &.building-road::after {
+    background-image: url('/assets/images/buildings/road.png');
+  }
+
+  &.building-farm::after {
+    background-image: url('/assets/images/buildings/farm.png');
+  }
+
+  &.building-mine::after {
+    background-image: url('/assets/images/buildings/mine.png');
+  }
+
+  /* Construcción en progreso para edificios */
+  &.building-ongoing::after {
+    filter: grayscale(0.5) brightness(1.2) drop-shadow(0 0 8px #ff9800);
+    opacity: 0.7;
+    animation: building-ongoing-pulse 1.2s infinite alternate;
+  }
+
+  @keyframes building-ongoing-pulse {
+    from {
+      opacity: 0.5;
+    }
+
+    to {
+      opacity: 0.9;
+    }
+  }
+
 
   &.forest::after {
     background-image: url('/assets/images/features/forest.png');
@@ -430,11 +510,11 @@
   justify-content: center;
   align-items: center;
   box-sizing: border-box;
-  //border: 2px solid #000;
   width: 100px;
   height: 100px;
   margin: 0px;
   cursor: pointer;
+
   &.city {
     background-color: #ffcc00;
     background-image: url('/assets/images/cities/settlement1.png');
@@ -443,13 +523,13 @@
     z-index: 10;
   }
 }
+
 /* Elementos dentro de la casilla */
 .debug-coords {
   position: absolute;
   bottom: 2px;
   right: 2px;
   font-size: 8px;
-  //color: white;
   background-color: rgba(0, 0, 0, 0.5);
   padding: 1px 2px;
   border-color: white;
@@ -458,11 +538,10 @@
 }
 
 /* Características y recursos */
-//color: white;
-.feature-image, .resource-image {
+.feature-image,
+.resource-image {
   position: absolute;
   top: 50%;
-//color: white;
   left: 50%;
   transform: translate(-50%, -50%);
   width: 60%;
@@ -470,71 +549,85 @@
   font-size: 18px; // Más pequeño
   text-align: center;
   z-index: 2;
-  opacity: 0.7;    // Más translúcido
+  opacity: 0.7; // Más translúcido
   pointer-events: none;
   background: none;
 
-/* Niebla de guerra */
-.fog-of-war {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: #000;
-  z-index: 5;
-}
-
-.fog-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 2;
-}
-
-    /* Estados de la casilla */
-    .selected { border: 2px solid red; }
-    .path-tile { border: 2px dashed #ecd613; }
-    .has-unit { position: relative; }
-    .unit-can-move { border: 2px solid yellow; }
-    .unexplored { background-color: #1a1a1a; }
-
-    /* Indicadores de unidades */
-    .unit-indicator.left::after {
-      transform: scaleX(-1); // Flip the image horizontally
-    }
-
-    .unit-indicator.right::after {
-      transform: scaleX(1); // Original direction
-    }
-
-    /* Indicador de ciudad */
-    .city-indicator {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 24px;
-      z-index: 20;
-      cursor: pointer;
-    }
-
-    /* Coordenadas para depuración */
-    .coordinates {
-      position: absolute;
-      bottom: 2px;
-      right: 2px;
-      font-size: 8px;
-      color: white;
-      background-color: rgba(0, 0, 0, 0.5);
-      padding: 1px 2px;
-      border-radius: 2px;
-      z-index: 5;
-    }
+  /* Niebla de guerra */
+  .fog-of-war {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    z-index: 5;
   }
+
+  .fog-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 2;
+  }
+
+  /* Estados de la casilla */
+  .selected {
+    border: 2px solid red;
+  }
+
+  .path-tile {
+    border: 2px dashed #ecd613;
+  }
+
+  .has-unit {
+    position: relative;
+  }
+
+  .unit-can-move {
+    border: 2px solid yellow;
+  }
+
+  .unexplored {
+    background-color: #1a1a1a;
+  }
+
+  /* Indicadores de unidades */
+  .unit-indicator.left::after {
+    transform: scaleX(-1); // Flip the image horizontally
+  }
+
+  .unit-indicator.right::after {
+    transform: scaleX(1); // Original direction
+  }
+
+  /* Indicador de ciudad */
+  .city-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    z-index: 20;
+    cursor: pointer;
+  }
+
+  /* Coordenadas para depuración */
+  .coordinates {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    font-size: 8px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 1px 2px;
+    border-radius: 2px;
+    z-index: 5;
+  }
+}
 
 /* Estilos para mejoras de terreno */
 .improvement-image {
@@ -563,7 +656,6 @@
     background-position: center;
     background-repeat: no-repeat;
     background-size: contain;
-    opacity: 0.8;
     z-index: 2;
   }
 
@@ -576,49 +668,72 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: radial-gradient(ellipse at center, rgba(255,215,0,0.3) 0%, rgba(255,255,255,0) 70%);
+      background: radial-gradient(ellipse at center, rgba(255, 215, 0, 0.3) 0%, rgba(255, 255, 255, 0) 70%);
       animation: pulse 2s infinite;
       z-index: 1;
     }
 
     @keyframes pulse {
-      0% { opacity: 0.7; }
-      50% { opacity: 0.3; }
-      100% { opacity: 0.7; }
+      0% {
+        opacity: 0.7;
+      }
+
+      50% {
+        opacity: 0.3;
+      }
+
+      100% {
+        opacity: 0.7;
+      }
     }
   }
 
-  &.improvement-farm::after {
-    background-image: url('/assets/images/improvements/farm.png');
+
+
+  &.build::after {
+    background-image: url('/assets/images/buildings/build.png');
   }
 
-  &.improvement-mine::after {
-    background-image: url('/assets/images/improvements/mine.png');
+  &.port::after {
+    background-image: url('/assets/images/buildings/port.png');
   }
 
-  &.improvement-plantation::after {
-    background-image: url('/assets/images/improvements/plantation.png');
+  &.farm::after {
+    background-image: url('/assets/images/buildings/farm.png');
   }
 
-  &.improvement-camp::after {
-    background-image: url('/assets/images/improvements/camp.png');
+  &.road::after {
+    background-image: url('/assets/images/buildings/road.png');
   }
 
-  &.improvement-pasture::after {
-    background-image: url('/assets/images/improvements/pasture.png');
-  }
-
-  &.improvement-fishing_boats::after {
-    background-image: url('/assets/images/improvements/fishing_boats.png');
+  &.mine::after {
+    background-image: url('/assets/images/buildings/mina.png');
   }
 }
 
-.improvement-farm { border: 2px dashed rgba(255, 235, 59, 0.5); }
-.improvement-mine { border: 2px dashed rgba(139, 69, 19, 0.5); }
-.improvement-plantation { border: 2px dashed rgba(76, 175, 80, 0.5); }
-.improvement-camp { border: 2px dashed rgba(121, 85, 72, 0.5); }
-.improvement-pasture { border: 2px dashed rgba(200, 230, 201, 0.5); }
-.improvement-fishing_boats { border: 2px dashed rgba(33, 150, 243, 0.5); }
+.improvement-farm {
+  border: 2px dashed rgba(255, 235, 59, 0.5);
+}
+
+.improvement-mine {
+  border: 2px dashed rgba(139, 69, 19, 0.5);
+}
+
+.improvement-plantation {
+  border: 2px dashed rgba(76, 175, 80, 0.5);
+}
+
+.improvement-camp {
+  border: 2px dashed rgba(121, 85, 72, 0.5);
+}
+
+.improvement-pasture {
+  border: 2px dashed rgba(200, 230, 201, 0.5);
+}
+
+.improvement-fishing_boats {
+  border: 2px dashed rgba(33, 150, 243, 0.5);
+}
 
 /* Indicador de progreso de construcción */
 .construction-progress-indicator {
@@ -647,7 +762,15 @@
 
 /* Efecto de pulso para la construcción en progreso */
 @keyframes construction-pulse {
-  0% { opacity: 0.5; }
-  50% { opacity: 0.8; }
-  100% { opacity: 0.5; }
+  0% {
+    opacity: 0.5;
+  }
+
+  50% {
+    opacity: 0.8;
+  }
+
+  100% {
+    opacity: 0.5;
+  }
 }
