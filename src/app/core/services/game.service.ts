@@ -712,7 +712,7 @@ export class GameService {
   private createStartingUnits(civilization: string, position: { x: number; y: number }): UnitModel.Unit[] {
     const settler = UnitModel.createSettler('player1', position.x, position.y, 1);
     const owner = 'player1';
-    const warrior = UnitModel.createWorker(owner , position.x, position.y, 1);
+    const warrior = UnitModel.createWarrior(owner , position.x, position.y, 1);
     return [settler, warrior];
   }
 
