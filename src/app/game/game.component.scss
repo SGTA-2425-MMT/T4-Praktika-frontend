@@ -8,7 +8,8 @@
   color: #fff;
 }
 
-.loading-screen, .error-message {
+.loading-screen,
+.error-message {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -29,8 +30,13 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .game-ui {
@@ -274,13 +280,13 @@
   background-color: rgba(40, 40, 60, 0.9);
   padding: 10px 20px;
   border-bottom: 2px solid #f1c40f;
-  
+
   h2 {
     color: #f1c40f;
     margin: 0;
     font-size: 1.5rem;
   }
-  
+
   .close-button {
     background: none;
     border: none;
@@ -288,7 +294,7 @@
     font-size: 1.8rem;
     cursor: pointer;
     padding: 0 10px;
-    
+
     &:hover {
       color: #fff;
     }
@@ -304,11 +310,11 @@
 .clickable {
   cursor: pointer;
   transition: color 0.2s;
-  
+
   &:hover {
     color: #f1c40f;
   }
-  
+
   .science-icon {
     margin-right: 5px;
   }

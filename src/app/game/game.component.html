@@ -1,88 +1,85 @@
 <div class="game-wrapper">
   @if (loading) {
-    <div class="loading-screen">
-      <div class="spinner"></div>
-      <p>Cargando partida...</p>
-    </div>
+  <div class="loading-screen">
+    <div class="spinner"></div>
+    <p>Cargando partida...</p>
+  </div>
   } @else if (error) {
-    <div class="error-message">
-      {{ error }}
-      <p>Redirigiendo al menú principal...</p>
-    </div>
+  <div class="error-message">
+    {{ error }}
+    <p>Redirigiendo al menú principal...</p>
+  </div>
   } @else if (gameSession) {
-    <div class="game-ui">
-      <!-- Panel de notificaciones -->
-      <app-notification-panel></app-notification-panel>
-      
-      <!-- Cabecera del juego -->
-      <header class="game-header">
-        <div class="game-info">
-          <h2>{{ gameSession.name }}</h2>
-          <span class="civilization-name">{{ gameSession.playerCivilization }}</span>
-        </div>
-        <div class="game-stats">
-          <div class="stat-item">Turno: {{ gameSession.turn }}</div>
-          <div class="stat-item">Dificultad: {{ gameSession.difficulty }}</div>
-          <div class="stat-item">Oro: {{ gameSession.gold || 0 }} (+{{ gameSession.goldPerTurn || 0 }})</div>
-          <div class="stat-item clickable" (click)="toggleTechTree()">
-            <span class="science-icon">🔬</span>
-            Ciencia: {{ gameSession.sciencePerTurn || 0 }}
-          </div>
-          <div class="stat-item">Cultura: {{ gameSession.culturePerTurn || 0 }}</div>
-        </div>
-        <div class="game-phases">
-          <span>Fase actual: {{ getCurrentPhaseName() }}</span>
-          <div class="phase-indicators">
-            <div class="phase" [class.active]="gameSession.currentPhase === 'diplomacia_decisiones'"></div>
-            <div class="phase" [class.active]="gameSession.currentPhase === 'creacion_investigacion'"></div>
-            <div class="phase" [class.active]="gameSession.currentPhase === 'movimiento_accion'"></div>
-            <div class="phase" [class.active]="gameSession.currentPhase === 'ia'"></div>
-          </div>
-        </div>
-        <!-- Botones de guardar y salir -->
-        <div class="game-controls">
-          <button class="btn-save" (click)="saveGame()">💾 Guardar Partida</button>
-          <button class="btn-exit" (click)="exitToMenu()">🚪 Salir</button>
-        </div>
-      </header>
+  <div class="game-ui">
+    <!-- Panel de notificaciones -->
+    <app-notification-panel></app-notification-panel>
 
-      <!-- Contenedor principal del juego -->
-      <main class="game-content">
-        <!-- Vista del mapa -->
-        <app-map-view
-          [gameSession]="gameSession"
-          (endTurn)="endTurn()"
-          [canManageUnits]="gameSession.currentPhase === 'movimiento_accion'"
-          [currentPhase]="gameSession.currentPhase"/>
-        
-        <!-- Modal del árbol tecnológico -->
-        @if (showTechTree) {
-          <div class="tech-tree-modal">
-            <div class="tech-tree-header">
-              <h2>Árbol Tecnológico</h2>
-              <button class="close-button" (click)="toggleTechTree()">×</button>
-            </div>
-            <div class="tech-tree-content">
-              <app-tech-tree></app-tech-tree>
-            </div>
-          </div>
-        }
-      </main>
+    <!-- Cabecera del juego -->
+    <header class="game-header">
+      <div class="game-info">
+        <h2>{{ gameSession.name }}</h2>
+        <span class="civilization-name">{{ gameSession.playerCivilization }}</span>
+      </div>
+      <div class="game-stats">
+        <div class="stat-item">Turno: {{ gameSession.turn }}</div>
+        <div class="stat-item">Dificultad: {{ gameSession.difficulty }}</div>
+        <div class="stat-item">Oro: {{ gameSession.gold || 0 }} (+{{ gameSession.goldPerTurn || 0 }})</div>
+        <button class="stat-item clickable" (click)="toggleTechTree()" (keydown)="toggleTechTree()">
+          <span class="science-icon">🔬</span>
+          Ciencia: {{ gameSession.sciencePerTurn || 0 }}
+        </button>
+        <div class="stat-item">Cultura: {{ gameSession.culturePerTurn || 0 }}</div>
+      </div>
+      <div class="game-phases">
+        <span>Fase actual: {{ getCurrentPhaseName() }}</span>
+        <div class="phase-indicators">
+          <div class="phase" [class.active]="gameSession.currentPhase === 'diplomacia_decisiones'"></div>
+          <div class="phase" [class.active]="gameSession.currentPhase === 'creacion_investigacion'"></div>
+          <div class="phase" [class.active]="gameSession.currentPhase === 'movimiento_accion'"></div>
+          <div class="phase" [class.active]="gameSession.currentPhase === 'ia'"></div>
+        </div>
+      </div>
+      <!-- Botones de guardar y salir -->
+      <div class="game-controls">
+        <button class="btn-save" (click)="saveGame()">💾 Guardar Partida</button>
+        <button class="btn-exit" (click)="exitToMenu()">🚪 Salir</button>
+      </div>
+    </header>
 
-      <!-- Panel inferior de acciones -->
-      <footer class="game-footer">
-        <button class="btn-next-phase" (click)="nextPhase()" *ngIf="gameSession.currentPhase !== 'ia'">
-          Siguiente Fase
-        </button>
-        <button class="btn-end-turn" (click)="endTurn()">
-          Fin del Turno
-        </button>
-      </footer>
-    </div>
+    <!-- Contenedor principal del juego -->
+    <main class="game-content">
+      <!-- Vista del mapa -->
+      <app-map-view [gameSession]="gameSession" (endTurn)="endTurn()"
+        [canManageUnits]="gameSession.currentPhase === 'movimiento_accion'" [currentPhase]="gameSession.currentPhase" />
+
+      <!-- Modal del árbol tecnológico -->
+      @if (showTechTree) {
+      <div class="tech-tree-modal">
+        <div class="tech-tree-header">
+          <h2>Árbol Tecnológico</h2>
+          <button class="close-button" (click)="toggleTechTree()">×</button>
+        </div>
+        <div class="tech-tree-content">
+          <app-tech-tree></app-tech-tree>
+        </div>
+      </div>
+      }
+    </main>
+
+    <!-- Panel inferior de acciones -->
+    <footer class="game-footer">
+      <button class="btn-next-phase" (click)="nextPhase()" *ngIf="gameSession.currentPhase !== 'ia'">
+        Siguiente Fase
+      </button>
+      <button class="btn-end-turn" (click)="endTurn()">
+        Fin del Turno
+      </button>
+    </footer>
+  </div>
   } @else {
-    <div class="error-message">
-      <p>Ninguna partida cargada.</p>
-      <button (click)="returnToMainMenu()">Volver al menú principal</button>
-    </div>
+  <div class="error-message">
+    <p>Ninguna partida cargada.</p>
+    <button (click)="returnToMainMenu()">Volver al menú principal</button>
+  </div>
   }
 </div>

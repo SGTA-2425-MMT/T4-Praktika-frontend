@@ -23,11 +23,11 @@ export class GameComponent implements OnInit, OnDestroy {
   showTechTree = false; // Estado para mostrar/ocultar el árbol tecnológico
 
   constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private gameService: GameService,
-    private debugService: DebugService
-  ) {}
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly gameService: GameService,
+    private readonly debugService: DebugService
+  ) { }
 
   ngOnInit(): void {
     // Suscribirse a cambios en la partida actual
@@ -135,9 +135,9 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   getCurrentPhaseName(): string {
-    if (!this.gameSession || !this.gameSession.currentPhase) return 'Diplomacia y Decisiones';
+    if (!this.gameSession?.currentPhase) return 'Diplomacia y Decisiones';
 
-    switch(this.gameSession.currentPhase) {
+    switch (this.gameSession.currentPhase) {
       case 'diplomacia_decisiones': return 'Diplomacia y Decisiones';
       case 'creacion_investigacion': return 'Construcción e Investigación';
       case 'movimiento_accion': return 'Movimiento y Acción';
@@ -162,7 +162,7 @@ export class GameComponent implements OnInit, OnDestroy {
     this.showTechTree = !this.showTechTree;
     console.log(`${this.showTechTree ? 'Mostrando' : 'Ocultando'} árbol tecnológico`);
   }
-  
+
   // Escuchar teclas para depuración
   @HostListener('window:keydown', ['$event'])
   handleKeyDown(event: KeyboardEvent): void {
@@ -171,14 +171,14 @@ export class GameComponent implements OnInit, OnDestroy {
       console.log("Ejecutando diagnóstico de ciencia...");
       this.debugService.debugScienceStatus();
     }
-    
+
     // Shift+F9 para corregir problemas de ciencia
     if (event.key === 'F9' && event.shiftKey) {
       console.log("Corrigiendo problemas de ciencia...");
       this.debugService.fixScienceIssues();
       alert("Se ha aplicado una corrección a la producción de ciencia. Verifica la consola para más detalles.");
     }
-    
+
     // Ctrl+F9 para forzar actualización de investigación
     if (event.key === 'F9' && event.ctrlKey) {
       console.log("Forzando actualización de la investigación...");
