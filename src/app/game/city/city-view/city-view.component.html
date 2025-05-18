@@ -5,12 +5,12 @@
       <button class="close-btn" (click)="closeView()">✕</button>
     </div>
 
-  <div class="city-tabs">
-    <button [class.active]="activeTab === 'overview'" (click)="changeTab('overview')">General</button>
-    <button [class.active]="activeTab === 'citizens'" (click)="changeTab('citizens')">Ciudadanos</button>
-    <button [class.active]="activeTab === 'production'" (click)="changeTab('production')">Producción</button>
-    <button [class.active]="activeTab === 'buildings'" (click)="changeTab('buildings')">Edificios</button>
-  </div>
+    <div class="city-tabs">
+      <button [class.active]="activeTab === 'overview'" (click)="changeTab('overview')">General</button>
+      <button [class.active]="activeTab === 'citizens'" (click)="changeTab('citizens')">Ciudadanos</button>
+      <button [class.active]="activeTab === 'production'" (click)="changeTab('production')">Producción</button>
+      <button [class.active]="activeTab === 'buildings'" (click)="changeTab('buildings')">Edificios</button>
+    </div>
 
     <!-- Pestaña de visión general -->
     <div class="city-content" *ngIf="activeTab === 'overview'">
@@ -77,7 +77,7 @@
     <div class="city-content citizens-content" *ngIf="activeTab === 'citizens'">
       <div class="citizens-panel">
         <h3>Gestión de Ciudadanos</h3>
-        
+
         <div class="citizens-summary">
           <div class="info-row">
             <span>Población total:</span>
@@ -88,10 +88,10 @@
             <span>{{ city.citizens.unemployed }}</span>
           </div>
         </div>
-        
+
         <div class="citizens-distribution">
           <h4>Distribución de ciudadanos</h4>
-          
+
           <div class="citizen-category" *ngFor="let type of citizenTypes">
             <div class="citizen-type">
               <span class="citizen-icon">{{ type.icon }}</span>
@@ -100,20 +100,18 @@
             </div>
             <div class="citizen-effect">{{ type.effect }}</div>
             <div class="citizen-actions">
-              <button class="action-btn add-btn" 
-                      [disabled]="city.citizens.unemployed <= 0"
-                      (click)="assignCitizen(type.key)">
+              <button class="action-btn add-btn" [disabled]="city.citizens.unemployed <= 0"
+                (click)="assignCitizen(type.key)">
                 +
               </button>
-              <button class="action-btn remove-btn" 
-                      [disabled]="city.citizens[type.key] <= 0"
-                      (click)="unassignCitizen(type.key)">
+              <button class="action-btn remove-btn" [disabled]="city.citizens[type.key] <= 0"
+                (click)="unassignCitizen(type.key)">
                 -
               </button>
             </div>
           </div>
         </div>
-        
+
         <div class="citizens-info">
           <h4>Información</h4>
           <p>Los ciudadanos generan recursos adicionales según su especialización:</p>
@@ -148,13 +146,14 @@
 
         <h3>Unidades disponibles</h3>
         <div class="production-options">
-          <div class="production-item" *ngFor="let unit of availableUnits" 
-               [class.disabled]="!unit.unlocked"
-               (click)="unit.unlocked && selectProduction(unit.type)">
+          <div class="production-item" *ngFor="let unit of availableUnits" [class.disabled]="!unit.unlocked"
+            (click)="unit.unlocked && selectProduction(unit.type)"
+            (keydown)="unit.unlocked && $event.key === 'Enter' && selectProduction(unit.type)">
             <div class="production-icon" [ngClass]="unit.type + '-icon'">{{ unit.icon }}</div>
             <div class="production-details">
               <h4>{{ unit.name }}</h4>
-              <p>Coste: {{ unit.cost }} producción ({{ city.productionPerTurn > 0 ? Math.ceil(unit.cost / city.productionPerTurn) : '?' }} turnos)</p>
+              <p>Coste: {{ unit.cost }} producción ({{ city.productionPerTurn > 0 ? Math.ceil(unit.cost /
+                city.productionPerTurn) : '?' }} turnos)</p>
               <p>{{ unit.description }}</p>
               <p *ngIf="!unit.unlocked" class="locked-message">🔒 Necesita tecnología avanzada</p>
             </div>
@@ -165,9 +164,7 @@
 
     <!-- Pestaña de edificios -->
     <div class="city-content" *ngIf="activeTab === 'buildings'">
-      <app-city-buildings 
-        [city]="city" 
-        (buildingSelected)="onBuildingSelected($event)">
+      <app-city-buildings [city]="city" (buildingSelected)="onBuildingSelected($event)">
       </app-city-buildings>
     </div>
   </div>

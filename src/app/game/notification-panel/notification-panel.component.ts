@@ -29,7 +29,7 @@ export class NotificationPanelComponent implements OnInit, OnDestroy {
   notifications: GameNotification[] = [];
   private subscription: Subscription | null = null;
 
-  constructor(private notificationService: NotificationService) {}
+  constructor(private readonly notificationService: NotificationService) { }
 
   ngOnInit(): void {
     this.subscription = this.notificationService.notifications$.subscribe(notifications => {

@@ -98,7 +98,7 @@ export class NewGameComponent {
   }
 
   get currentStepDescription(): string {
-    switch(this.currentStep) {
+    switch (this.currentStep) {
       case 'civilization': return 'Elige tu pueblo y comienza tu legado';
       case 'leader': return 'Nombra al líder de tu civilización';
       case 'mapSetup': return 'Configura el mundo donde conquistarás';
@@ -109,9 +109,9 @@ export class NewGameComponent {
   }
 
   constructor(
-    private fb: FormBuilder,
-    private router: Router,
-    private gameService: GameService
+    private readonly fb: FormBuilder,
+    private readonly router: Router,
+    private readonly gameService: GameService
   ) {
     this.newGameForm = this.fb.group({
       gameName: ['', [Validators.required, Validators.minLength(3)]],
@@ -127,7 +127,7 @@ export class NewGameComponent {
   }
 
   nextStep(): void {
-    switch(this.currentStep) {
+    switch (this.currentStep) {
       case 'civilization':
         this.currentStep = 'leader';
         break;
@@ -147,7 +147,7 @@ export class NewGameComponent {
   }
 
   previousStep(): void {
-    switch(this.currentStep) {
+    switch (this.currentStep) {
       case 'leader':
         this.currentStep = 'civilization';
         break;
@@ -177,7 +177,7 @@ export class NewGameComponent {
 
   getDifficultyName(): string {
     const difficultyValue = this.newGameForm.get('difficulty')?.value;
-    switch(difficultyValue) {
+    switch (difficultyValue) {
       case 'easy': return 'Fácil';
       case 'normal': return 'Normal';
       case 'hard': return 'Difícil';

@@ -12,14 +12,14 @@ import { Router } from '@angular/router';
 })
 export class SettingsComponent {
   settingsForm: FormGroup;
-  
+
   soundOptions = [
     { value: 'high', label: 'Alto' },
     { value: 'medium', label: 'Medio' },
     { value: 'low', label: 'Bajo' },
     { value: 'off', label: 'Apagado' }
   ];
-  
+
   difficultyOptions = [
     { value: 'easy', label: 'Fácil' },
     { value: 'normal', label: 'Normal' },
@@ -28,8 +28,8 @@ export class SettingsComponent {
   ];
 
   constructor(
-    private fb: FormBuilder,
-    private router: Router
+    private readonly fb: FormBuilder,
+    private readonly router: Router
   ) {
     this.settingsForm = this.fb.group({
       soundVolume: ['medium'],

@@ -15,9 +15,9 @@ export class LoadGameComponent implements OnInit {
   selectedGame: GameSession | null = null;
 
   constructor(
-    private router: Router,
-    private gameService: GameService
-  ) {}
+    private readonly router: Router,
+    private readonly gameService: GameService
+  ) { }
 
   ngOnInit(): void {
     // Cargar la lista de partidas guardadas
@@ -33,20 +33,20 @@ export class LoadGameComponent implements OnInit {
       alert('Por favor, selecciona una partida para cargar');
       return;
     }
-    
+
     // Navegar a la pantalla de juego con el ID de la partida
     this.router.navigate(['/game'], { queryParams: { load: this.selectedGame.id } });
   }
 
   deleteGame(game: GameSession, event: Event): void {
     event.stopPropagation();  // Evitar que se seleccione el juego al eliminar
-    
+
     const confirmed = confirm(`¿Estás seguro de que quieres eliminar la partida "${game.name}"?`);
     if (confirmed) {
       if (this.gameService.deleteGame(game.id)) {
         // Actualizar la lista después de eliminar
         this.savedGames = this.gameService.getSavedGames();
-        
+
         // Si el juego eliminado era el seleccionado, limpiar la selección
         if (this.selectedGame && this.selectedGame.id === game.id) {
           this.selectedGame = null;

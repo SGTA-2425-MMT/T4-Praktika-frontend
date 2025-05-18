@@ -1,38 +1,35 @@
 <div class="notification-panel">
   @for (notification of notifications; track notification.id) {
-    <div 
-      class="notification-item {{ getNotificationClass(notification.type) }}"
-      [@notificationAnimation]="'visible'"
-    >
-      <div class="notification-header">
-        <div class="notification-icon" *ngIf="notification.icon">{{ notification.icon }}</div>
-        <div class="notification-title">{{ notification.title }}</div>
-        <button class="close-button" (click)="dismissNotification(notification.id)">×</button>
-      </div>
-      <div class="notification-content">
-        <div class="notification-message">{{ notification.message }}</div>
-        
-        <!-- Para notificaciones de investigación, podemos añadir detalles específicos -->
-        <div class="notification-details" *ngIf="notification.details?.type === 'research'">
-          <div class="unlocked-items" *ngIf="notification.details.unlockedBuildings?.length">
-            <span class="unlocked-header">🏛️ Edificios desbloqueados:</span>
-            <div class="unlocked-list">
-              @for (building of notification.details.unlockedBuildings; track building) {
-                <span class="unlocked-item">{{ building }}</span>
-              }
-            </div>
+  <div class="notification-item {{ getNotificationClass(notification.type) }}" [@notificationAnimation]="'visible'">
+    <div class="notification-header">
+      <div class="notification-icon" *ngIf="notification.icon">{{ notification.icon }}</div>
+      <div class="notification-title">{{ notification.title }}</div>
+      <button class="close-button" (click)="dismissNotification(notification.id)">×</button>
+    </div>
+    <div class="notification-content">
+      <div class="notification-message">{{ notification.message }}</div>
+
+      <!-- Para notificaciones de investigación, podemos añadir detalles específicos -->
+      <div class="notification-details" *ngIf="notification.details?.type === 'research'">
+        <div class="unlocked-items" *ngIf="notification.details.unlockedBuildings?.length">
+          <span class="unlocked-header">🏛️ Edificios desbloqueados:</span>
+          <div class="unlocked-list">
+            @for (building of notification.details.unlockedBuildings; track building) {
+            <span class="unlocked-item">{{ building }}</span>
+            }
           </div>
-          
-          <div class="unlocked-items" *ngIf="notification.details.unlockedUnits?.length">
-            <span class="unlocked-header">⚔️ Unidades desbloqueadas:</span>
-            <div class="unlocked-list">
-              @for (unit of notification.details.unlockedUnits; track unit) {
-                <span class="unlocked-item">{{ unit }}</span>
-              }
-            </div>
+        </div>
+
+        <div class="unlocked-items" *ngIf="notification.details.unlockedUnits?.length">
+          <span class="unlocked-header">⚔️ Unidades desbloqueadas:</span>
+          <div class="unlocked-list">
+            @for (unit of notification.details.unlockedUnits; track unit) {
+            <span class="unlocked-item">{{ unit }}</span>
+            }
           </div>
         </div>
       </div>
     </div>
+  </div>
   }
 </div>

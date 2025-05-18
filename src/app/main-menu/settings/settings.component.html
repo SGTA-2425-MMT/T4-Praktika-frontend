@@ -8,12 +8,12 @@
     <form [formGroup]="settingsForm" class="settings-form">
       <div class="settings-section">
         <h2>Audio</h2>
-        
+
         <div class="form-group">
           <label for="soundVolume">Volumen de Efectos</label>
           <select id="soundVolume" formControlName="soundVolume" class="form-control">
             @for (option of soundOptions; track option.value) {
-              <option [value]="option.value">{{option.label}}</option>
+            <option [value]="option.value">{{option.label}}</option>
             }
           </select>
         </div>
@@ -22,7 +22,7 @@
           <label for="musicVolume">Volumen de Música</label>
           <select id="musicVolume" formControlName="musicVolume" class="form-control">
             @for (option of soundOptions; track option.value) {
-              <option [value]="option.value">{{option.label}}</option>
+            <option [value]="option.value">{{option.label}}</option>
             }
           </select>
         </div>
@@ -30,16 +30,16 @@
 
       <div class="settings-section">
         <h2>Juego</h2>
-        
+
         <div class="form-group">
           <label for="difficulty">Dificultad</label>
           <select id="difficulty" formControlName="difficulty" class="form-control">
             @for (option of difficultyOptions; track option.value) {
-              <option [value]="option.value">{{option.label}}</option>
+            <option [value]="option.value">{{option.label}}</option>
             }
           </select>
         </div>
-        
+
         <div class="form-group checkbox">
           <input type="checkbox" id="fullscreen" formControlName="fullscreen">
           <label for="fullscreen">Pantalla Completa</label>

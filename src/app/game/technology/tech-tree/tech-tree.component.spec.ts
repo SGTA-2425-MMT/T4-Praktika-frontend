@@ -10,7 +10,7 @@ describe('TechTreeComponent', () => {
     await TestBed.configureTestingModule({
       imports: [TechTreeComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(TechTreeComponent);
     component = fixture.componentInstance;

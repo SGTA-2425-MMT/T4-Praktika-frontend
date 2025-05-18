@@ -5,7 +5,7 @@ import { GameService } from './game.service';
   providedIn: 'root'
 })
 export class DebugService {
-  constructor(private gameService: GameService) {}
+  constructor(private readonly gameService: GameService) {}
   
   // Para depuración - imprimir estado actual de ciencia
   debugScienceStatus(): void {

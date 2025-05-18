@@ -6,4 +6,4 @@ import { MainMenuComponent } from './main-menu.component';
   imports: [CommonModule, MainMenuComponent],
   exports: [MainMenuComponent]
 })
-export class MainMenuModule {}
+export class MainMenuModule { }

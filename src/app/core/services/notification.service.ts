@@ -16,7 +16,7 @@ export interface GameNotification {
   providedIn: 'root'
 })
 export class NotificationService {
-  private notificationsSubject = new BehaviorSubject<GameNotification[]>([]);
+  private readonly notificationsSubject = new BehaviorSubject<GameNotification[]>([]);
   private readonly DEFAULT_DURATION = 5000; // 5 segundos por defecto
 
   constructor() {}
@@ -37,12 +37,12 @@ export class NotificationService {
     
     const newNotification: GameNotification = {
       id,
-      title: notification.title || '',
-      message: notification.message || '',
-      type: notification.type || 'info',
+      title: notification.title ?? '',
+      message: notification.message ?? '',
+      type: notification.type ?? 'info',
       icon: notification.icon,
       timestamp: new Date(),
-      duration: notification.duration || this.DEFAULT_DURATION,
+      duration: notification.duration ?? this.DEFAULT_DURATION,
       details: notification.details
     };
 

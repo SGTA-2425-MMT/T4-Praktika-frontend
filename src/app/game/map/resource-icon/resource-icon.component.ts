@@ -30,7 +30,7 @@ import { ResourceType } from '../../../core/models/map.model';
 })
 export class ResourceIconComponent {
   @Input() resourceType!: ResourceType;
-  
+
   get resourceName(): string {
     const names: Record<ResourceType, string> = {
       horses: 'Caballos',
@@ -53,7 +53,7 @@ export class ResourceIconComponent {
       silk: 'Seda',
       spices: 'Especias'
     };
-    
+
     return names[this.resourceType] || 'Recurso';
   }
 }

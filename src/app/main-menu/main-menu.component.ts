@@ -14,7 +14,7 @@ export class MainMenuComponent {
   constructor(
     private readonly router: Router,
     private readonly authService: AuthService
-  ) {}
+  ) { }
 
   newGame() {
     // Navegar a la pantalla de nueva partida

@@ -1,8 +1,12 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, Injector } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TileImprovementService, TileImprovement } from '../../core/services/tile-improvement.service';
+import { BuildingsService, BuildingType } from '../../core/services/buildings.service';
+import { GameService, GameSession } from '../../core/services/game.service';
 import { MapTile } from '../../core/models/map.model';
 import { Unit, UnitAction } from '../../core/models/unit.model';
+import { BUILDING_TEMPLATES, Building } from '../../core/models/building.model';
+import { ImprovementType } from '../../core/models/map.model';
+import { TileImprovementService } from '../../core/services/tile-improvement.service';
 
 @Component({
   selector: 'app-worker-actions',
@@ -16,63 +20,132 @@ export class WorkerActionsComponent {
   @Input() currentTile: MapTile | null = null;
   @Output() actionSelected = new EventEmitter<UnitAction>();
   @Output() cancelAction = new EventEmitter<void>();
-  
-  availableImprovements: TileImprovement[] = [];
+
+  availableImprovements: any[] = [];
   canRemoveFeature: boolean = false;
   canBuildRoad: boolean = true; // Simplificado por ahora
 
-  constructor(private improvementService: TileImprovementService) {}
+  constructor(
+    private readonly buildingsService: BuildingsService,
+    private readonly gameService: GameService,
+    private readonly injector: Injector // Needed to get TileImprovementService
+  ) { }
 
   ngOnChanges(): void {
     this.updateAvailableActions();
   }
 
   updateAvailableActions(): void {
-    console.log("Actualizando acciones disponibles del trabajador");
-    
+    console.log("Actualizando acciones disponibles del trabajador (solo buildingsService)");
+
     if (!this.worker || !this.currentTile) {
       this.availableImprovements = [];
       this.canRemoveFeature = false;
+      console.log('[updateAvailableActions] No hay worker o currentTile');
       return;
     }
 
-    // Comprobar si se puede eliminar alguna característica
-    this.canRemoveFeature = this.improvementService.canRemoveFeature(this.currentTile);
-    
-    console.log(`Casilla actual: ${this.currentTile.x},${this.currentTile.y}, tipo: ${this.currentTile.terrain}, característica: ${this.currentTile.featureType}`);
-    console.log(`¿Puede eliminar característica? ${this.canRemoveFeature}`);
+    this.canRemoveFeature = false;
 
-    // Obtener mejoras que se pueden construir independientemente del terreno
-    this.availableImprovements = this.improvementService.getValidImprovements(this.currentTile);
-    console.log(`Mejoras disponibles: ${this.availableImprovements.length}`);
-    
-    // Registramos los nombres de las mejoras disponibles
+    const tile = this.currentTile;
+    const gameSession = this.gameService.currentGame;
+    if (!tile || !gameSession) {
+      this.availableImprovements = [];
+      return;
+    }
+
+    // Only show improvements that are in ImprovementType or are 'road' (if workers can build roads)
+    const validImprovementTypes: string[] = [
+      'farm', 'road', 'gold_mine', 'port'
+    ];
+    this.availableImprovements = (BUILDING_TEMPLATES)
+      .filter(template => validImprovementTypes.includes(template.type))
+      .map(template => {
+        const canBuildResult = this.buildingsService.canBuildBuilding(template.type, tile.x, tile.y, gameSession);
+        return {
+          type: template.type,
+          name: template.name,
+          icon: template.icon,
+          description: template.description,
+          turns: template.turnsToBuild,
+          canBuild: canBuildResult.canBuild,
+          reason: canBuildResult.reason || ''
+        };
+      });
+    console.log(`[updateAvailableActions] Mejoras disponibles (data-driven): ${this.availableImprovements.length}`);
     if (this.availableImprovements.length > 0) {
-      console.log('Mejoras disponibles:', this.availableImprovements.map(imp => imp.name).join(', '));
+      console.log('[updateAvailableActions] Mejoras disponibles:', this.availableImprovements.map(imp => imp.name).join(', '));
     }
   }
 
-  // Seleccionar construir una mejora
+  // Mueve aquí la lógica de buildImprovement
   buildImprovement(improvementType: string): void {
-    const actionType = 'build_' + improvementType as UnitAction;
-    this.actionSelected.emit(actionType);
-    // No cerramos el menú, sólo actualizamos las acciones disponibles
-    setTimeout(() => this.updateAvailableActions(), 100);
-  }
+    if (!this.worker || !this.currentTile) {
+      alert('No hay trabajador o casilla seleccionada');
+      return;
+    }
+    const tileImprovementService = this.injector.get(TileImprovementService);
+    const tile = this.currentTile;
+    const improvement = improvementType.replace('build_', '');
+    // Si es una mejora de terreno válida
+    if ({
+      'farm': true, 'gold_mine': true, 'road': true, 'port': true,
+    }[improvement]) {
+      // Verificar si se puede construir
+      alert('CurrentAction: ' + improvement);
+      if (tileImprovementService.canBuildImprovement(improvement as any, tile)) {
+        this.worker.currentAction = ('build_' + improvement) as UnitAction;
+        this.worker.buildingImprovement = improvement;
+        this.worker.turnsToComplete = tileImprovementService.getImprovementTime(improvement as any) || 3;
+        this.worker.movementPoints = 0;
 
-  // Seleccionar eliminar una característica
-  clearFeature(featureType: string): void {
-    const actionType = 'clear_' + featureType.toLowerCase() as UnitAction;
-    this.actionSelected.emit(actionType);
-    // No cerramos el menú, sólo actualizamos las acciones disponibles
-    setTimeout(() => this.updateAvailableActions(), 100);
-  }
+        let building: Building | undefined;
 
-  // Construir camino
-  buildRoad(): void {
-    this.actionSelected.emit('build_road');
-    // No cerramos el menú, sólo actualizamos las acciones disponibles
-    setTimeout(() => this.updateAvailableActions(), 100);
+        if (this.worker.currentAction === 'build_road') {
+          this.currentTile.building = 'road';
+          building = BUILDING_TEMPLATES.find((b: Building) => b.type === BuildingType.ROAD);
+        } else if (this.worker.currentAction.startsWith('build_farm')) {
+          this.currentTile.building = 'farm';
+          building = BUILDING_TEMPLATES.find((b: Building) => b.type === BuildingType.FARM);
+        }
+        else if (this.worker.currentAction.startsWith('build_mine')) {
+          this.currentTile.building = 'gold_mine';
+          building = BUILDING_TEMPLATES.find((b: Building) => b.type === BuildingType.GOLD_MINE);
+
+        } else if (this.worker.currentAction === 'build_port') {
+          this.currentTile.building = 'port';
+          building = BUILDING_TEMPLATES.find((b: Building) => b.type === BuildingType.PORT);
+        }
+
+        if (building && this.gameService.currentGame) {
+          building.position.x = this.currentTile.x;
+          building.position.y = this.currentTile.y;
+
+          this.gameService.currentGame.Buildings.push(building);
+        }
+        alert('Construyendo ' + this.currentTile.building);
+        alert('Creado: ' + (building ? JSON.stringify(building) : 'undefined'));
+
+        this.actionSelected.emit(('build_' + improvement) as UnitAction);
+        setTimeout(() => this.updateAvailableActions(), 100);
+      } else {
+        alert('No se puede construir esta mejora aquí.');
+      }
+    } else if (improvementType.startsWith('clear_')) {
+      // Lógica para limpiar características
+      if (tileImprovementService.canRemoveFeature(tile)) {
+        this.worker.currentAction = improvementType as UnitAction;
+        this.worker.turnsToComplete = improvementType === 'clear_forest' ? 3 : 4;
+        this.worker.movementPoints = 0;
+        alert('Eliminando característica: ' + improvementType);
+        this.actionSelected.emit(improvementType as UnitAction);
+        setTimeout(() => this.updateAvailableActions(), 100);
+      } else {
+        alert('No se puede eliminar la característica de esta casilla.');
+      }
+    } else {
+      alert('Acción no soportada: ' + improvementType);
+    }
   }
 
   // Cancelar la acción actual
@@ -83,10 +156,9 @@ export class WorkerActionsComponent {
   // Obtener una descripción legible de la acción
   getActionDescription(action: string): string {
     const improvementName = action.replace('build_', '');
-    const improvement = this.improvementService.getImprovementInfo(improvementName as any);
-    
+    const improvement = (BUILDING_TEMPLATES as Building[]).find((b: Building) => b.type === improvementName);
     if (improvement) {
-      return `${improvement.name} (${improvement.turnsToComplete} turnos): ${improvement.description}`;
+      return `${improvement.name} (${improvement.turnsToBuild} turnos)`;
     } else if (action === 'clear_forest') {
       return "Talar bosque (3 turnos): Elimina el bosque para permitir otras mejoras.";
     } else if (action === 'clear_jungle') {
@@ -94,64 +166,56 @@ export class WorkerActionsComponent {
     } else if (action === 'build_road') {
       return "Construir camino (3 turnos): Reduce el costo de movimiento en esta casilla.";
     }
-    
     return action;
   }
 
   // Comprobar si el trabajador está ocupado actualmente
   isWorkerBusy(): boolean {
-    return !!(this.worker && this.worker.currentAction && this.worker.turnsToComplete !== undefined && this.worker.turnsToComplete > 0);
+    return !!(this.worker?.currentAction && this.worker?.turnsToComplete !== undefined && this.worker?.turnsToComplete > 0);
   }
 
   // Obtener descripción del trabajo actual
   getCurrentWorkDescription(): string {
-    if (!this.worker || !this.worker.currentAction) {
+    if (!this.worker?.currentAction) {
       return '';
     }
-    
     if (this.worker.buildingImprovement) {
-      const improvement = this.improvementService.getImprovementInfo(this.worker.buildingImprovement as any);
+      const improvement = (BUILDING_TEMPLATES).find((b: Building) => b.type === this.worker!.buildingImprovement);
       if (improvement) {
         return `Construyendo ${improvement.name} - ${this.worker.turnsToComplete} turnos restantes`;
       }
     }
-    
-    // Para acciones que no son mejoras (como limpiar terreno o caminos)
     if (this.worker.currentAction.startsWith('clear_')) {
       const featureType = this.worker.currentAction.replace('clear_', '');
       return `Despejando ${featureType} - ${this.worker.turnsToComplete} turnos restantes`;
     } else if (this.worker.currentAction === 'build_road') {
       return `Construyendo camino - ${this.worker.turnsToComplete} turnos restantes`;
     }
-    
     return this.getActionDescription(this.worker.currentAction);
   }
-  
+
   // Calcular el porcentaje de progreso
   getProgressPercentage(): number {
-    if (!this.worker || !this.worker.currentAction || this.worker.turnsToComplete === undefined) {
+    if (!(this.worker?.currentAction) || this.worker?.turnsToComplete === undefined) {
       return 0;
     }
-    
     let totalTurns = 0;
-    
-    // Determinar el número total de turnos según la acción
     if (this.worker.buildingImprovement) {
-      const improvement = this.improvementService.getImprovementInfo(this.worker.buildingImprovement as any);
+      const improvement = (BUILDING_TEMPLATES).find((b: Building) => b.type === this.worker!.buildingImprovement);
       if (improvement) {
-        totalTurns = improvement.turnsToComplete;
+        totalTurns = improvement.turnsToBuild;
       }
     } else if (this.worker.currentAction === 'build_road') {
+      totalTurns = 1;
+    } else if (this.worker.currentAction.startsWith('build_farm')) {
       totalTurns = 3;
-    } else if (this.worker.currentAction === 'clear_forest') {
-      totalTurns = 3;
-    } else if (this.worker.currentAction === 'clear_jungle') {
-      totalTurns = 4;
     }
-    
+    else if (this.worker.currentAction.startsWith('build_mine')) {
+      totalTurns = 5;
+    } else if (this.worker.currentAction === 'build_port') {
+      totalTurns = 8;
+    }
     if (totalTurns === 0) return 0;
-    
-    // Invertir el porcentaje para que muestre cuánto se ha completado
     const turnsCompleted = totalTurns - this.worker.turnsToComplete;
     return (turnsCompleted / totalTurns) * 100;
   }

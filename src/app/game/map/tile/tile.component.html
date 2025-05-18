@@ -1,13 +1,9 @@
-<div
-  class="tile"
-  [ngClass]="getTileClasses()"
-  (click)="onClick()"
->
+<div class="tile" [ngClass]="getTileClasses()" (click)="onClick()" (keydown)="onKeyDown($event)">
   <div class="tile-feature"></div>
   @if (hasUnit) {
-    <div class="unit-indicator" [ngClass]="direction">
-      {{ getUnitSymbol() }}
-    </div>
+  <div class="unit-indicator" [ngClass]="direction">
+    {{ getUnitSymbol() }}
+  </div>
   }
 
   <!-- Indicador de progreso de construcción -->
@@ -22,19 +18,17 @@
 
   <!-- Características adicionales usando emojis -->
   <div *ngIf="tile.isExplored && tile.featureType && tile.featureType !== 'none'"
-       class="feature-image feature-{{tile.featureType}}"
-       [style.opacity]="tile.isVisible ? '1' : '0.7'"></div>
+    class="feature-image feature-{{tile.featureType}}" [style.opacity]="tile.isVisible ? '1' : '0.7'"></div>
 
   <!-- Recursos con emojis -->
-  <div *ngIf="tile.isExplored && tile.isVisible && tile.resource"
-       class="resource-image resource-{{tile.resource}}">
+  <div *ngIf="tile.isExplored && tile.isVisible && tile.resource" class="resource-image resource-{{tile.resource}}">
     <span *ngIf="isStrategicResource(tile.resource)">⚔️</span>
     <!--<span *ngIf="isFoodResource(tile.resource)">🍎</span>
     <span *ngIf="isLuxuryResource(tile.resource)">💎</span>-->
   </div>
 
   @if (tile.resource) {
-    <!--<div class="resource-icon"
+  <!--<div class="resource-icon"
          [class.strategic]="isStrategicResource(tile.resource)"
          [class.food]="isFoodResource(tile.resource)"
          [class.luxury]="isLuxuryResource(tile.resource)">
@@ -43,14 +37,13 @@
   }
 
   <!-- Mejoras de terreno -->
-  <div *ngIf="tile.isExplored && tile.isVisible && tile.improvement && tile.improvement !== 'none'"
-       class="improvement-image improvement-{{tile.improvement}}">
-    <span *ngIf="tile.improvement === 'farm'">🌾</span>
-    <span *ngIf="tile.improvement === 'mine'">⛏️</span>
-    <span *ngIf="tile.improvement === 'plantation'">🌴</span>
-    <span *ngIf="tile.improvement === 'camp'">🏕️</span>
-    <span *ngIf="tile.improvement === 'pasture'">🐄</span>
-    <span *ngIf="tile.improvement === 'fishing_boats'">🚣</span>
+  <div *ngIf="tile.isExplored && tile.isVisible && tile.building && tile.building !== 'none'"
+    class="improvement-image improvement-{{tile.building}}">
+    <span *ngIf="tile.building === 'farm'">🌾</span>
+    <span *ngIf="tile.building === 'gold_mine'">⛏️</span>
+    <span *ngIf="tile.building === 'road'"> </span>
+    <span *ngIf="tile.building === 'port'">🚣</span>
+
   </div>
 
   <div *ngIf="!tile.isExplored" class="fog-of-war"></div>

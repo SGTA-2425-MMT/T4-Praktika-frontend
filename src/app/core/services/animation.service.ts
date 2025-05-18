@@ -13,7 +13,7 @@ export class AnimationService {
   initPhaser(container: HTMLElement): void {
     // Create a scene class
     class MainScene extends Phaser.Scene {
-      constructor(private animService: AnimationService) {
+      constructor(private readonly animService: AnimationService) {
         super({ key: 'MainScene' });
       }
 
