@@ -8,8 +8,7 @@ export type UnitType =
   'worker' | 'catapult' | 'cannon';
 
 export type UnitAction = 'move' | 'attack' |'found_city' | 'build' | 'negotiate' | 'retreat' | 'navigate' |
-  'build_farm' | 'build_mine' | 'build_plantation' | 'build_camp' | 'build_pasture' | 'build_fishing_boats' |
-  'clear_forest' | 'clear_jungle' | 'build_road';
+  'build_farm' | 'build_mine' | 'build_road' | 'build_port' ;
 
 export interface Unit {
   id: string;
@@ -47,6 +46,7 @@ export interface Unit {
   promotions?: string[]; // Promociones/mejoras que tiene la unidad
   attackRange: number; // Alcance de ataque de la unidad, predeterminado a 1
   healthBarVisible?: boolean; // Indica si la barra de vida es visible
+  canSwim: boolean; // Indica si la unidad puede nadar
 }
 
 // Nuevas interfaces para mejorar la jugabilidad
@@ -98,6 +98,7 @@ export const createSettler = (owner: string, x: number, y: number, level:number)
   isFortified: false,
   level: level,
   attackRange: 1,
+  canSwim: false, // Indica si la unidad puede nadar
 });
 
 //Ejemplo de Worker
@@ -121,13 +122,13 @@ export const createWorker = (owner: string, x: number, y: number, level:number):
   attacksPerTurn: 0,
 
   isRanged: false,
-  availableActions: ['move', 'build_farm', 'build_mine', 'build_plantation', 'build_camp', 'build_pasture',
-                     'build_fishing_boats', 'clear_forest', 'clear_jungle', 'build_road'],
+  availableActions: ['move', 'build_farm', 'build_mine', 'build_road', 'build_port', 'build_farm', 'build_mine'],
   buildingImprovement: undefined,
   canMove: true,
   isFortified: false,
   level: level,
   attackRange: 1,
+  canSwim: false, // Indica si la unidad puede nadar
 });
 
 // Ejemplo de creación de un Warrior:
@@ -155,6 +156,7 @@ export const createWarrior = (owner: string, x: number, y: number, level:number)
   canMove: true,
   isFortified: false,
   level: level,
+  canSwim: false, // Indica si la unidad puede nadar
 });
 
 // Ejemplo de creación de un Archer:
@@ -184,6 +186,7 @@ export const createArcher = (owner: string, x: number, y: number, level:number):
   isFortified: false,
   level: level,
   attackRange: 2,
+  canSwim: false, // Indica si la unidad puede nadar
 });
 
 // Ejemplo de creación de un Horseman:
@@ -211,6 +214,7 @@ export const createHorseman = (owner: string, x: number, y: number, level:number
   isFortified: false,
   level: level,
   attackRange: 1,
+  canSwim: false, // Indica si la unidad puede nadar
 });
 
 // Ejemplo de creación de un Catapult:
@@ -226,12 +230,12 @@ export const createArtillery = (owner: string, x: number, y: number, level:numbe
 
   movementPoints: 2,
   maxMovementPoints: 2,
-  strength: 6 + 2 * level,
+  strength: 60 + 88 * level,
   health: 100 + 8 * level,
   maxHealth: 100 + 8 * level,
 
   isRanged: true,
-  maxRange: 3,
+  maxRange: 7,
   attacksPerTurn: 1,
   maxattacksPerTurn: 1,
 
@@ -240,14 +244,33 @@ export const createArtillery = (owner: string, x: number, y: number, level:numbe
   isFortified: false,
   level: level,
   attackRange: 1,
+  canSwim: false, // Indica si la unidad puede nadar
 });
 
 // Factory for Catapult (maps to artillery)
 export const createCatapult = (owner: string, x: number, y: number, level: number): Unit => ({
-  ...createArtillery(owner, x, y, level),
   id: `catapult_${Date.now()}`,
   name: 'Catapult',
   type: 'catapult',
+  owner,
+  position: { x, y },
+  turnsToComplete: 0,
+  cost: 0,
+  movementPoints: 2,
+  maxMovementPoints: 2,
+  strength: 60 + 88 * level,
+  health: 100 + 8 * level,
+  maxHealth: 100 + 8 * level,
+  attacksPerTurn: 1,
+  maxattacksPerTurn: 1,
+  isRanged: true,
+  maxRange: 3,
+  availableActions: ['move', 'attack'],
+  canMove: true,
+  isFortified: false,
+  level: level,
+  attackRange: 3,
+  canSwim: false, // Indica si la unidad puede nadar
 });
 
 // Factory for Warship
@@ -273,32 +296,10 @@ export const createWarship = (owner: string, x: number, y: number, level: number
   isFortified: false,
   level: level,
   attackRange: 1,
+  canSwim: true, // Indica si la unidad puede nadar
 });
 
-// Factory for Cannon
-export const createCannon = (owner: string, x: number, y: number, level: number): Unit => ({
-  id: `cannon_${Date.now()}`,
-  name: 'Cannon',
-  type: 'cannon',
-  owner,
-  position: { x, y },
-  turnsToComplete: 0,
-  cost: 0,
-  movementPoints: 2,
-  maxMovementPoints: 2,
-  strength: 14 + 4 * level,
-  health: 100 + 10 * level,
-  maxHealth: 100 + 10 * level,
-  isRanged: true,
-  maxRange: 3,
-  attacksPerTurn: 1,
-  maxattacksPerTurn: 1,
-  availableActions: ['move', 'attack'],
-  canMove: true,
-  isFortified: false,
-  level: level,
-  attackRange: 1,
-});
+
 
 // Factory for Galley
 export const createGalley = (owner: string, x: number, y: number, level: number): Unit => ({
@@ -311,7 +312,7 @@ export const createGalley = (owner: string, x: number, y: number, level: number)
   cost: 0,
   movementPoints: 4,
   maxMovementPoints: 4,
-  strength: 6 + 2 * level,
+  strength: 60 + 2 * level,
   health: 80 + 8 * level,
   maxHealth: 80 + 8 * level,
   attacksPerTurn: 1,
@@ -323,6 +324,57 @@ export const createGalley = (owner: string, x: number, y: number, level: number)
   isFortified: false,
   level: level,
   attackRange: 1,
+  canSwim: true, // Indica si la unidad puede nadar
+});
+
+// Factory for Tank
+export const createTank = (owner: string, x: number, y: number, level: number): Unit => ({
+  id: `tank_${Date.now()}`,
+  name: 'Tank',
+  type: 'tank',
+  owner,
+  position: { x, y },
+  turnsToComplete: 0,
+  cost: 0,
+  movementPoints: 4,
+  maxMovementPoints: 4,
+  strength: 200 + 50 * level,
+  health: 450 + 20 * level,
+  maxHealth: 150 + 20 * level,
+  attacksPerTurn: 2,
+  maxattacksPerTurn: 2,
+  isRanged: false,
+  availableActions: ['move', 'attack', 'retreat'],
+  canMove: true,
+  isFortified: false,
+  level: level,
+  attackRange: 5,
+  canSwim: false, // Indica si la unidad puede nadar
+});
+
+// FActory for rifleman
+export const createRifleman = (owner: string, x: number, y: number, level: number): Unit => ({
+  id: `rifleman_${Date.now()}`,
+  name: 'Rifleman',
+  type: 'rifleman',
+  owner,
+  position: { x, y },
+  turnsToComplete: 0,
+  cost: 0,
+  movementPoints: 2,
+  maxMovementPoints: 2,
+  strength: 60 + 30 * level,
+  health: 150 + 30 * level,
+  maxHealth: 100 + 15 * level,
+  attacksPerTurn: 1,
+  maxattacksPerTurn: 1,
+  isRanged: true,
+  availableActions: ['move', 'attack', 'retreat'],
+  canMove: true,
+  isFortified: false,
+  level: level,
+  attackRange: 2,
+  canSwim: false, // Indica si la unidad puede nadar
 });
 
 export interface unitLevel
@@ -332,18 +384,18 @@ export interface unitLevel
 }
 
 export const UNIT_LEVEL_TRACKER: unitLevel[] = [
-  { unitType: 'settler', unitLevel: 3 },
+  { unitType: 'settler', unitLevel: 1 },
   { unitType: 'worker', unitLevel: 1 },
-  { unitType: 'warrior', unitLevel: 4 },
-  { unitType: 'archer', unitLevel: 0 },
-  { unitType: 'horseman', unitLevel: 0 },
-  { unitType: 'artillery', unitLevel: 0 },
-  { unitType: 'tank', unitLevel: 0 },
-  { unitType: 'rifleman', unitLevel: 0 },
-  { unitType: 'galley', unitLevel: 0 },
-  { unitType: 'warship', unitLevel: 0 },
-  { unitType: 'catapult', unitLevel: 0 },
-  { unitType: 'cannon', unitLevel: 0 }
+  { unitType: 'warrior', unitLevel: 1 },
+  { unitType: 'archer', unitLevel: -1 },
+  { unitType: 'horseman', unitLevel: -1 },
+  { unitType: 'artillery', unitLevel: -1 },
+  { unitType: 'tank', unitLevel: -1 },
+  { unitType: 'rifleman', unitLevel: -1 },
+  { unitType: 'galley', unitLevel: -1 },
+  { unitType: 'warship', unitLevel: -1 },
+  { unitType: 'catapult', unitLevel: -1 },
+
 ];
 
 // Ejemplo de cañon
