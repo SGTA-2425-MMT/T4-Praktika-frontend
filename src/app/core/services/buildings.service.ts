@@ -142,7 +142,7 @@ export class BuildingsService {
 
 
 
-  getBuidingType(buildingType: BuildingType): Building | undefined {
+  getBuildingType(buildingType: BuildingType): Building | undefined {
     return BUILDING_TEMPLATES.find(b => b.type === buildingType);
   }
 }
