@@ -2,13 +2,10 @@
 # Stage 1: Build the Angular app
 FROM node:current-alpine AS build
 WORKDIR /app
-
-# Mount a cache for pnpm's store
+COPY package.json ./
+COPY pnpm-lock.yaml ./
 RUN corepack enable && corepack prepare pnpm@latest --activate
-COPY package.json pnpm-lock.yaml ./
-RUN --mount=type=cache,target=/root/.pnpm-store \
-    pnpm install --frozen-lockfile
-
+RUN pnpm install
 COPY . .
 RUN pnpm build
 

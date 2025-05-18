@@ -94,12 +94,6 @@
         }
       </div>
 
-
-      @if (successMessage) {
-        <div class="alert alert-success">
-          <ng-container *ngFor="let line of successMessage.split('\n')">{{ line }}<br /></ng-container>
-        </div>
-      }
       @if (errorMessage) {
         <div class="alert alert-danger">
           {{ errorMessage }}
