@@ -7,21 +7,21 @@
 
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
       <div class="form-group">
-        <label for="email">Correo electrónico</label>
+        <label for="username">Nombre de usuario</label>
         <input 
-          type="email" 
-          id="email" 
-          formControlName="email" 
-          [class.is-invalid]="email?.invalid && (email?.dirty || email?.touched)"
-          placeholder="ejemplo@correo.com"
+          type="text" 
+          id="username" 
+          formControlName="username" 
+          [class.is-invalid]="username?.invalid && (username?.dirty || username?.touched)"
+          placeholder="Tu nombre de usuario"
         >
-        @if (email?.invalid && (email?.dirty || email?.touched)) {
+        @if (username?.invalid && (username?.dirty || username?.touched)) {
           <div class="error-message">
-            @if (email?.errors?.['required']) {
-              <span>El correo electrónico es obligatorio</span>
+            @if (username?.errors?.['required']) {
+              <span>El nombre de usuario es obligatorio</span>
             }
-            @if (email?.errors?.['email']) {
-              <span>Introduce un correo electrónico válido</span>
+            @if (username?.errors?.['minlength']) {
+              <span>El nombre debe tener al menos 3 caracteres</span>
             }
           </div>
         }

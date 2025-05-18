@@ -31,7 +31,7 @@ export class MainMenuComponent {
     this.router.navigate(['/settings']);
   }
 
-  logout() {
-    this.authService.logout();
+  async logout() {
+    await this.authService.logout();
   }
 }

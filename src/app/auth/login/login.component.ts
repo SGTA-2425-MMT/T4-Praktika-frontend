@@ -16,16 +16,16 @@ export class LoginComponent implements OnInit {
   isSubmitting = false;
   errorMessage = '';
   
-  get email() { return this.loginForm.get('email'); }
+  get username() { return this.loginForm.get('username'); }
   get password() { return this.loginForm.get('password'); }
   
   constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router
+    private readonly fb: FormBuilder,
+    private readonly authService: AuthService,
+    private readonly router: Router
   ) {
     this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
+      username: ['', [Validators.required, Validators.minLength(3)]],
       password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
@@ -33,24 +33,55 @@ export class LoginComponent implements OnInit {
   ngOnInit() {
     // Precargar credenciales como solicitado
     this.loginForm.setValue({
-      email: 'prueba@gmail.com',
-      password: '123456'
+      username: 'testuser',
+      password: 'testpassword'
     });
   }
   
-  onSubmit() {
+  async onSubmit() {
     if (this.loginForm.invalid) {
       return;
     }
 
     this.isSubmitting = true;
-    
-    // Simulando inicio de sesión
-    setTimeout(() => {
-      this.authService.login('', '');
+    this.errorMessage = '';
+    const { username, password } = this.loginForm.value;
+    try {
+      const success = await this.authService.login(username, password);
+      if (success) {
+        this.router.navigate(['/main-menu']);
+      } else {
+        this.errorMessage = 'Nombre de usuario o contraseña incorrectos.';
+      }
+    } catch (err: any) {
+      // Handle new backend error format (object) and legacy (string)
+      let msg = 'Error de inicio de sesión.';
+      const detail = err?.error?.detail;
+      if (detail && typeof detail === 'object' && detail !== null) {
+        if (typeof detail.error_description === 'string' && detail.error_description) {
+          msg = detail.error_description;
+        } else if (typeof detail.error === 'string' && detail.error) {
+          msg = detail.error;
+        } else {
+          msg = JSON.stringify(detail, null, 2);
+        }
+      } else if (typeof detail === 'string') {
+        const match = detail.match(/\{.*\}/);
+        if (match) {
+          try {
+            const json = JSON.parse(match[0]);
+            msg = json.error_description || json.error || match[0];
+          } catch {
+            msg = detail;
+          }
+        } else {
+          msg = detail;
+        }
+      }
+      this.errorMessage = msg;
+    } finally {
       this.isSubmitting = false;
-      this.router.navigate(['/main-menu']);
-    }, 1000);
+    }
   }
   
   goToRegister() {
