@@ -55,7 +55,7 @@ export class TileImprovementService {
     }
 
     const imp = Building;
-    if (imp !== 'gold_mine' && imp !== 'farm' && imp !== 'road' && imp !== 'port') {
+    if (!Object.values(BuildingType).includes(imp)) {
       console.log(`La mejora ${imp} no está definida`);
       return false;
     }
