@@ -4,7 +4,7 @@
   padding: 1rem;
   border-radius: 4px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-  width: 300px;
+  width: 700px;
   margin-bottom: 1rem;
 }
 
@@ -13,26 +13,28 @@
   background-color: rgba(47, 79, 79, 0.6);
   border-radius: 5px;
   margin-bottom: 15px;
-  
+  margin-top: 1rem;
+
   p {
     margin-bottom: 10px;
     font-weight: bold;
   }
-  
+
   .progress-bar {
     height: 10px;
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: #222;
     border-radius: 5px;
     overflow: hidden;
-    margin-bottom: 5px;
-    
-    .progress {
-      height: 100%;
-      background: linear-gradient(90deg, #66ccff, #3399ff);
-      transition: width 0.3s ease;
-    }
+    margin: 0.5rem 0;
   }
-  
+
+  .progress {
+    height: 100%;
+    background: linear-gradient(90deg, #66ccff, #3399ff);
+    transition: width 0.3s ease;
+    background-color: #4caf50;
+  }
+
   .progress-text {
     text-align: center;
     font-size: 0.8rem;
@@ -58,7 +60,9 @@ h4 {
   color: #a0c0ff;
 }
 
-.improvement-list, .feature-list, .road-list {
+.improvement-list,
+.feature-list,
+.road-list {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -100,14 +104,6 @@ button:hover {
   z-index: 10;
 }
 
-li:hover .tooltip {
-  display: block;
-}
-
-.current-work {
-  margin-top: 1rem;
-}
-
 .progress-bar {
   background-color: #222;
   height: 10px;
@@ -135,8 +131,181 @@ li:hover .tooltip {
   background-color: #d32f2f;
 }
 
-.improvement-section, .feature-section, .road-section {
+.improvement-section,
+.feature-section,
+.road-section {
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid #333;
+}
+
+.worker-build-menu {
+  margin-bottom: 0.5rem;
+}
+
+.buildings-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 0.5rem;
+}
+
+.building-card {
+  background: #2c2f48;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  border: 1px solid #2a3b4c;
+  padding: 8px 6px 8px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.95em;
+  min-height: 60px;
+  width: 220px;
+  position: relative;
+  transition: filter 0.2s, opacity 0.2s, background 0.2s;
+  font-family: inherit;
+  color: #f3f3f3;
+  font-weight: 400;
+  letter-spacing: normal;
+}
+
+.building-card.unavailable {
+  opacity: 0.55;
+  filter: grayscale(0.7) brightness(0.7);
+  background: #23243a;
+  pointer-events: none;
+  border: 1.5px dashed #555;
+  box-shadow: none;
+  width: 140px;
+  min-height: 40px;
+  font-size: 0.85em;
+  padding: 4px 2px 4px 2px;
+}
+
+.building-card.unavailable .building-icon {
+  font-size: 1.3em;
+  margin-bottom: 0;
+}
+
+.building-icon {
+  font-size: 2em;
+  margin-bottom: 4px;
+  color: #f3f3f3;
+}
+
+.building-card.unavailable .lock-icon {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 1.2em;
+  color: #b0b0b0;
+  opacity: 0.85;
+}
+
+.building-card.unavailable .building-info h4,
+.building-card.unavailable .building-description,
+.building-card.unavailable .build-turns {
+  color: #b0b0b0;
+}
+
+.building-info h4 {
+  font-size: 1.2em;
+  margin-bottom: 2px;
+  font-family: inherit;
+  color: #f3f3f3;
+  font-weight: 400;
+  letter-spacing: normal;
+}
+
+.building-title {
+  font-family: inherit;
+  font-size: 1.25em;
+  color: #fff;
+  font-weight: bold;
+  margin-bottom: 4px;
+  margin-top: 2px;
+  letter-spacing: 0.01em;
+}
+
+.building-description {
+  font-size: 1em;
+  color: #e0e0e0;
+  margin-bottom: 2px;
+  font-weight: 400;
+}
+
+.build-turns {
+  font-size: 0.95em;
+  color: #b0c4ff;
+  margin-bottom: 2px;
+}
+
+.lock-icon {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-size: 1.3em;
+  color: #b0b0b0;
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.worker-actions-close-btn {
+  align-self: flex-end;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.3em;
+  cursor: pointer;
+  margin-bottom: 2px;
+  margin-right: 2px;
+  transition: color 0.15s;
+
+  &:hover {
+    color: #ff4c4c;
+  }
+}
+
+.worker-build-panel {
+  background: none;
+  border-radius: 0;
+  padding: 0;
+  width: 1500px;
+  min-width: unset;
+  max-width: unset;
+  margin-left: 0;
+  margin-right: 0;
+  box-shadow: none;
+  color: inherit;
+  display: block;
+  border: none;
+}
+
+.worker-actions-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  z-index: 1100;
+  pointer-events: auto;
+  width: 1500px;
+}
+
+.worker-actions-overlay app-worker-actions {
+  pointer-events: auto;
+  width: 1500px;
+}
+
+.building-card,
+.building-info h4,
+.building-description,
+.build-turns {
+  text-transform: none !important;
 }
