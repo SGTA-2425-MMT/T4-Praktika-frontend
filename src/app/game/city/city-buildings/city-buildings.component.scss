@@ -4,12 +4,12 @@
     color: #fff;
     border-bottom: 1px solid #4e54c8;
     padding-bottom: 10px;
-    
+
     &:first-child {
       margin-top: 0;
     }
   }
-  
+
   section {
     margin-bottom: 30px;
   }
@@ -31,20 +31,20 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
   transition: transform 0.2s, box-shadow 0.2s;
   position: relative;
-  
+
   &.available {
     cursor: pointer;
-    
+
     &:hover {
       transform: translateY(-3px);
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     }
-    
+
     &.newly-unlocked {
       animation: pulse-highlight 2s infinite;
       border: 2px dashed #ffeb3b;
       box-shadow: 0 0 15px rgba(255, 235, 59, 0.5);
-      
+
       &::after {
         content: "¡Nuevo!";
         position: absolute;
@@ -60,11 +60,11 @@
       }
     }
   }
-  
+
   &.constructed {
     border-left: 3px solid #4caf50;
   }
-  
+
   .building-icon {
     display: flex;
     align-items: center;
@@ -74,7 +74,7 @@
     color: white;
     font-size: 24px;
   }
-  
+
   .building-era-badge {
     position: absolute;
     top: 5px;
@@ -86,7 +86,7 @@
     color: #fff;
     z-index: 2;
   }
-  
+
   .level-badge {
     font-size: 0.8em;
     background: #4e54c8;
@@ -94,60 +94,60 @@
     border-radius: 4px;
     margin-left: 8px;
   }
-  
+
   .building-info {
     padding: 12px;
     flex: 1;
-    
+
     h4 {
       margin: 0 0 8px 0;
       color: #fff;
       display: flex;
       align-items: center;
     }
-    
+
     .building-cost {
       display: flex;
       align-items: center;
       color: #b3b4c7;
       font-size: 14px;
       margin: 5px 0;
-      
+
       .cost-icon {
         margin-right: 5px;
       }
     }
-    
+
     .building-description {
       color: #d3d6e0;
       font-size: 12px;
       margin: 8px 0;
       line-height: 1.4;
     }
-    
+
     .building-effects {
       display: flex;
       flex-wrap: wrap;
       gap: 5px;
       margin-top: 8px;
-      
+
       .effect-badge {
         background-color: #343760;
         color: #88b0ff;
         font-size: 11px;
         padding: 2px 6px;
         border-radius: 3px;
-        
+
         &:nth-child(2n) {
           background-color: #3c404e;
           color: #8fdd85;
         }
       }
     }
-    
+
     .upgrade-option {
       margin-top: 10px;
-      
+
       .upgrade-button {
         background: #4e54c8;
         color: white;
@@ -156,7 +156,7 @@
         border-radius: 4px;
         cursor: pointer;
         width: 100%;
-        
+
         &:hover {
           background: #3a3e99;
         }
@@ -167,49 +167,49 @@
 
 .buildings-in-progress {
   margin-bottom: 25px;
-  
+
   .building-progress-list {
     background-color: #2c2f48;
     border-radius: 6px;
     padding: 10px;
-    
+
     .building-progress-item {
       padding: 10px;
       margin-bottom: 10px;
       border-bottom: 1px solid #3c404e;
-      
+
       &:last-child {
         margin-bottom: 0;
         border-bottom: none;
       }
-      
+
       .building-progress-info {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 8px;
-        
+
         h4 {
           margin: 0;
           color: #fff;
         }
-        
+
         .progress-details {
           font-size: 0.9em;
           color: #b3b4c7;
-          
+
           span {
             margin-left: 15px;
           }
         }
       }
-      
+
       .progress-bar {
         height: 6px;
         background-color: #3c404e;
         border-radius: 3px;
         overflow: hidden;
-        
+
         .progress-fill {
           height: 100%;
           background-color: #4e54c8;
@@ -227,10 +227,10 @@
   border-radius: 6px;
   text-align: center;
   color: #b3b4c7;
-  
+
   p {
     margin: 5px 0;
-    
+
     &:last-child {
       font-size: 0.9em;
       font-style: italic;
@@ -242,9 +242,11 @@
   0% {
     box-shadow: 0 0 5px rgba(255, 235, 59, 0.5);
   }
+
   50% {
     box-shadow: 0 0 20px rgba(255, 235, 59, 0.8);
   }
+
   100% {
     box-shadow: 0 0 5px rgba(255, 235, 59, 0.5);
   }
