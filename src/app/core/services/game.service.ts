@@ -1,6 +1,8 @@
+import { Building } from './../models/city.model';
+import { Building as Building2 } from './../models/building.model';
 import { unitLevel } from './../models/unit.model';
 import { Injectable, Injector } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, map, Observable } from 'rxjs';
 import { GameMap, MapTile, ImprovementType} from '../models/map.model';
 import * as UnitModel from '../models/unit.model';
 import { City } from '../models/city.model';
@@ -12,6 +14,7 @@ import { TileImprovementService } from './tile-improvement.service';
 import { UnitAction } from '../models/unit.model';
 import { NotificationService } from './notification.service';
 import { SharedWarGameService } from './shared-war-game.service';
+import { BuildingsService } from '../services/buildings.service';
 
 export interface GameSettings {
   gameName: string;
@@ -30,6 +33,7 @@ export interface GameSession {
   units: UnitModel.Unit[];
   unitLevelTracker: UnitModel.unitLevel[];
   cities: City[];
+  Buildings: Building2[];
   playerCivilization: string;
   difficulty: string;
   createdAt: Date;
@@ -100,6 +104,11 @@ export class GameService {
     (window as any).gameServiceInstance = this;
   }
 
+  // Getter para el servicio de edificios
+  get buildingsService(): BuildingsService {
+    return this.injector.get(BuildingsService);
+  }
+
   // Obtener el servicio de notificación usando Injector para evitar dependencia circular
   private get notificationService() {
     return this.injector.get(NotificationService);
@@ -129,6 +138,7 @@ export class GameService {
       units,
       unitLevelTracker: UnitModel.UNIT_LEVEL_TRACKER,
       cities: [],
+      Buildings: [],
       playerCivilization: settings.civilization,
       difficulty: settings.difficulty,
       createdAt: new Date(),
@@ -278,6 +288,21 @@ export class GameService {
     // Procesar acciones de los trabajadores
     this.processWorkerActions(game);
 
+    // Buscar todas las buildings al final del turno
+    const allBuildings = this.currentGame.Buildings;
+
+
+    for (const building of allBuildings) {
+      if (building.turnsToBuild>0)
+      {
+        building.turnsToBuild--;
+      }
+      else if (building.turnsToBuild === 0 && !building.built) {
+        building.built = true;
+        game.map.tiles[building.position.y][building.position.x].building = building.type;
+      }
+    }
+
     // Actualizar ciencia acumulada y progreso de investigación
     this.updateResearch();
 
@@ -422,8 +447,10 @@ export class GameService {
                 availableActions.push('build');
             }
 
-            if ((unit.type === 'warrior' || unit.type === 'archer') && unit.movementPoints > 0) {
-                const enemyUnitsInRange = game.units.some(otherUnit => 
+            if ((unit.type === 'warrior' || unit.type === 'archer' || unit.type ==='artillery'
+                || unit.type === 'horseman' || unit.type === 'galley' || unit.type === 'rifleman' || unit.type === 'tank' || unit.type === 'warship'
+                || unit.type === 'catapult' ) ) {
+                const enemyUnitsInRange = game.units.some(otherUnit =>
                     otherUnit.owner !== game.currentPlayerId && // Asegurarse de que no sea del jugador actual
                     otherUnit.owner !== 'neutral' && // Excluir unidades neutrales
                     this.isUnitInRange(unit, otherUnit)
@@ -492,12 +519,29 @@ export class GameService {
         const completedTechnology = game.researchProgress.currentTechnology;
         console.log(`[GameService] Investigación completada de tecnología: ${completedTechnology}`);
 
+        //halo aqui!!!!
+        // Desbloquear construcciones asociadas a la tecnología
+        if (completedTech.unlocksBuildings && completedTech.unlocksBuildings.length > 0) {
+          const unlockableTypes = ['road', 'port', 'farm', 'gold_mine'];
+          completedTech.unlocksBuildings.forEach(buildingType => {
+            if (unlockableTypes.includes(buildingType)) {
+              // Buscar el template correspondiente y marcarlo como unlocked
+              const template = this.buildingsService.getAll().find(b => b.type === buildingType);
+              if (template) {
+                template.unlocked = true;
+                console.log(`[GameService] Construcción desbloqueada: ${template.name}`);
+              }
+            }
+          });
+        }
+
         // Mejorar nivel de unidades desbloqueadas por la tecnología
         if (completedTech.unlocksUnits && completedTech.unlocksUnits.length > 0) {
           completedTech.unlocksUnits.forEach(unitType => {
             const trackerEntry = game.unitLevelTracker.find(u => String(u.unitType) === String(unitType));
             if (trackerEntry) {
-              // Sube el nivel hasta un máximo de 3
+              // Sube el nivel hasta un máximo de 2
+              alert("UnitLevel"+trackerEntry.unitLevel);
               trackerEntry.unitLevel = Math.min(Number(trackerEntry.unitLevel) + 1, 2);
               console.log(`[GameService] Nivel de unidad '${unitType}' mejorado a ${trackerEntry.unitLevel}`);
             }
@@ -515,8 +559,8 @@ export class GameService {
           // Información detallada sobre la tecnología completada
           console.log(`[GameService] Detalles de tecnología completada:`);
           console.log(`  - Nombre: ${completedTech.name}`);
-          console.log(`  - Edificios desbloqueados: ${completedTech.unlocksBuildings?.join(', ') || 'ninguno'}`);
-          console.log(`  - Unidades desbloqueadas: ${completedTech.unlocksUnits?.join(', ') || 'ninguna'}`);
+          console.log(`  - Edificios desbloqueados: ${completedTech.unlocksBuildings?.join(', ') ?? 'ninguno'}`);
+          console.log(`  - Unidades desbloqueadas: ${completedTech.unlocksUnits?.join(', ') ?? 'ninguna'}`);
 
           // Notificar al jugador que la investigación se ha completado usando el sistema de notificaciones
           // Solo mostrar notificación si es la primera vez que se descubre
@@ -606,16 +650,16 @@ export class GameService {
         return UnitModel.createArcher(owner , position.x, position.y, unitLevel);
       case 'horseman':
         return UnitModel.createHorseman(owner , position.x, position.y, unitLevel);
-      case 'swordsman':
-        return UnitModel.createWarrior(owner , position.x, position.y, unitLevel); // Si hay un createSwordsman, cámbialo aquí
       case 'catapult':
-        return UnitModel.createCatapult(owner , position.x, position.y, unitLevel);
-      case 'warship':
-        return UnitModel.createWarship(owner , position.x, position.y, unitLevel);
-      case 'cannon' :
-        return UnitModel.createCannon(owner , position.x, position.y, unitLevel);
+        return UnitModel.createCatapult(owner , position.x, position.y, unitLevel); // Si hay un createSwordsman, cámbialo aquí
+      case 'artillery':
+        return UnitModel.createArtillery(owner , position.x, position.y, unitLevel);
       case 'galley':
         return UnitModel.createGalley(owner , position.x, position.y, unitLevel);
+      case 'tank':
+        return UnitModel.createTank(owner , position.x, position.y, unitLevel);
+      case 'rifleman':
+        return UnitModel.createRifleman(owner , position.x, position.y, unitLevel);
       default:
         console.error(`Tipo de unidad desconocido: ${type}`);
         return null;
@@ -651,9 +695,9 @@ export class GameService {
 
       const tile = map.tiles[y][x];
       // Verificar que el terreno sea adecuado Y no tenga bosque/jungla
-      if ((tile.terrain === 'grassland' || tile.terrain === 'plains') && 
+      if ((tile.terrain === 'grassland' || tile.terrain === 'plains') &&
           tile.featureType !== 'forest' && tile.featureType !== 'jungle') {
-        console.log(`Posición inicial encontrada en (${x}, ${y}), terreno: ${tile.terrain}, característica: ${tile.featureType || 'ninguna'}`);
+        console.log(`Posición inicial encontrada en (${x}, ${y}), terreno: ${tile.terrain}, característica: ${tile.featureType ?? 'ninguna'}`);
         return { x, y };
       }
     }
@@ -668,7 +712,7 @@ export class GameService {
   private createStartingUnits(civilization: string, position: { x: number; y: number }): UnitModel.Unit[] {
     const settler = UnitModel.createSettler('player1', position.x, position.y, 1);
     const owner = 'player1';
-    const warrior = UnitModel.createWarrior(owner , position.x, position.y, 1);
+    const warrior = UnitModel.createWorker(owner , position.x, position.y, 1);
     return [settler, warrior];
   }
 
@@ -747,7 +791,12 @@ export class GameService {
     game.availableTechnologies = availableTechs.map(tech => tech.id);
 
     // Actualizar la era del juego basada en las tecnologías descubiertas
-    this.updateGameEra();
+    const newEra = this.technologyService.getGameEra(game);
+    if (game.era !== this.convertTechEraToGameEra(newEra)) {
+      const oldEra = game.era;
+      game.era = this.convertTechEraToGameEra(newEra);
+      console.log(`¡La civilización ha avanzado de la era ${oldEra} a la era ${game.era}!`);
+    }
   }
 
   // Actualiza la era del juego según las tecnologías descubiertas
@@ -864,6 +913,11 @@ export class GameService {
         // Esto calcula la ciencia por científico y la añade a la base
         this.cityService.updateCityYieldsBasedOnCitizens(city);
 
+        // Procesar recursos de edificios
+        const buildingResources = this.buildingsService.processTurn(city.id);
+        city.foodPerTurn += buildingResources.food;
+        city.goldPerTurn += buildingResources.gold;
+
         console.log(`Después de actualizar: Ciudad ${city.name}, Científicos: ${city.citizens.scientists}, Ciencia: ${city.sciencePerTurn}`);
       }
     });
@@ -936,12 +990,11 @@ export class GameService {
             const improvementType = actionStr.replace('build_', '') as ImprovementType;
 
             // Aplicar la mejora a la casilla
-            tileImprovementService.applyImprovement(improvementType, tile);
             console.log(`Trabajador completó la construcción de ${improvementType} en (${tile.x}, ${tile.y})`);
 
             // Notificar la actualización del tile
             this.tileUpdateSubject.next({...tile});
-          } else if (unit.currentAction && unit.currentAction.startsWith('clear_')) {
+          } else if (unit.currentAction?.startsWith('clear_')) {
             // Eliminar la característica del terreno
             tileImprovementService.removeFeature(tile);
             console.log(`Trabajador completó la eliminación de característica en (${tile.x}, ${tile.y})`);
@@ -967,7 +1020,7 @@ export class GameService {
   // Actualizar la visualización de las casillas al completar mejoras
   updateTileVisualization(tile: MapTile): void {
     // Notificar a los componentes interesados que la visualización de una casilla ha cambiado
-    console.log(`Actualizando visualización de casilla (${tile.x}, ${tile.y}) con mejora: ${tile.improvement || 'ninguna'}`);
+    console.log(`Actualizando visualización de casilla (${tile.x}, ${tile.y}) con mejora: ${tile.building || 'none'}`);
 
     // Emitir el evento de actualización de casilla
     this.tileUpdateSubject.next(tile);

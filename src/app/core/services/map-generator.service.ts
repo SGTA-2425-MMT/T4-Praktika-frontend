@@ -54,7 +54,8 @@ export class MapGeneratorService {
             name: "0",
             level: '0' // Asignar un nivel inicial
           },
-          featureType // Asignar la característica al tile
+          featureType, // Asignar la característica al tile
+          building: 'none',
         };
       }
     }

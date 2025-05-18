@@ -8,10 +8,10 @@ import { GameService } from './game.service';
   providedIn: 'root'
 })
 export class MovementService {
-  private path = new BehaviorSubject<MapCoordinate[]>([]);
+  private readonly path = new BehaviorSubject<MapCoordinate[]>([]);
   currentPath$ = this.path.asObservable();
 
-  constructor(private gameService: GameService) {}
+  constructor(private readonly gameService: GameService) {}
 
   // Encuentra la ruta más corta usando el algoritmo A*
   findPath(map: GameMap, start: MapCoordinate, end: MapCoordinate, unit: Unit): MapCoordinate[] {

@@ -22,7 +22,7 @@ export interface GameState {
   providedIn: 'root'
 })
 export class GameStateService {
-  private gameState: GameState = {
+  private readonly gameState: GameState = {
     currentPlayerId: '1',
     players: {},
     units: {},
@@ -35,7 +35,7 @@ export class GameStateService {
     turn: 1
   };
 
-  private gameStateSubject = new BehaviorSubject<GameState>(this.gameState);
+  private readonly gameStateSubject = new BehaviorSubject<GameState>(this.gameState);
 
   constructor() {
     this.initializeGameState();

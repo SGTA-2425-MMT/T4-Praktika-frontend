@@ -8,93 +8,97 @@ import { GameService } from './game.service';
   providedIn: 'root'
 })
 export class MovementService {
-  private path = new BehaviorSubject<MapCoordinate[]>([]);
+  private readonly path = new BehaviorSubject<MapCoordinate[]>([]);
   currentPath$ = this.path.asObservable();
 
-  constructor(private gameService: GameService) {}
+  constructor(private readonly gameService: GameService) {}
 
-  // Encuentra la ruta más corta usando el algoritmo A*
-  findPath(map: GameMap, start: MapCoordinate, end: MapCoordinate, unit: Unit): MapCoordinate[] {
-    const startTile = map.tiles[start.y][start.x];
-    const endTile = map.tiles[end.y][end.x];
+  isWaterTile(tile: MapTile): boolean {
+    return (
+      tile.terrain.includes('water')
+    );
+  }
+findPath(map: GameMap, start: MapCoordinate, end: MapCoordinate, unit: Unit): MapCoordinate[] {
+  const startTile = map.tiles[start.y][start.x];
+  const endTile = map.tiles[end.y][end.x];
 
-    // Verificar si el destino es alcanzable
-    if (!this.canMoveTo(endTile, unit)) {
-      console.log('Destino inalcanzable');
-      return [];
-    }
-
-    // Estructura para el algoritmo A*
-    const openSet: MapCoordinate[] = [start];
-    const closedSet: Set<string> = new Set();
-    const gScore: Record<string, number> = {}; // Costo desde el inicio hasta el nodo
-    const fScore: Record<string, number> = {}; // Costo estimado desde el inicio hasta la meta
-    const cameFrom: Record<string, MapCoordinate> = {}; // Para reconstruir el camino
-
-    const getKey = (pos: MapCoordinate) => `${pos.x},${pos.y}`;
-
-    // Inicializar
-    gScore[getKey(start)] = 0;
-    fScore[getKey(start)] = this.heuristic(start, end);
-
-    while (openSet.length > 0) {
-      // Encontrar el nodo con menor fScore
-      let current = openSet[0];
-      let currentIndex = 0;
-
-      for (let i = 0; i < openSet.length; i++) {
-        const nodeKey = getKey(openSet[i]);
-        const currentKey = getKey(current);
-
-        if (fScore[nodeKey] < fScore[currentKey]) {
-          current = openSet[i];
-          currentIndex = i;
-        }
-      }
-
-      // Si hemos llegado al destino
-      if (current.x === end.x && current.y === end.y) {
-        return this.reconstructPath(cameFrom, current);
-      }
-
-      // Eliminamos el nodo actual del conjunto abierto
-      openSet.splice(currentIndex, 1);
-      closedSet.add(getKey(current));
-
-      // Explorar los vecinos
-      for (const neighbor of this.getNeighbors(current, map)) {
-        const neighborKey = getKey(neighbor);
-
-        // Saltar si ya está en el conjunto cerrado
-        if (closedSet.has(neighborKey)) continue;
-
-        const neighborTile = map.tiles[neighbor.y][neighbor.x];
-
-        // Saltar si la unidad no puede moverse a esta casilla
-        if (!this.canMoveTo(neighborTile, unit)) continue;
-
-        // Calcular el costo del movimiento
-        const movementCost = neighborTile.movementCost;
-        const tentativeGScore = gScore[getKey(current)] + movementCost;
-
-        // Si no está en el conjunto abierto, añadirlo
-        if (!openSet.some(pos => pos.x === neighbor.x && pos.y === neighbor.y)) {
-          openSet.push(neighbor);
-        } else if (tentativeGScore >= (gScore[neighborKey] || Infinity)) {
-          // Este no es un mejor camino
-          continue;
-        }
-
-        // Este camino es el mejor hasta ahora
-        cameFrom[neighborKey] = current;
-        gScore[neighborKey] = tentativeGScore;
-        fScore[neighborKey] = gScore[neighborKey] + this.heuristic(neighbor, end);
-      }
-    }
-
-    // No se encontró camino
+  if (!this.canMoveTo(endTile, unit)) {
+    console.log('Destino inalcanzable');
     return [];
   }
+
+  const openSet: {pos: MapCoordinate, landSteps: number}[] = [{pos: start, landSteps: 0}];
+  const closedSet: Set<string> = new Set();
+  const gScore: Record<string, number> = {};
+  const fScore: Record<string, number> = {};
+  const cameFrom: Record<string, MapCoordinate> = {};
+  const landStepsMap: Record<string, number> = {};
+
+  const getKey = (pos: MapCoordinate) => `${pos.x},${pos.y}`;
+
+  gScore[getKey(start)] = 0;
+  fScore[getKey(start)] = this.heuristic(start, end);
+  landStepsMap[getKey(start)] = 0;
+
+  while (openSet.length > 0) {
+    // Encontrar el nodo con menor fScore
+    let currentIdx = 0;
+    for (let i = 1; i < openSet.length; i++) {
+      if (fScore[getKey(openSet[i].pos)] < fScore[getKey(openSet[currentIdx].pos)]) {
+        currentIdx = i;
+      }
+    }
+    const current = openSet[currentIdx];
+    const currentKey = getKey(current.pos);
+
+    if (current.pos.x === end.x && current.pos.y === end.y) {
+      return this.reconstructPath(cameFrom, current.pos);
+    }
+
+    openSet.splice(currentIdx, 1);
+    closedSet.add(currentKey);
+
+    for (const neighbor of this.getNeighbors(current.pos, map)) {
+      const neighborKey = getKey(neighbor);
+      if (closedSet.has(neighborKey)) continue;
+
+      const neighborTile = map.tiles[neighbor.y][neighbor.x];
+
+      // --- Lógica especial para unidades marinas ---
+      let landSteps = current.landSteps;
+      if (unit.canSwim) {
+        const isCurrentLand = !this.isWaterTile(startTile);
+        const isNeighborLand = !this.isWaterTile(neighborTile);
+        if (isNeighborLand) {
+          landSteps += 1;
+        } else {
+          landSteps = 0; // Reinicia si vuelve al agua
+        }
+        if (landSteps > 1) continue; // No puede avanzar más de 1 casilla en tierra
+      }
+
+      if (!this.canMoveTo(neighborTile, unit)) continue;
+
+      const movementCost = neighborTile.movementCost;
+      const tentativeGScore = gScore[currentKey] + movementCost;
+
+      if (!(neighborKey in gScore) || tentativeGScore < gScore[neighborKey]) {
+        cameFrom[neighborKey] = current.pos;
+        gScore[neighborKey] = tentativeGScore;
+        fScore[neighborKey] = tentativeGScore + this.heuristic(neighbor, end);
+        landStepsMap[neighborKey] = landSteps;
+
+        // Solo agregar si no está ya en openSet
+        if (!openSet.some(n => getKey(n.pos) === neighborKey)) {
+          openSet.push({pos: neighbor, landSteps});
+        }
+      }
+    }
+  }
+
+  return [];
+}
+// ...existing code...
 
   // Función heurística para A* (distancia Manhattan)
   private heuristic(a: MapCoordinate, b: MapCoordinate): number {
@@ -125,11 +129,15 @@ export class MovementService {
 
   // Verifica si una unidad puede moverse a una casilla
   canMoveTo(tile: MapTile, unit: Unit): boolean {
+
+    if (!unit.canSwim && this.isWaterTile(tile)) {
+      return false;
+    }
     // Verificar si el terreno es adecuado según el tipo de unidad
-    
+
     // Verificar si hay árboles (bosque o jungla) - Las unidades terrestres no pueden entrar a casillas con árboles
     // excepto los trabajadores que son los únicos que pueden quitar los árboles
-    if ((tile.featureType === 'forest' || tile.featureType === 'jungle') && 
+    if ((tile.featureType === 'forest' || tile.featureType === 'jungle') &&
         unit.type !== 'worker') {
       console.log(`La unidad ${unit.type} no puede entrar en casillas con ${tile.featureType}`);
       return false;
