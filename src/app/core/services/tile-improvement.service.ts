@@ -67,8 +67,8 @@ export class TileImprovementService {
     }
 
     // Comprobar si hay características del terreno que impidan la mejora
-    if (!tile.featureType || !BuildingUtils.validFeature(tile.featureType, imp)) {
-      console.log(`No se puede construir ${imp} debido a característica ${tile.featureType}`);
+    if (tile.featureType && !BuildingUtils.validFeature(tile.featureType, imp)) {
+      console.log(`No se puede construir ${imp} debido a característica inválida: ${tile.featureType}`);
       return false;
     }
 
