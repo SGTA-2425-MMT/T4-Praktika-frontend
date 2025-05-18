@@ -67,7 +67,7 @@ findPath(map: GameMap, start: MapCoordinate, end: MapCoordinate, unit: Unit): Ma
       // --- Lógica especial para unidades marinas ---
       let landSteps = current.landSteps;
       if (unit.canSwim) {
-        const isCurrentLand = !this.isWaterTile(startTile);
+        const isCurrentLand = !this.isWaterTile(map.tiles[current.pos.y][current.pos.x]);
         const isNeighborLand = !this.isWaterTile(neighborTile);
         if (isNeighborLand) {
           landSteps += 1;
