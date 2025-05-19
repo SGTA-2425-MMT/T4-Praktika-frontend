@@ -14,7 +14,7 @@
             <div class="civilization-grid">
               @for (civ of civilizations; track civ.value) {
               <div class="civilization-option" [class.selected]="newGameForm.get('civilization')?.value === civ.value"
-                (click)="selectCivilization(civ.value)" (keydown)="onCivilizationOptionKeyDown($event, civ.value)">
+                (click)="selectCivilization(civ.value)">
                 <span>{{civ.label}}</span>
               </div>
               }
