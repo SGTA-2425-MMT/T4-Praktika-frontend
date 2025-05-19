@@ -1,7 +1,10 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { RouterModule } from '@angular/router';
 import { AppComponent } from './app.component';
+import { CoreModule } from './core/core.module';
+import { routes } from './app.routes';
 
 @NgModule({
   declarations: [
@@ -9,9 +12,8 @@ import { AppComponent } from './app.component';
   ],
   imports: [
     BrowserModule,
-    // HttpClientModule removed as it is deprecated,
-    // ...otros módulos como AuthModule, GameModule, etc...
-    // AppComponent is standalone and should not be imported here
+    RouterModule.forRoot(routes),
+    CoreModule, // Importamos el CoreModule que contiene los servicios de autenticación e interceptores
   ],
   providers: [
     provideHttpClient(withInterceptorsFromDi())
