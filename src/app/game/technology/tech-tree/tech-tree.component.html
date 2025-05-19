@@ -31,8 +31,7 @@
         <div class="tech-card" [class.discovered]="isTechDiscovered(tech.id)"
           [class.available]="isTechAvailable(tech.id)" [class.researching]="isCurrentlyResearching(tech.id)"
           [style.border-color]="getCategoryColor(tech.category)"
-          (click)="isTechAvailable(tech.id) ? startResearch(tech.id) : null"
-          (keydown)="onTechCardKeyDown($event, tech)">
+          (click)="isTechAvailable(tech.id) ? startResearch(tech.id) : null">
           <div class="tech-header">
             <span class="tech-icon">{{ tech.icon }}</span>
             <h4 class="tech-name">{{ tech.name }}</h4>
