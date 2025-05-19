@@ -118,6 +118,15 @@ export class TileComponent implements OnInit, OnDestroy {
     this.tileClick.emit();
   }
 
+  // Manejar eventos de teclado
+  onKeyDown(event: KeyboardEvent): void {
+    // Si se presiona Enter o Espacio, actuar como si se hubiera hecho clic
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.onClick();
+    }
+  }
+
   getUnitSymbol(): string {
     // Devuelve un símbolo según el tipo de unidad
     switch (this.unitType) {

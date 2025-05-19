@@ -191,6 +191,17 @@ export class TechTreeComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Manejar eventos de teclado en las tarjetas de tecnología
+  onTechCardKeyDown(event: KeyboardEvent, tech: Technology): void {
+    // Si se presiona Enter o Espacio, actuar como si se hubiera hecho clic
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      if (this.isTechAvailable(tech.id)) {
+        this.startResearch(tech.id);
+      }
+    }
+  }
+
   // Verificar si una tecnología está disponible para investigar
   isTechAvailable(techId: string): boolean {
     return this.availableTechnologies.some(t => t.id === techId);
