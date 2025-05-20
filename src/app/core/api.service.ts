@@ -12,6 +12,7 @@ export interface GameMap {
   size: MapSize;
   explored: number[][];
   visible_objects: any[];
+  stored_tiles?: any[][]; // Para guardar los datos completos de las casillas
 }
 
 export interface GameStatePlayer {

@@ -1237,14 +1237,16 @@ export class GameService {
       }
       
       // Verificar si el ID es temporal (comienza con "game_")
+      // solo en este caso creamos un nuevo juego
       if (currentGame.id.startsWith('game_')) {
-        // Si es un ID temporal, tenemos que crear un nuevo juego en lugar de actualizar
+        console.log('Guardando como nuevo juego (primera vez)...');
+        // Si es un ID temporal, tenemos que crear un nuevo juego
         const apiGameState = this.convertLocalGameToApiFormat(currentGame);
         
         // Crear el objeto GameCreate para la API
         const gameCreate: GameCreate = {
           name: currentGame.name,
-          scenario_id: "default", // Usar un escenario por defecto o permitir especificarlo
+          scenario_id: "default", // Usar un escenario por defecto
           game_state: apiGameState
         };
         
@@ -1257,20 +1259,40 @@ export class GameService {
         // Actualizar el estado del juego
         this.currentGameSubject.next({...currentGame});
         
+        // Añadir a la lista local de juegos guardados si no existe
+        if (!this.savedGames.some(game => game.id === currentGame.id)) {
+          this.savedGames.push({...currentGame});
+          this.persistSavedGames();
+        }
+        
         if (!isAutosave) {
           this.notificationService.success('Guardado', 'Juego guardado correctamente');
         }
         
         return true;
       } else {
+        console.log(`Sobrescribiendo juego existente con ID: ${currentGame.id}`);
         // Si ya tiene un ID válido, actualizar el juego existente
         const apiGameState = this.convertLocalGameToApiFormat(currentGame);
         
         // Enviar la petición a la API
         await firstValueFrom(this.apiService.saveGame(currentGame.id, apiGameState));
         
+        // Actualizar la fecha de último guardado
+        currentGame.lastSaved = new Date();
+        
+        // Actualizar la copia en la lista de juegos guardados
+        const savedGameIndex = this.savedGames.findIndex(game => game.id === currentGame.id);
+        if (savedGameIndex !== -1) {
+          this.savedGames[savedGameIndex] = {...currentGame};
+        } else {
+          // Si por alguna razón no está en la lista, añadirlo
+          this.savedGames.push({...currentGame});
+        }
+        this.persistSavedGames();
+        
         if (!isAutosave) {
-          this.notificationService.success('Guardado', 'Juego guardado correctamente');
+          this.notificationService.success('Guardado', 'Juego actualizado correctamente');
         }
         
         return true;
@@ -1554,24 +1576,109 @@ export class GameService {
     const map: GameMap = {
       width: apiGameState.map.size.width,
       height: apiGameState.map.size.height,
-      tiles: [], // Se llenará después
-      // Otros campos necesarios del mapa
+      tiles: [], // Inicializaremos este array a continuación
     };
     
-    // Aquí se deberían procesar los tiles del mapa desde apiGameState.map
-    // ...
+    // Inicializar los tiles del mapa con valores básicos
+    for (let y = 0; y < map.height; y++) {
+      map.tiles[y] = [];
+      for (let x = 0; x < map.width; x++) {
+        // Verificar si existe información del terreno previa 
+        // (stored_tiles sería una propiedad personalizada que hayamos añadido en el backend)
+        let existingTile: any = undefined;
+        
+        // Intentar obtener los datos de la casilla si existen en una propiedad personalizada
+        if (apiGameState.map.stored_tiles && 
+            apiGameState.map.stored_tiles[y] && 
+            apiGameState.map.stored_tiles[y][x]) {
+          existingTile = apiGameState.map.stored_tiles[y][x];
+        }
+        
+        if (existingTile) {
+          // Usar la información existente
+          map.tiles[y][x] = {
+            ...existingTile,
+            // Asegurar que todos los campos requeridos estén presentes
+            id: existingTile.id || `tile_${x}_${y}`,
+            x: x,
+            y: y,
+            isExplored: existingTile.isExplored !== undefined ? existingTile.isExplored : false,
+            isVisible: existingTile.isVisible !== undefined ? existingTile.isVisible : false,
+            building: existingTile.building || 'none' as ImprovementType,
+            city: existingTile.city || { id: '', name: '', level: 'none' }
+          };
+        } else {
+          // Crear casilla con terreno generado
+          let terrainType: 'plains' | 'grassland' | 'desert' | 'water' = 'plains';
+          
+          // Generar un tipo de terreno consistente
+          const coordSum = (x * 3 + y * 7) % 10;
+          if (coordSum < 2) terrainType = 'water';
+          else if (coordSum < 5) terrainType = 'grassland';
+          else if (coordSum < 7) terrainType = 'desert';
+          else if (coordSum < 9) terrainType = 'plains';
+          
+          map.tiles[y][x] = {
+            id: `tile_${x}_${y}`,
+            x,
+            y,
+            terrain: terrainType,
+            movementCost: terrainType === 'water' ? 2 : 1,
+            isExplored: false,
+            isVisible: false,
+            building: 'none' as ImprovementType,
+            defense: 1,
+            yields: {
+              food: terrainType === 'grassland' ? 2 : (terrainType === 'plains' ? 1 : 0),
+              production: terrainType === 'plains' ? 1 : 0,
+              gold: 0
+            },
+            city: {
+              id: '',
+              name: '',
+              level: 'none'
+            }
+          };
+        }
+      }
+    }
     
     // Combinar unidades del jugador y la IA
     const allUnits = [
-      ...playerData.units,
-      ...aiData.units
+      ...(playerData.units || []),
+      ...(aiData.units || [])
     ];
     
     // Combinar ciudades del jugador y la IA
     const allCities = [
-      ...playerData.cities,
-      ...aiData.cities
+      ...(playerData.cities || []),
+      ...(aiData.cities || [])
     ];
+    
+    // Hacer visibles áreas alrededor de las unidades del jugador
+    allUnits.forEach(unit => {
+      if (unit.owner === apiGameState.current_player && unit.position) {
+        this.revealAroundUnit(map, unit.position, 3);
+      }
+    });
+    
+    // Hacer visibles áreas alrededor de las ciudades
+    allCities.forEach(city => {
+      if (city.position) {
+        // Añadir ciudad al tile
+        if (city.position.y >= 0 && city.position.y < map.height && 
+            city.position.x >= 0 && city.position.x < map.width) {
+          map.tiles[city.position.y][city.position.x].city = {
+            id: city.id,
+            name: city.name,
+            level: city.level || 'settlement'
+          };
+        }
+        // Revelar más área alrededor de las ciudades del jugador
+        const revealRadius = city.ownerId === apiGameState.current_player ? 4 : 2;
+        this.revealAroundUnit(map, city.position, revealRadius);
+      }
+    });
     
     // Combinar tecnologías del jugador y la IA
     const playerTechnologies = playerData.technologies || [];
@@ -1581,8 +1688,13 @@ export class GameService {
       units: allUnits,
       cities: allCities,
       discoveredTechnologies: playerTechnologies,
-      // Otros campos del estado del juego
-      // ...
+      gold: playerData.resources?.['gold'] || 0,
+      goldPerTurn: playerData.resources?.['gold_per_turn'] || 0,
+      science: playerData.resources?.['science'] || 0,
+      sciencePerTurn: playerData.resources?.['science_per_turn'] || 0,
+      culture: playerData.resources?.['culture'] || 0,
+      culturePerTurn: playerData.resources?.['culture_per_turn'] || 0,
+      happiness: playerData.resources?.['happiness'] || 0
     };
   }
   
@@ -1597,6 +1709,66 @@ export class GameService {
     // Separar ciudades del jugador y la IA
     const playerCities = localGame.cities.filter(city => city.ownerId === localGame.currentPlayerId);
     const aiCities = localGame.cities.filter(city => city.ownerId !== localGame.currentPlayerId);
+    
+    // Crear datos de exploración y objetos visibles del mapa
+    const explored: number[][] = [];
+    const visible_objects = [];
+    
+    // Verificar que el mapa y sus tiles existan
+    if (localGame.map && localGame.map.tiles) {
+      // Guardar el estado de exploración como números (0 = no explorado, 1 = explorado)
+      for (let y = 0; y < localGame.map.height; y++) {
+        explored[y] = [];
+        if (localGame.map.tiles[y]) { // Verificar que la fila exista
+          for (let x = 0; x < localGame.map.width; x++) {
+            const tile = localGame.map.tiles[y][x];
+            if (tile) { // Verificar que el tile exista
+              explored[y][x] = tile.isExplored ? 1 : 0; // Convertir booleano a número
+              
+              // Guardar objetos visibles (ciudades, mejoras, características)
+              if (tile.building && tile.building !== 'none') {
+                visible_objects.push({
+                  type: 'improvement',
+                  id: `improvement_${x}_${y}`,
+                  position: { x, y },
+                  improvement_type: tile.building
+                });
+              }
+              
+              if (tile.city && tile.city.id) {
+                visible_objects.push({
+                  type: 'city',
+                  id: tile.city.id,
+                  position: { x, y }
+                });
+              }
+              
+              if (tile.featureType) {
+                visible_objects.push({
+                  type: 'feature',
+                  id: `feature_${x}_${y}`,
+                  position: { x, y },
+                  feature_type: tile.featureType
+                });
+              }
+            } else {
+              // Si no hay tile, marcar como no explorado
+              explored[y][x] = 0;
+            }
+          }
+        } else {
+          // Si no hay fila, inicializarla con todos los elementos no explorados
+          for (let x = 0; x < localGame.map.width; x++) {
+            explored[y][x] = 0;
+          }
+        }
+      }
+    }
+    
+    // Guardar también los datos completos de los tiles (solo si existen)
+    const mapTiles = localGame.map && localGame.map.tiles ? 
+      JSON.parse(JSON.stringify(localGame.map.tiles)) : 
+      []; // Array vacío si no hay tiles
     
     // Crear el estado del juego en formato API
     return {
@@ -1621,17 +1793,17 @@ export class GameService {
         units: aiUnits,
         technologies: [], // La IA podría tener sus propias tecnologías
         resources: {
-          // Recursos de la IA
-          // ...
+          // Recursos de la IA (podríamos obtenerlos de jugadores IA)
         }
       },
       map: {
         size: {
-          width: localGame.map.width,
-          height: localGame.map.height
+          width: localGame.map?.width || 0,
+          height: localGame.map?.height || 0
         },
-        explored: [], // Array bidimensional que representa las casillas exploradas
-        visible_objects: [] // Objetos visibles en el mapa
+        explored: explored,
+        visible_objects: visible_objects,
+        stored_tiles: mapTiles // Usar una propiedad personalizada para guardar los tiles completos
       }
     };
   }
