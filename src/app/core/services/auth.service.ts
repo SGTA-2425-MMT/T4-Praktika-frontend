@@ -69,13 +69,17 @@ export class AuthService {
    */
   async login(username: string, password: string): Promise<boolean> {
     try {
-      // Crear un FormData (el endpoint espera un formulario)
-      const formData = new FormData();
+      // El endpoint espera un formulario URL-encoded, no un FormData
+      const formData = new URLSearchParams();
       formData.append('username', username);
       formData.append('password', password);
       
       const response = await firstValueFrom(
-        this.http.post<LoginResponse>(`${this.apiUrl}/token`, formData)
+        this.http.post<LoginResponse>(`${this.apiUrl}/token`, formData.toString(), {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        })
       );
       
       // Guardar el token

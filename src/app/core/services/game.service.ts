@@ -2,7 +2,7 @@ import { Building } from './../models/city.model';
 import { Building as Building2 } from './../models/building.model';
 import { unitLevel } from './../models/unit.model';
 import { Injectable, Injector } from '@angular/core';
-import { BehaviorSubject, map, Observable } from 'rxjs';
+import { BehaviorSubject, map, Observable, firstValueFrom, catchError, of, tap } from 'rxjs';
 import { GameMap, MapTile, ImprovementType} from '../models/map.model';
 import * as UnitModel from '../models/unit.model';
 import { City } from '../models/city.model';
@@ -15,6 +15,7 @@ import { UnitAction } from '../models/unit.model';
 import { NotificationService } from './notification.service';
 import { SharedWarGameService } from './shared-war-game.service';
 import { BuildingsService } from '../services/buildings.service';
+import { ApiService, GameCreate, GameOut, GameState, ScenarioOut, PlayerAction } from '../../core/api.service';
 
 export interface GameSettings {
   gameName: string;
@@ -96,7 +97,8 @@ export class GameService {
     private mapGeneratorService: MapGeneratorService,
     private cityService: CityService,
     private technologyService: TechnologyService,
-    private injector: Injector
+    private injector: Injector,
+    private apiService: ApiService // Inyectar ApiService
   ) {
     this.loadSavedGames();
     // Hacer que el servicio sea accesible globalmente para llamarlo desde cualquier componente
@@ -229,44 +231,62 @@ export class GameService {
     this.revealAroundUnit(map, position, radius);
   }
 
-  loadGame(gameId: string): GameSession | null {
-    const game = this.savedGames.find(game => game.id === gameId);
-    if (game) {
-      this.currentGameSubject.next(game);
-      return game;
+  async loadGame(gameId: string): Promise<GameSession | null> {
+    try {
+      const success = await this.loadGameFromApi(gameId);
+      if (success) {
+        return this.currentGame;
+      } else {
+        // Fallback al método antiguo si falla la carga desde la API
+        const game = this.savedGames.find(game => game.id === gameId);
+        if (game) {
+          this.currentGameSubject.next(game);
+          return game;
+        }
+      }
+    } catch (error) {
+      console.error('Error al cargar el juego:', error);
+      return null;
     }
     return null;
   }
 
-  saveGame(): boolean {
-    const game = this.currentGame;
-    if (!game) return false;
+  async saveGame(): Promise<boolean> {
+    // Guarda el juego en la API
+    return await this.saveGameToApi(false);
+  }
 
-    game.lastSaved = new Date();
-    const existingIndex = this.savedGames.findIndex(g => g.id === game.id);
-    if (existingIndex >= 0) {
-      this.savedGames[existingIndex] = game;
-    } else {
-      this.savedGames.push(game);
+  async getSavedGames(): Promise<GameSession[]> {
+    try {
+      const apiGames = await this.loadSavedGamesFromApi();
+      // Convertir los juegos del formato API al formato local
+      const localGames: GameSession[] = apiGames.map(apiGame => {
+        return this.convertApiGameToLocalFormat(apiGame);
+      });
+      
+      // Actualizar la lista local
+      this.savedGames = localGames;
+      return [...this.savedGames];
+    } catch (error) {
+      console.error('Error al obtener juegos guardados desde la API:', error);
+      // Fallback a los juegos guardados localmente
+      return [...this.savedGames];
     }
-
-    this.persistSavedGames();
-    return true;
   }
 
-  getSavedGames(): GameSession[] {
-    return [...this.savedGames];
-  }
-
-  deleteGame(gameId: string): boolean {
-    const initialLength = this.savedGames.length;
-    this.savedGames = this.savedGames.filter(game => game.id !== gameId);
-
-    if (this.savedGames.length < initialLength) {
+  async deleteGame(gameId: string): Promise<boolean> {
+    try {
+      await firstValueFrom(this.apiService.deleteGame(gameId));
+      // Actualizar la lista local de juegos guardados
+      this.savedGames = this.savedGames.filter(game => game.id !== gameId);
       this.persistSavedGames();
+      this.notificationService.success('Juego eliminado', 'El juego se eliminó correctamente');
       return true;
+    } catch (error) {
+      console.error('Error al eliminar el juego:', error);
+      this.notificationService.error('Error', 'No se pudo eliminar el juego');
+      return false;
     }
-    return false;
   }
 
   endTurn(): void {
@@ -1112,5 +1132,507 @@ export class GameService {
     }
 
     this.currentGameSubject.next({ ...game });
+  }
+
+  // ==================== MÉTODOS DE INTEGRACIÓN CON LA API ====================
+  
+  /**
+   * Obtiene los escenarios disponibles desde la API
+   */
+  async getAvailableScenarios(): Promise<ScenarioOut[]> {
+    try {
+      return await firstValueFrom(this.apiService.getScenarios());
+    } catch (error) {
+      console.error('Error al obtener escenarios:', error);
+      this.notificationService.error('Error', 'No se pudieron cargar los escenarios disponibles');
+      return [];
+    }
+  }
+  
+  /**
+   * Carga los juegos guardados del usuario actual desde la API
+   */
+  async loadSavedGamesFromApi(): Promise<GameOut[]> {
+    try {
+      const games = await firstValueFrom(this.apiService.getGames());
+      console.log('Juegos cargados desde la API:', games);
+      return games;
+    } catch (error) {
+      console.error('Error al cargar juegos guardados:', error);
+      this.notificationService.error('Error', 'No se pudieron cargar los juegos guardados');
+      return [];
+    }
+  }
+  
+  /**
+   * Carga un juego específico desde la API
+   * @param gameId ID del juego a cargar
+   */
+  async loadGameFromApi(gameId: string): Promise<boolean> {
+    try {
+      const gameData = await firstValueFrom(this.apiService.getGame(gameId));
+      
+      // Convertir el formato de la API al formato local
+      const gameSession = this.convertApiGameToLocalFormat(gameData);
+      
+      // Actualizar el estado del juego
+      this.currentGameSubject.next(gameSession);
+      
+      this.notificationService.success('Juego cargado', `Juego "${gameData.name}" cargado correctamente`);
+      return true;
+    } catch (error) {
+      console.error('Error al cargar el juego:', error);
+      this.notificationService.error('Error', 'No se pudo cargar el juego');
+      return false;
+    }
+  }
+  
+  /**
+   * Crea un nuevo juego en la API
+   * @param gameSettings Configuración del nuevo juego
+   */
+  async createNewGameInApi(gameSettings: GameSettings, scenarioId: string): Promise<boolean> {
+    try {
+      // Primero crear el juego en local
+      const localGame = this.createNewGame(gameSettings);
+      
+      // Convertir el juego local al formato de la API
+      const apiGameState = this.convertLocalGameToApiFormat(localGame);
+      
+      // Crear el objeto GameCreate para la API
+      const gameCreate: GameCreate = {
+        name: gameSettings.gameName,
+        scenario_id: scenarioId,
+        game_state: apiGameState
+      };
+      
+      // Enviar la petición a la API
+      const createdGame = await firstValueFrom(this.apiService.createGame(gameCreate));
+      
+      // Actualizar el ID del juego local con el ID asignado por la API
+      localGame.id = createdGame._id;
+      
+      // Actualizar el estado del juego
+      this.currentGameSubject.next({...localGame});
+      
+      this.notificationService.success('Juego creado', `Juego "${gameSettings.gameName}" creado correctamente`);
+      return true;
+    } catch (error) {
+      console.error('Error al crear el juego:', error);
+      this.notificationService.error('Error', 'No se pudo crear el juego');
+      return false;
+    }
+  }
+  
+  /**
+   * Guarda el estado actual del juego en la API
+   * @param isAutosave Indica si es un autoguardado (true) o un guardado manual (false)
+   */
+  async saveGameToApi(isAutosave: boolean = false): Promise<boolean> {
+    try {
+      const currentGame = this.currentGame;
+      if (!currentGame) {
+        console.error('No hay juego activo para guardar');
+        return false;
+      }
+      
+      // Verificar si el ID es temporal (comienza con "game_")
+      if (currentGame.id.startsWith('game_')) {
+        // Si es un ID temporal, tenemos que crear un nuevo juego en lugar de actualizar
+        const apiGameState = this.convertLocalGameToApiFormat(currentGame);
+        
+        // Crear el objeto GameCreate para la API
+        const gameCreate: GameCreate = {
+          name: currentGame.name,
+          scenario_id: "default", // Usar un escenario por defecto o permitir especificarlo
+          game_state: apiGameState
+        };
+        
+        // Enviar la petición de crear juego a la API
+        const createdGame = await firstValueFrom(this.apiService.createGame(gameCreate));
+        
+        // Actualizar el ID del juego local con el ID asignado por la API
+        currentGame.id = createdGame._id;
+        
+        // Actualizar el estado del juego
+        this.currentGameSubject.next({...currentGame});
+        
+        if (!isAutosave) {
+          this.notificationService.success('Guardado', 'Juego guardado correctamente');
+        }
+        
+        return true;
+      } else {
+        // Si ya tiene un ID válido, actualizar el juego existente
+        const apiGameState = this.convertLocalGameToApiFormat(currentGame);
+        
+        // Enviar la petición a la API
+        await firstValueFrom(this.apiService.saveGame(currentGame.id, apiGameState));
+        
+        if (!isAutosave) {
+          this.notificationService.success('Guardado', 'Juego guardado correctamente');
+        }
+        
+        return true;
+      }
+    } catch (error) {
+      console.error('Error al guardar el juego:', error);
+      if (!isAutosave) {
+        this.notificationService.error('Error', 'No se pudo guardar el juego');
+      }
+      return false;
+    }
+  }
+  
+  /**
+   * Envía una acción de jugador a la API
+   * @param action Acción a realizar
+   */
+  async sendPlayerAction(action: PlayerAction): Promise<boolean> {
+    try {
+      const currentGame = this.currentGame;
+      if (!currentGame) {
+        console.error('No hay juego activo para enviar acción');
+        return false;
+      }
+      
+      // Verificar si necesitamos guardar primero (si el ID es temporal)
+      if (currentGame.id.startsWith('game_')) {
+        const saved = await this.saveGameToApi(true);
+        if (!saved) {
+          console.error('No se pudo guardar el juego antes de enviar la acción');
+          return false;
+        }
+      }
+      
+      // Enviar la acción a la API
+      const updatedGame = await firstValueFrom(this.apiService.applyAction(currentGame.id, action));
+      
+      // Actualizar el estado del juego con la respuesta de la API
+      const gameSession = this.convertApiGameToLocalFormat(updatedGame);
+      this.currentGameSubject.next(gameSession);
+      
+      return true;
+    } catch (error) {
+      console.error('Error al enviar acción de jugador:', error);
+      this.notificationService.error('Error', 'No se pudo realizar la acción');
+      return false;
+    }
+  }
+  
+  /**
+   * Envía múltiples acciones de jugador a la API
+   * @param actions Array de acciones a realizar
+   */
+  async sendMultiplePlayerActions(actions: PlayerAction[]): Promise<boolean> {
+    try {
+      const currentGame = this.currentGame;
+      if (!currentGame) {
+        console.error('No hay juego activo para enviar acciones');
+        return false;
+      }
+      
+      // Enviar las acciones a la API
+      const updatedGame = await firstValueFrom(this.apiService.applyAction(currentGame.id, actions));
+      
+      // Actualizar el estado del juego con la respuesta de la API
+      const gameSession = this.convertApiGameToLocalFormat(updatedGame);
+      this.currentGameSubject.next(gameSession);
+      
+      return true;
+    } catch (error) {
+      console.error('Error al enviar acciones de jugador:', error);
+      this.notificationService.error('Error', 'No se pudieron realizar las acciones');
+      return false;
+    }
+  }
+  
+  /**
+   * Finaliza el turno del jugador y activa la IA
+   */
+  async endTurnWithApi(): Promise<boolean> {
+    try {
+      const currentGame = this.currentGame;
+      if (!currentGame) {
+        console.error('No hay juego activo para finalizar turno');
+        return false;
+      }
+      
+      // Primero procesamos la fase de IA (esto es local)
+      if (currentGame.currentPhase !== 'ia') {
+        this.changePhase('ia');
+      }
+      
+      // Enviar la solicitud de finalizar turno a la API
+      const updatedGame = await firstValueFrom(this.apiService.endTurn(currentGame.id));
+      
+      // Actualizar el estado del juego con la respuesta de la API
+      const gameSession = this.convertApiGameToLocalFormat(updatedGame);
+      this.currentGameSubject.next(gameSession);
+      
+      // Comenzar un nuevo turno
+      this.startTurn();
+      
+      return true;
+    } catch (error) {
+      console.error('Error al finalizar turno:', error);
+      this.notificationService.error('Error', 'No se pudo finalizar el turno');
+      return false;
+    }
+  }
+  
+  /**
+   * Aplica un cheat code al juego
+   * @param cheatCode Código de la trampa
+   * @param target Objetivo opcional de la trampa
+   */
+  async applyCheat(cheatCode: string, target?: { type: string, id: string }): Promise<boolean> {
+    try {
+      const currentGame = this.currentGame;
+      if (!currentGame) {
+        console.error('No hay juego activo para aplicar trampa');
+        return false;
+      }
+      
+      // Crear el objeto de solicitud de trampa
+      const cheatRequest = {
+        game_id: currentGame.id,
+        cheat_code: cheatCode,
+        target: target
+      };
+      
+      // Enviar la solicitud a la API
+      const response = await firstValueFrom(this.apiService.applyCheat(currentGame.id, cheatRequest));
+      
+      // Si la trampa fue exitosa y devolvió un nuevo estado del juego, actualizarlo
+      if (response.success && response.game_state) {
+        // Convertir el estado de la API al formato local
+        const gameSession = this.convertApiGameStateToLocalFormat(response.game_state);
+        
+        // Actualizar solo el estado del juego, manteniendo el resto de propiedades
+        this.currentGameSubject.next({
+          ...currentGame,
+          ...gameSession
+        });
+      }
+      
+      // Mostrar mensaje de éxito o error
+      if (response.success) {
+        this.notificationService.success('Trampa aplicada', response.message || 'Trampa aplicada correctamente');
+      } else {
+        this.notificationService.error('Error', response.message || 'La trampa no tuvo efecto');
+      }
+      
+      return response.success;
+    } catch (error) {
+      console.error('Error al aplicar trampa:', error);
+      this.notificationService.error('Error', 'No se pudo aplicar la trampa');
+      return false;
+    }
+  }
+  
+  /**
+   * Activa el autoguardado periódico
+   * @param intervalMinutes Intervalo de autoguardado en minutos
+   */
+  enableAutoSave(intervalMinutes: number = 5): void {
+    // Limpiar cualquier intervalo existente
+    if (this._autoSaveInterval) {
+      clearInterval(this._autoSaveInterval);
+    }
+    
+    // Configurar nuevo intervalo
+    this._autoSaveInterval = setInterval(() => {
+      if (this.currentGame) {
+        this.saveGameToApi(true)
+          .then(success => {
+            if (success) {
+              console.log('Autoguardado completado');
+            }
+          })
+          .catch(error => {
+            console.error('Error en autoguardado:', error);
+          });
+      }
+    }, intervalMinutes * 60 * 1000);
+    
+    console.log(`Autoguardado activado cada ${intervalMinutes} minutos`);
+  }
+  
+  /**
+   * Desactiva el autoguardado periódico
+   */
+  disableAutoSave(): void {
+    if (this._autoSaveInterval) {
+      clearInterval(this._autoSaveInterval);
+      this._autoSaveInterval = undefined;
+      console.log('Autoguardado desactivado');
+    }
+  }
+  
+  // Variable privada para almacenar el intervalo de autoguardado
+  private _autoSaveInterval: any;
+  
+  // ==================== MÉTODOS DE CONVERSIÓN DE FORMATO ====================
+  
+  /**
+   * Convierte un juego del formato de la API al formato local
+   */
+  private convertApiGameToLocalFormat(apiGame: GameOut): GameSession {
+    // Extraer el estado del juego de la API
+    const apiGameState = apiGame.game_state;
+    
+    // Convertir el estado del juego
+    const gameState = this.convertApiGameStateToLocalFormat(apiGameState);
+    
+    // Crear el objeto GameSession
+    return {
+      id: apiGame._id,
+      name: apiGame.name,
+      turn: apiGameState.turn,
+      currentPlayerId: apiGameState.current_player,
+      map: gameState.map,
+      units: gameState.units,
+      unitLevelTracker: UnitModel.UNIT_LEVEL_TRACKER, // Usar el tracker local
+      cities: gameState.cities,
+      Buildings: gameState.Buildings || [],
+      playerCivilization: 'default', // Ajustar según sea necesario
+      difficulty: 'normal', // Ajustar según sea necesario
+      createdAt: new Date(apiGame.created_at),
+      lastSaved: apiGame.last_saved ? new Date(apiGame.last_saved) : undefined,
+      currentPhase: 'diplomacia_decisiones', // Por defecto
+      discoveredTechnologies: gameState.discoveredTechnologies || [],
+      availableTechnologies: gameState.availableTechnologies || [],
+      gold: gameState.gold || 0,
+      goldPerTurn: gameState.goldPerTurn || 0,
+      science: gameState.science || 0,
+      sciencePerTurn: gameState.sciencePerTurn || 0,
+      culture: gameState.culture || 0,
+      culturePerTurn: gameState.culturePerTurn || 0,
+      happiness: gameState.happiness || 0,
+      era: gameState.era || 'ancient',
+      players: gameState.players || [{
+        id: apiGameState.current_player,
+        name: 'Player 1',
+        civilization: 'default',
+        resources: {
+          gold: gameState.gold || 0,
+          goldPerTurn: gameState.goldPerTurn || 0,
+          science: gameState.science || 0,
+          sciencePerTurn: gameState.sciencePerTurn || 0,
+          culture: gameState.culture || 0,
+          culturePerTurn: gameState.culturePerTurn || 0,
+          happiness: gameState.happiness || 0
+        },
+        research: {
+          progress: 0,
+          turnsRemaining: 0
+        },
+        technologies: gameState.discoveredTechnologies || [],
+        availableTechnologies: gameState.availableTechnologies || [],
+        era: gameState.era || 'ancient'
+      }],
+      settings: {
+        gameName: apiGame.name,
+        mapSize: 'medium', // Por defecto
+        civilization: 'default', // Por defecto
+        difficulty: 'normal', // Por defecto
+        numberOfOpponents: 3 // Por defecto
+      }
+    };
+  }
+  
+  /**
+   * Convierte el estado del juego del formato de la API al formato local
+   */
+  private convertApiGameStateToLocalFormat(apiGameState: GameState): any {
+    // Extraer datos del jugador y la IA
+    const playerData = apiGameState.player;
+    const aiData = apiGameState.ai;
+    
+    // Convertir el mapa
+    const map: GameMap = {
+      width: apiGameState.map.size.width,
+      height: apiGameState.map.size.height,
+      tiles: [], // Se llenará después
+      // Otros campos necesarios del mapa
+    };
+    
+    // Aquí se deberían procesar los tiles del mapa desde apiGameState.map
+    // ...
+    
+    // Combinar unidades del jugador y la IA
+    const allUnits = [
+      ...playerData.units,
+      ...aiData.units
+    ];
+    
+    // Combinar ciudades del jugador y la IA
+    const allCities = [
+      ...playerData.cities,
+      ...aiData.cities
+    ];
+    
+    // Combinar tecnologías del jugador y la IA
+    const playerTechnologies = playerData.technologies || [];
+    
+    return {
+      map,
+      units: allUnits,
+      cities: allCities,
+      discoveredTechnologies: playerTechnologies,
+      // Otros campos del estado del juego
+      // ...
+    };
+  }
+  
+  /**
+   * Convierte un juego del formato local al formato de la API
+   */
+  private convertLocalGameToApiFormat(localGame: GameSession): GameState {
+    // Separar unidades del jugador y la IA
+    const playerUnits = localGame.units.filter(unit => unit.owner === localGame.currentPlayerId);
+    const aiUnits = localGame.units.filter(unit => unit.owner !== localGame.currentPlayerId);
+    
+    // Separar ciudades del jugador y la IA
+    const playerCities = localGame.cities.filter(city => city.ownerId === localGame.currentPlayerId);
+    const aiCities = localGame.cities.filter(city => city.ownerId !== localGame.currentPlayerId);
+    
+    // Crear el estado del juego en formato API
+    return {
+      turn: localGame.turn,
+      current_player: localGame.currentPlayerId,
+      player: {
+        cities: playerCities,
+        units: playerUnits,
+        technologies: localGame.discoveredTechnologies,
+        resources: {
+          gold: localGame.gold,
+          gold_per_turn: localGame.goldPerTurn,
+          science: localGame.science,
+          science_per_turn: localGame.sciencePerTurn,
+          culture: localGame.culture,
+          culture_per_turn: localGame.culturePerTurn,
+          happiness: localGame.happiness
+        }
+      },
+      ai: {
+        cities: aiCities,
+        units: aiUnits,
+        technologies: [], // La IA podría tener sus propias tecnologías
+        resources: {
+          // Recursos de la IA
+          // ...
+        }
+      },
+      map: {
+        size: {
+          width: localGame.map.width,
+          height: localGame.map.height
+        },
+        explored: [], // Array bidimensional que representa las casillas exploradas
+        visible_objects: [] // Objetos visibles en el mapa
+      }
+    };
   }
 }

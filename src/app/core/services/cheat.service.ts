@@ -3,12 +3,13 @@ import { GameService } from './game.service';
 import { MapService } from './map.service';
 import { FogOfWarService } from './fog-of-war.service';
 import { NotificationService } from './notification.service';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { BuildingCategory, Era, City } from '../models/city.model';
 import * as UnitModel from '../models/unit.model';
 import { GameSession } from './game.service';
 import { TechnologyService } from './technology.service';
 import { TechEra } from '../models/technology.model';
+import { ApiService, CheatRequest } from '../api.service';
 
 export interface CheatLogEntry {
   code: string;
@@ -31,7 +32,9 @@ export class CheatService {
   constructor(
     private gameService: GameService,
     private mapService: MapService,
-    private fogOfWarService: FogOfWarService
+    private fogOfWarService: FogOfWarService,
+    private apiService: ApiService,
+    private notificationService: NotificationService
   ) {
     console.log(`Modo de trucos ${this.cheatsEnabled ? 'activado' : 'desactivado'}`);
   }
@@ -127,6 +130,101 @@ export class CheatService {
     return result;
   }
 
+  /**
+   * Ejecuta un cheat a través de la API del backend
+   * @param cheatCode El código del cheat a ejecutar
+   * @param target El objetivo opcional del cheat
+   */
+  async executeCheatAPI(cheatCode: string, target?: { type: string, id: string }): Promise<boolean> {
+    const currentGame = this.gameService.currentGame;
+    if (!currentGame) {
+      this.notificationService.error('Error', 'No hay juego activo para aplicar la trampa');
+      return false;
+    }
+
+    // Crear el objeto de solicitud de trampa
+    const cheatRequest: CheatRequest = {
+      game_id: currentGame.id,
+      cheat_code: cheatCode,
+      target: target
+    };
+
+    try {
+      // Enviar la solicitud a la API
+      const response = await firstValueFrom(this.apiService.applyCheat(currentGame.id, cheatRequest));
+
+      // Si la trampa fue exitosa y devolvió un nuevo estado del juego, actualizarlo
+      if (response.success && response.game_state) {
+        // Recargar el juego para aplicar los cambios
+        await this.gameService.loadGameFromApi(currentGame.id);
+      }
+
+      // Mostrar mensaje de éxito o error
+      if (response.success) {
+        this.notificationService.success('Trampa aplicada', response.message || 'Trampa aplicada correctamente');
+        // Registrar el uso del cheat
+        this.logCheatUse(cheatCode, response.message || 'Trampa aplicada correctamente', { 
+          target,
+          apiResponse: true 
+        });
+      } else {
+        this.notificationService.error('Error', response.message || 'La trampa no tuvo efecto');
+      }
+
+      return response.success;
+    } catch (error) {
+      console.error('Error al aplicar trampa:', error);
+      this.notificationService.error('Error', 'No se pudo aplicar la trampa');
+      return false;
+    }
+  }
+
+  /**
+   * Método para identificar si un cheat debe ejecutarse en el backend o frontend
+   * @param code El código del cheat
+   * @param context El contexto de ejecución
+   */
+  async processCheat(code: string, context: any): Promise<string> {
+    // Cheats que se ejecutan en el backend
+    const backendCheats = [
+      'recursos_infinitos',
+      'investigacion_completa',
+      'matar_IA',
+      'conquistar_mundo',
+      'oro_infinito',
+      'unidades_max_nivel'
+    ];
+
+    // Verificar si el cheat debería ejecutarse en el backend
+    const cmdParts = code.split(':');
+    const baseCommand = cmdParts[0];
+
+    if (backendCheats.includes(baseCommand)) {
+      // Para cheats de backend, extraer el target si existe
+      let target;
+      if (cmdParts.length > 1) {
+        const targetParam = cmdParts[1].trim();
+        // Analizar el target, por ejemplo "city:city_123" o "unit:unit_456"
+        const targetParts = targetParam.split(':');
+        if (targetParts.length === 2) {
+          target = {
+            type: targetParts[0],
+            id: targetParts[1]
+          };
+        }
+      }
+
+      // Ejecutar en el backend
+      const success = await this.executeCheatAPI(baseCommand, target);
+      return success 
+        ? `Trampa "${baseCommand}" ejecutada correctamente en el servidor`
+        : `Error al ejecutar la trampa "${baseCommand}" en el servidor`;
+    } else {
+      // Para cheats de frontend, usar la implementación local
+      return this.executeCheat(code, context);
+    }
+  }
+  
   /**
    * Valida que el contexto proporcionado tenga los datos mínimos necesarios
    */
@@ -936,7 +1034,7 @@ export class CheatService {
     // Guardar los cambios
     this.gameService.updateCity(city);
     
-    // Notificar al usuario
+    // Notificar al jugador
     try {
       const notificationService = this.gameService['injector'].get(NotificationService);
       notificationService.success(

@@ -96,14 +96,19 @@ export class GameComponent implements OnInit, OnDestroy {
     this.subscription.unsubscribe();
   }
 
-  saveGame(): void {
-    if (this.gameService.saveGame()) {
-      // Mostrar mensaje de éxito
-      alert('Partida guardada correctamente');
-    } else {
-      alert('Ha ocurrido un error al guardar la partida');
+  async saveGame(): Promise<void> {
+      try {
+        const result = await this.gameService.saveGame();
+        if (result) {
+          // Mostrar mensaje de éxito
+          alert('Partida guardada correctamente');
+        } else {
+          alert('Ha ocurrido un error al guardar la partida');
+        }
+      } catch (error) {
+        alert('Ha ocurrido un error al guardar la partida');
+      }
     }
-  }
 
   exitToMenu(): void {
     const confirmExit = confirm('¿Estás seguro de que quieres salir? Los cambios no guardados se perderán.');
