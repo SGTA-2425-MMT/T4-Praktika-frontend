@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MapViewComponent } from './map/map-view/map-view.component';
@@ -6,12 +6,14 @@ import { TechTreeComponent } from './technology/tech-tree/tech-tree.component';
 import { NotificationPanelComponent } from './notification-panel/notification-panel.component';
 import { GameService, GameSession } from '../core/services/game.service';
 import { DebugService } from '../core/services/debug.service';
+import { CheatService, CheatLogEntry } from '../core/services/cheat.service';
+import { CheatConsoleComponent } from './cheat-console/cheat-console.component';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-game',
   standalone: true,
-  imports: [CommonModule, MapViewComponent, TechTreeComponent, NotificationPanelComponent],
+  imports: [CommonModule, MapViewComponent, TechTreeComponent, NotificationPanelComponent, CheatConsoleComponent],
   templateUrl: './game.component.html',
   styleUrl: './game.component.scss'
 })
@@ -21,12 +23,19 @@ export class GameComponent implements OnInit, OnDestroy {
   error = '';
   subscription: Subscription = new Subscription();
   showTechTree = false; // Estado para mostrar/ocultar el árbol tecnológico
+  
+  // Referencia al componente de consola de trucos
+  @ViewChild(CheatConsoleComponent) cheatConsoleRef!: CheatConsoleComponent;
+  
+  // Estado para mostrar/ocultar la consola de trucos
+  showCheatConsole = false;
 
   constructor(
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly gameService: GameService,
-    private readonly debugService: DebugService
+    private readonly debugService: DebugService,
+    public cheatService: CheatService
   ) { }
 
   ngOnInit(): void {
@@ -185,5 +194,48 @@ export class GameComponent implements OnInit, OnDestroy {
       this.debugService.forceResearchUpdate();
       alert("Se ha forzado la actualización de la investigación. Verifica la consola para más detalles.");
     }
+
+    // Ctrl+T para abrir la ventana de trucos (considera también 't' minúscula)
+    if (event.ctrlKey && (event.key === 'T' || event.key === 't')) {
+      console.log("Ctrl+T detectado. Abriendo ventana de trucos...");
+      event.preventDefault(); // Prevenir el comportamiento por defecto de Ctrl+T
+      this.openCheatInput();
+    }
+  }
+
+  openCheatInput(): void {
+    console.log("Abriendo consola de trucos, estado actual:", this.showCheatConsole);
+    this.showCheatConsole = true;
+    setTimeout(() => {
+      // Forzar que el focus vaya a la consola
+      const inputElement = document.querySelector('.console-input input');
+      if (inputElement) {
+        (inputElement as HTMLElement).focus();
+      }
+    }, 100);
+  }
+  
+  executeCheat(command: string): void {
+    const context = this.getCurrentGameContext();
+    const result = this.cheatService.executeCheat(command, context);
+    
+    // Enviar respuesta al componente de la consola de trucos
+    if (this.cheatConsoleRef) {
+      this.cheatConsoleRef.addResponse(result);
+    }
+  }
+  
+  closeCheatConsole(): void {
+    this.showCheatConsole = false;
+  }
+
+  getCurrentGameContext(): any {
+    return {
+      gameId: this.gameSession?.id,
+      gameName: this.gameSession?.name,
+      currentTurn: this.gameSession?.turn,
+      currentPhase: this.gameSession?.currentPhase,
+      currentPlayer: this.gameSession?.currentPlayerId
+    };
   }
 }

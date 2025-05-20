@@ -340,15 +340,29 @@ app-tile {
   }
 
   .sidebar-header {
-    padding: 20px;
-    background: rgba(0, 0, 0, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-
+    
     h3 {
       margin: 0;
-      font-size: 1.4em;
-      color: #fff;
-      text-align: center;
+      color:white;
+      font-size: 18px;
+    }
+    
+    .close-sidebar-btn {
+      background: none;
+      border: none;
+      font-size: 18px;
+      color: rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+      padding: 4px 8px;
+      
+      &:hover {
+        color: white;
+      }
     }
   }
 

@@ -33,8 +33,8 @@ export class LoginComponent implements OnInit {
   ngOnInit() {
     // Precargar credenciales como solicitado
     this.loginForm.setValue({
-      username: 'testuser',
-      password: 'testpassword'
+      username: 'pepe',
+      password: 'pepepe'
     });
   }
   

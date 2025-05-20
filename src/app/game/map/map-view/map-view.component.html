@@ -7,6 +7,7 @@
     [class.visible]="(selectedUnit || selectedCity) && (currentPhase === 'movimiento_accion' || currentPhase === 'creacion_investigacion')">
     <div class="sidebar-header">
       <h3>Panel de Control</h3>
+      <button class="close-sidebar-btn" (click)="closeSidebar()">✕</button>
     </div>
 
     <div class="sidebar-content">

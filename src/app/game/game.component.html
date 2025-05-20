@@ -64,6 +64,14 @@
         </div>
       </div>
       }
+      
+      <!-- Consola de trucos -->
+      <app-cheat-console 
+        [visible]="showCheatConsole" 
+        (execute)="executeCheat($event)" 
+        (close)="closeCheatConsole()"
+        [cheatLogs]="cheatService.logs">
+      </app-cheat-console>
     </main>
 
     <!-- Panel inferior de acciones -->
@@ -73,6 +81,9 @@
       </button>
       <button class="btn-end-turn" (click)="endTurn()">
         Fin del Turno
+      </button>
+      <button class="btn-cheats" (click)="openCheatInput()" title="Abrir consola de trucos (Ctrl+T)">
+        🔮 Trucos
       </button>
     </footer>
   </div>

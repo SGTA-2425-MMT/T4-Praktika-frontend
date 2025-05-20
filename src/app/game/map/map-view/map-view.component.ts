@@ -880,4 +880,23 @@ moveSelectedUnit(targetTile: MapTile): void {
       this.clearSelection();
     }
   }
+
+    /**
+ * Método para cerrar el panel lateral
+ */
+closeSidebar(): void {
+  console.log('Cerrando panel lateral');
+  // Si hay una unidad seleccionada, la deseleccionamos
+  if (this.selectedUnit) {
+    this.clearSelection();
+  }
+  
+  // Si hay una ciudad seleccionada, la deseleccionamos
+  if (this.selectedCity) {
+    this.selectedCity = null;
+  }
+  
+  // Asegurarnos de que cualquier otro menú contextual también se cierre
+  this.showWorkerActionsMenu = false;
+}
 }
