@@ -15,10 +15,10 @@ export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   isSubmitting = false;
   errorMessage = '';
-  
+
   get username() { return this.loginForm.get('username'); }
   get password() { return this.loginForm.get('password'); }
-  
+
   constructor(
     private readonly fb: FormBuilder,
     private readonly authService: AuthService,
@@ -37,7 +37,7 @@ export class LoginComponent implements OnInit {
       password: 'pepepe'
     });
   }
-  
+
   async onSubmit() {
     if (this.loginForm.invalid) {
       return;
@@ -56,7 +56,7 @@ export class LoginComponent implements OnInit {
     } catch (err: any) {
       // Manejar errores del nuevo backend
       let msg = 'Error de inicio de sesión.';
-      if (err.error && err.error.detail) {
+      if (err.error?.detail) {
         msg = err.error.detail;
       }
       this.errorMessage = msg;
@@ -64,7 +64,7 @@ export class LoginComponent implements OnInit {
       this.isSubmitting = false;
     }
   }
-  
+
   goToRegister() {
     this.router.navigate(['/auth/register']);
   }

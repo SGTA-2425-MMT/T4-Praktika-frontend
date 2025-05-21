@@ -10,8 +10,8 @@ export class ScenarioService {
   private scenarios: ScenarioOut[] = [];
 
   constructor(
-    private apiService: ApiService,
-    private notificationService: NotificationService
+    private readonly apiService: ApiService,
+    private readonly notificationService: NotificationService
   ) {}
 
   /**
@@ -24,7 +24,7 @@ export class ScenarioService {
       if (this.scenarios.length > 0) {
         return this.scenarios;
       }
-      
+
       // Si no, los obtenemos de la API
       const scenarios = await firstValueFrom(this.apiService.getScenarios());
       this.scenarios = scenarios;
@@ -43,13 +43,13 @@ export class ScenarioService {
   async getScenarioById(id: string): Promise<ScenarioOut | null> {
     // Intentar obtener de la caché local primero
     let scenario = this.scenarios.find(s => s._id === id);
-    
+
     // Si no está en caché, intentar obtener todos los escenarios
     if (!scenario) {
       await this.getAllScenarios();
       scenario = this.scenarios.find(s => s._id === id);
     }
-    
+
     return scenario || null;
   }
 

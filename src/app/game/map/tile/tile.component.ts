@@ -96,8 +96,6 @@ export class TileComponent implements OnInit, OnDestroy {
     if (worker.currentAction === 'build_road') {
       totalTurns = 3;
     } else if (worker.currentAction.startsWith('build_road')) {
-      const improvementType = worker.currentAction.replace('build_', '');
-      const improvement = this.tileImprovementService.getImprovementInfo(improvementType as any);
       totalTurns = 1;
     } else if (worker.currentAction === 'build_farm') {
       totalTurns = 3;
@@ -256,9 +254,6 @@ export class TileComponent implements OnInit, OnDestroy {
     // Añadir clases para el tipo de edificio
     if (this.buildingType === 'none') {
       classes['build'] = true;
-      //if (this.buildingType === 'build') {
-      //classes['building-in-progress'] = true;
-      //}
     }
 
     return classes;

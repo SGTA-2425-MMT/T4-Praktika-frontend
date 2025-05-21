@@ -1,15 +1,13 @@
-import { Component, ElementRef, HostListener, Injector, Input, OnDestroy, OnInit, Output, ViewChild, EventEmitter, OnChanges, SimpleChanges, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, HostListener, Injector, Input, OnInit, Output, ViewChild, EventEmitter, OnChanges, SimpleChanges, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { GameService } from '../../../core/services/game.service';
-import { GameSession } from '../../../core/services/game.service';
+import { GameService, GameSession } from '../../../core/services/game.service';
 import { WarService } from '../../../core/services/war.service';
 import { TileImprovementService } from '../../../core/services/tile-improvement.service';
 import { FogOfWarService } from '../../../core/services/fog-of-war.service';
 import { MovementService } from '../../../core/services/movement.service';
-import { MapCoordinate } from '../../../core/models/map.model';
+import { MapCoordinate, MapTile } from '../../../core/models/map.model';
 import { AnimationService } from '../../../core/services/animation.service';
-import { GameMap, ImprovementType, MapTile, ResourceType, TerrainType } from '../../../core/models/map.model';
 import { Unit, UnitAction } from '../../../core/models/unit.model';
 import { City } from '../../../core/models/city.model';
 import { TileComponent } from '../tile/tile.component';
@@ -538,7 +536,7 @@ moveSelectedUnit(targetTile: MapTile): void {
         break;
       case 'catapult':
         cost = 0;
-        break;  
+        break;
       case 'artillery':
         cost = 0;
         break;
@@ -598,7 +596,7 @@ moveSelectedUnit(targetTile: MapTile): void {
     );
 
     if (!result.canBuild) {
-      alert(result.reason || 'No se puede construir aquí');
+      alert(result.reason ?? 'No se puede construir aquí');
       return;
     }
 
@@ -611,7 +609,7 @@ moveSelectedUnit(targetTile: MapTile): void {
     const newBuilding: Building = {
       ...template,
       id: template.type + '_' + Date.now(),
-      cityId: result.nearestCity?.id || '',
+      cityId: result.nearestCity?.id ?? '',
       position: { x, y },
       built: false,
     };
@@ -668,28 +666,17 @@ moveSelectedUnit(targetTile: MapTile): void {
     alert('Construyendo mejora de terreno...'+this.selectedUnit?.buildingImprovement);
     if (!this.selectedUnit || !this.gameSession || this.selectedUnit.type !== 'worker') {
       console.warn('[buildImprovement] No hay unidad seleccionada, no hay sesión de juego, o la unidad no es trabajador');
-      return;
     }
   }
 
 
   // Cancelar la acción actual del trabajador
   cancelWorkerAction(): void {
-    /*
-    if (!this.selectedUnit || !this.gameSession || this.selectedUnit.type !== 'worker') {
+    console.log('Cancelando acción del trabajador...');
+    if (!this.selectedUnit || this.selectedUnit.type !== 'worker') {
+      console.warn('[cancelWorkerAction] No hay unidad seleccionada o la unidad no es trabajador');
       return;
     }
-
-    this.selectedUnit.currentAction = undefined;
-    this.selectedUnit.buildingImprovement = undefined;
-    this.selectedUnit.turnsToComplete = undefined;
-
-    // Restaurar los puntos de movimiento si se cancela la acción
-    if (this.selectedUnit.movementPoints === 0 && this.selectedUnit.maxMovementPoints > 0) {
-      this.selectedUnit.movementPoints = 1; // Permitir al menos un movimiento
-    }
-
-    console.log(`Acción del trabajador cancelada`);*/
     this.showWorkerActionsMenu = false;
   }
 
@@ -890,12 +877,12 @@ closeSidebar(): void {
   if (this.selectedUnit) {
     this.clearSelection();
   }
-  
+
   // Si hay una ciudad seleccionada, la deseleccionamos
   if (this.selectedCity) {
     this.selectedCity = null;
   }
-  
+
   // Asegurarnos de que cualquier otro menú contextual también se cierre
   this.showWorkerActionsMenu = false;
 }

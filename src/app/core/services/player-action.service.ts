@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { ApiService, GameOut, PlayerAction } from '../api.service';
+import { ApiService, PlayerAction } from '../api.service';
 import { NotificationService } from './notification.service';
 import { GameService } from './game.service';
 
@@ -14,9 +14,9 @@ import { GameService } from './game.service';
 })
 export class PlayerActionService {
   constructor(
-    private apiService: ApiService,
-    private notificationService: NotificationService,
-    private gameService: GameService
+    private readonly apiService: ApiService,
+    private readonly notificationService: NotificationService,
+    private readonly gameService: GameService
   ) {}
 
   /**

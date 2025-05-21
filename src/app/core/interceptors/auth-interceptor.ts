@@ -7,12 +7,12 @@ import { AuthService } from '../services/auth.service';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private readonly authService: AuthService, private readonly router: Router) {}
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     // Obtener el token de autenticación
     const token = this.authService.getToken();
-    
+
     // Si hay un token, añadirlo a la cabecera de la petición
     if (token) {
       const cloned = request.clone({
@@ -28,7 +28,7 @@ export class AuthInterceptor implements HttpInterceptor {
         })
       );
     }
-    
+
     // Si no hay token, enviar la petición sin modificar
     return next.handle(request);
   }

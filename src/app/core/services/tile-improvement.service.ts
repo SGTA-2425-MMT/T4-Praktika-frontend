@@ -1,7 +1,5 @@
-//import { Building } from './../models/city.model';
-
 import { Injectable } from '@angular/core';
-import { GameMap, MapTile, TerrainType, FeatureType } from '../models/map.model';
+import { MapTile, FeatureType } from '../models/map.model';
 import { Unit } from '../models/unit.model';
 import { BUILDING_TEMPLATES, Building, BuildingType, BuildingUtils } from '../models/building.model';
 

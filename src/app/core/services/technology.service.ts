@@ -375,7 +375,6 @@ export class TechnologyService {
       }
 
       // Limpiar investigación actual
-      const completedResearch = this.researchInProgress;
       this.researchInProgress = null;
       this.researchProgressSubject.next(null);
       console.log('[TechnologyService] Investigación actual limpiada.');

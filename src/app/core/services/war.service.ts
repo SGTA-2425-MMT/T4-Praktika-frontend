@@ -84,7 +84,7 @@ export class WarService {
 
     if (attacker.isRanged){
       const aDistance = this.getDistance(attacker.position, defender.position);
-      console.log('Ranged atack: ', aDistance);
+      console.log('Ranged attack: ', aDistance);
       if (attacker.maxRange! < aDistance) {
         console.error('Attack not allowed: Target is out of range for ranged units.');
         return false; // Out of range for ranged units

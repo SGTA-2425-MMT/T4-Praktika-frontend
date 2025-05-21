@@ -195,9 +195,6 @@ findPath(map: GameMap, start: MapCoordinate, end: MapCoordinate, unit: Unit): Ma
     // Si no hay camino, no se puede mover
     if (path.length === 0) return false;
 
-    // Determinar la dirección del movimiento
-    const direction = destination.x > unit.position.x ? 'right' : 'left';
-
     // Mover la unidad
     unit.position = { x: destination.x, y: destination.y };
 

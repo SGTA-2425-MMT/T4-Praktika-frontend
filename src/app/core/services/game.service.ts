@@ -1,9 +1,7 @@
-import { Building } from './../models/city.model';
 import { Building as Building2 } from './../models/building.model';
-import { unitLevel } from './../models/unit.model';
 import { Injectable, Injector } from '@angular/core';
-import { BehaviorSubject, map, Observable, firstValueFrom, catchError, of, tap } from 'rxjs';
-import { GameMap, MapTile, ImprovementType} from '../models/map.model';
+import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
+import { GameMap, MapTile, ImprovementType } from '../models/map.model';
 import * as UnitModel from '../models/unit.model';
 import { City } from '../models/city.model';
 import { MapGeneratorService } from './map-generator.service';
@@ -57,7 +55,7 @@ export interface GameSession {
   culture: number;
   culturePerTurn: number;
   happiness: number;
-  era: 'ancient'  | 'medieval' | 'age_of_discovery' | 'modern';
+  era: 'ancient' | 'medieval' | 'age_of_discovery' | 'modern';
   players: {
     id: string;
     name: string;
@@ -86,20 +84,20 @@ export interface GameSession {
   providedIn: 'root'
 })
 export class GameService {
-  private currentGameSubject = new BehaviorSubject<GameSession | null>(null);
+  private readonly currentGameSubject = new BehaviorSubject<GameSession | null>(null);
   private savedGames: GameSession[] = [];
 
   // Subject para notificar cambios en las casillas
-  private tileUpdateSubject = new BehaviorSubject<MapTile | null>(null);
+  private readonly tileUpdateSubject = new BehaviorSubject<MapTile | null>(null);
   public tileUpdate$ = this.tileUpdateSubject.asObservable();
 
   constructor(
-    private sharedWarGameService: SharedWarGameService,
-    private mapGeneratorService: MapGeneratorService,
-    private cityService: CityService,
-    private technologyService: TechnologyService,
-    private injector: Injector,
-    private apiService: ApiService // Inyectar ApiService
+    private readonly sharedWarGameService: SharedWarGameService,
+    private readonly mapGeneratorService: MapGeneratorService,
+    private readonly cityService: CityService,
+    private readonly technologyService: TechnologyService,
+    private readonly injector: Injector,
+    private readonly apiService: ApiService // Inyectar ApiService
   ) {
     this.loadSavedGames();
     // Hacer que el servicio sea accesible globalmente para llamarlo desde cualquier componente
@@ -233,25 +231,36 @@ export class GameService {
     this.revealAroundUnit(map, position, radius);
   }
 
-async loadGame(gameId: string): Promise<GameSession | null> {
-  // Si el ID es local/temporal, cargar solo desde localStorage
-  if (gameId.startsWith('game_')) {
-    const game = this.savedGames.find(game => game.id === gameId);
-    if (game) {
-      this.currentGameSubject.next(game);
-      this.notificationService.info('Cargado localmente', 'El juego se cargó desde el almacenamiento local');
-      return game;
-    } else {
-      this.notificationService.error('Error', 'No se pudo cargar el juego');
-      return null;
+  async loadGame(gameId: string): Promise<GameSession | null> {
+    // Si el ID es local/temporal, cargar solo desde localStorage
+    if (gameId.startsWith('game_')) {
+      const game = this.savedGames.find(game => game.id === gameId);
+      if (game) {
+        this.currentGameSubject.next(game);
+        this.notificationService.info('Cargado localmente', 'El juego se cargó desde el almacenamiento local');
+        return game;
+      } else {
+        this.notificationService.error('Error', 'No se pudo cargar el juego');
+        return null;
+      }
     }
-  }
-  // Si el ID no es local, intentar cargar desde la API y hacer fallback a localStorage
-  try {
-    const success = await this.loadGameFromApi(gameId);
-    if (success) {
-      return this.currentGame;
-    } else {
+    // Si el ID no es local, intentar cargar desde la API y hacer fallback a localStorage
+    try {
+      const success = await this.loadGameFromApi(gameId);
+      if (success) {
+        return this.currentGame;
+      } else {
+        const game = this.savedGames.find(game => game.id === gameId);
+        if (game) {
+          this.currentGameSubject.next(game);
+          this.notificationService.info('Cargado localmente', 'El juego se cargó desde el almacenamiento local');
+          return game;
+        } else {
+          this.notificationService.error('Error', 'No se pudo cargar el juego');
+        }
+      }
+    } catch (error) {
+      console.error('Error al cargar el juego:', error);
       const game = this.savedGames.find(game => game.id === gameId);
       if (game) {
         this.currentGameSubject.next(game);
@@ -260,21 +269,10 @@ async loadGame(gameId: string): Promise<GameSession | null> {
       } else {
         this.notificationService.error('Error', 'No se pudo cargar el juego');
       }
-    }
-  } catch (error) {
-    console.error('Error al cargar el juego:', error);
-    const game = this.savedGames.find(game => game.id === gameId);
-    if (game) {
-      this.currentGameSubject.next(game);
-      this.notificationService.info('Cargado localmente', 'El juego se cargó desde el almacenamiento local');
-      return game;
-    } else {
-      this.notificationService.error('Error', 'No se pudo cargar el juego');
+      return null;
     }
     return null;
   }
-  return null;
-}
 
   async saveGame(): Promise<boolean> {
     // Guarda el juego en la API
@@ -338,8 +336,7 @@ async loadGame(gameId: string): Promise<GameSession | null> {
 
 
     for (const building of allBuildings) {
-      if (building.turnsToBuild>0)
-      {
+      if (building.turnsToBuild > 0) {
         building.turnsToBuild--;
       }
       else if (building.turnsToBuild === 0 && !building.built) {
@@ -380,11 +377,11 @@ async loadGame(gameId: string): Promise<GameSession | null> {
       'movimiento_accion' |
       'ia'
     )[] = [
-      'diplomacia_decisiones',
-      'creacion_investigacion',
-      'movimiento_accion',
-      'ia'
-    ];
+        'diplomacia_decisiones',
+        'creacion_investigacion',
+        'movimiento_accion',
+        'ia'
+      ];
 
     const currentIndex = phases.indexOf(game.currentPhase);
 
@@ -450,9 +447,9 @@ async loadGame(gameId: string): Promise<GameSession | null> {
           .filter(unit => unit.owner === game.currentPlayerId)
           .reduce((closest: UnitModel.Unit | null, current: UnitModel.Unit) => {
             const distanceToCurrent = Math.abs(rivalUnit.position.x - current.position.x) +
-                                      Math.abs(rivalUnit.position.y - current.position.y);
+              Math.abs(rivalUnit.position.y - current.position.y);
             const distanceToClosest = closest ? Math.abs(rivalUnit.position.x - closest.position.x) +
-                                               Math.abs(rivalUnit.position.y - closest.position.y) : Infinity;
+              Math.abs(rivalUnit.position.y - closest.position.y) : Infinity;
             return distanceToCurrent < distanceToClosest ? current : closest;
           }, null);
 
@@ -481,33 +478,33 @@ async loadGame(gameId: string): Promise<GameSession | null> {
     if (!game) return;
 
     game.units.forEach(unit => {
-        if (unit.owner === game.currentPlayerId && unit.movementPoints > 0) {
-            const availableActions: UnitModel.UnitAction[] = ['move'];
+      if (unit.owner === game.currentPlayerId && unit.movementPoints > 0) {
+        const availableActions: UnitModel.UnitAction[] = ['move'];
 
-            if (unit.type === 'settler' && unit.movementPoints > 0) {
-                availableActions.push('found_city');
-            }
-
-            if (unit.type === 'worker' && unit.movementPoints > 0) {
-                availableActions.push('build');
-            }
-
-            if ((unit.type === 'warrior' || unit.type === 'archer' || unit.type ==='artillery'
-                || unit.type === 'horseman' || unit.type === 'galley' || unit.type === 'rifleman' || unit.type === 'tank' || unit.type === 'warship'
-                || unit.type === 'catapult' ) ) {
-                const enemyUnitsInRange = game.units.some(otherUnit =>
-                    otherUnit.owner !== game.currentPlayerId && // Asegurarse de que no sea del jugador actual
-                    otherUnit.owner !== 'neutral' && // Excluir unidades neutrales
-                    this.isUnitInRange(unit, otherUnit)
-                );
-
-                if (enemyUnitsInRange) {
-                    availableActions.push('attack');
-                }
-            }
-
-            unit.availableActions = availableActions;
+        if (unit.type === 'settler' && unit.movementPoints > 0) {
+          availableActions.push('found_city');
         }
+
+        if (unit.type === 'worker' && unit.movementPoints > 0) {
+          availableActions.push('build');
+        }
+
+        if ((unit.type === 'warrior' || unit.type === 'archer' || unit.type === 'artillery'
+          || unit.type === 'horseman' || unit.type === 'galley' || unit.type === 'rifleman' || unit.type === 'tank' || unit.type === 'warship'
+          || unit.type === 'catapult')) {
+          const enemyUnitsInRange = game.units.some(otherUnit =>
+            otherUnit.owner !== game.currentPlayerId && // Asegurarse de que no sea del jugador actual
+            otherUnit.owner !== 'neutral' && // Excluir unidades neutrales
+            this.isUnitInRange(unit, otherUnit)
+          );
+
+          if (enemyUnitsInRange) {
+            availableActions.push('attack');
+          }
+        }
+
+        unit.availableActions = availableActions;
+      }
     });
   }
 
@@ -637,7 +634,7 @@ async loadGame(gameId: string): Promise<GameSession | null> {
 
     // Asegurar que se conserven los valores actualizados
     // y que se propague la notificación de cambio
-    this.currentGameSubject.next({...game});
+    this.currentGameSubject.next({ ...game });
     console.log('=== Investigación actualizada ===');
   }
 
@@ -678,7 +675,6 @@ async loadGame(gameId: string): Promise<GameSession | null> {
   }
 
   private createNewUnit(type: string, position: { x: number; y: number }, owner: string): UnitModel.Unit | null {
-    const id = `${type}_${Date.now()}`;
     const unitLevel = this.getUnitLevelByType(type); // Usar el método actualizado
     if (!unitLevel || unitLevel < 1) {
       console.error(`No se puede desarrollar unidad no desbloqueada: ${type}`);
@@ -686,25 +682,25 @@ async loadGame(gameId: string): Promise<GameSession | null> {
     }
     switch (type) {
       case 'warrior':
-        return UnitModel.createWarrior(owner , position.x, position.y, unitLevel);
+        return UnitModel.createWarrior(owner, position.x, position.y, unitLevel);
       case 'settler':
-        return UnitModel.createSettler(owner , position.x, position.y, unitLevel);
+        return UnitModel.createSettler(owner, position.x, position.y, unitLevel);
       case 'worker':
-        return UnitModel.createWorker(owner , position.x, position.y, unitLevel);
+        return UnitModel.createWorker(owner, position.x, position.y, unitLevel);
       case 'archer':
-        return UnitModel.createArcher(owner , position.x, position.y, unitLevel);
+        return UnitModel.createArcher(owner, position.x, position.y, unitLevel);
       case 'horseman':
-        return UnitModel.createHorseman(owner , position.x, position.y, unitLevel);
+        return UnitModel.createHorseman(owner, position.x, position.y, unitLevel);
       case 'catapult':
-        return UnitModel.createCatapult(owner , position.x, position.y, unitLevel); // Si hay un createSwordsman, cámbialo aquí
+        return UnitModel.createCatapult(owner, position.x, position.y, unitLevel); // Si hay un createSwordsman, cámbialo aquí
       case 'artillery':
-        return UnitModel.createArtillery(owner , position.x, position.y, unitLevel);
+        return UnitModel.createArtillery(owner, position.x, position.y, unitLevel);
       case 'galley':
-        return UnitModel.createGalley(owner , position.x, position.y, unitLevel);
+        return UnitModel.createGalley(owner, position.x, position.y, unitLevel);
       case 'tank':
-        return UnitModel.createTank(owner , position.x, position.y, unitLevel);
+        return UnitModel.createTank(owner, position.x, position.y, unitLevel);
       case 'rifleman':
-        return UnitModel.createRifleman(owner , position.x, position.y, unitLevel);
+        return UnitModel.createRifleman(owner, position.x, position.y, unitLevel);
       default:
         console.error(`Tipo de unidad desconocido: ${type}`);
         return null;
@@ -729,6 +725,10 @@ async loadGame(gameId: string): Promise<GameSession | null> {
 
   private getMapDimensions(size: string): { width: number; height: number } {
     switch (size) {
+      case 'small': return { width: 20, height: 20 };
+      case 'medium': return { width: 40, height: 40 };
+      case 'large': return { width: 50, height: 50 };
+      case 'huge': return { width: 60, height: 60 };
       default: return { width: 50, height: 50 };
     }
   }
@@ -741,7 +741,7 @@ async loadGame(gameId: string): Promise<GameSession | null> {
       const tile = map.tiles[y][x];
       // Verificar que el terreno sea adecuado Y no tenga bosque/jungla
       if ((tile.terrain === 'grassland' || tile.terrain === 'plains') &&
-          tile.featureType !== 'forest' && tile.featureType !== 'jungle') {
+        tile.featureType !== 'forest' && tile.featureType !== 'jungle') {
         console.log(`Posición inicial encontrada en (${x}, ${y}), terreno: ${tile.terrain}, característica: ${tile.featureType ?? 'ninguna'}`);
         return { x, y };
       }
@@ -757,7 +757,7 @@ async loadGame(gameId: string): Promise<GameSession | null> {
   private createStartingUnits(civilization: string, position: { x: number; y: number }): UnitModel.Unit[] {
     const settler = UnitModel.createSettler('player1', position.x, position.y, 1);
     const owner = 'player1';
-    const warrior = UnitModel.createWarrior(owner , position.x, position.y, 1);
+    const warrior = UnitModel.createWarrior(owner, position.x, position.y, 1);
     return [settler, warrior];
   }
 
@@ -999,7 +999,7 @@ async loadGame(gameId: string): Promise<GameSession | null> {
 
     // No acumulamos el oro en este método para evitar acumulación duplicada
     // Notificar los cambios
-    this.currentGameSubject.next({...this.currentGame});
+    this.currentGameSubject.next({ ...this.currentGame });
   }
 
   // Método para procesar las acciones del Worker al final del turno
@@ -1028,7 +1028,7 @@ async loadGame(gameId: string): Promise<GameSession | null> {
             console.log(`Trabajador completó la construcción de un camino en (${tile.x}, ${tile.y})`);
 
             // Notificar la actualización del tile
-            this.tileUpdateSubject.next({...tile});
+            this.tileUpdateSubject.next({ ...tile });
           } else if (unit.currentAction && unit.currentAction.startsWith('build_') && unit.currentAction !== 'build_road' as UnitAction) {
             // Para mejoras que no son caminos (granjas, minas, etc.)
             const actionStr = unit.currentAction;
@@ -1038,14 +1038,14 @@ async loadGame(gameId: string): Promise<GameSession | null> {
             console.log(`Trabajador completó la construcción de ${improvementType} en (${tile.x}, ${tile.y})`);
 
             // Notificar la actualización del tile
-            this.tileUpdateSubject.next({...tile});
+            this.tileUpdateSubject.next({ ...tile });
           } else if (unit.currentAction?.startsWith('clear_')) {
             // Eliminar la característica del terreno
             tileImprovementService.removeFeature(tile);
             console.log(`Trabajador completó la eliminación de característica en (${tile.x}, ${tile.y})`);
 
             // Notificar la actualización del tile
-            this.tileUpdateSubject.next({...tile});
+            this.tileUpdateSubject.next({ ...tile });
           }
 
           // Actualizar la visualización de la casilla
@@ -1076,7 +1076,7 @@ async loadGame(gameId: string): Promise<GameSession | null> {
     if (!this.currentGame) return;
 
     // Crear una copia del objeto para asegurar que se detecten los cambios
-    const updatedGame = {...this.currentGame};
+    const updatedGame = { ...this.currentGame };
     this.currentGameSubject.next(updatedGame);
     console.log('Estado del juego actualizado manualmente');
   }
@@ -1096,64 +1096,64 @@ async loadGame(gameId: string): Promise<GameSession | null> {
 
     // Inicializar la lista de jugadores si no está definida
     if (!game.players) {
-        game.players = [];
+      game.players = [];
     }
 
     const availableCivilizations = [
-        'aztecs', 'egyptians', 'romans', 'greeks', 'chinese', 'indians', 'japanese', 'mongols'
+      'aztecs', 'egyptians', 'romans', 'greeks', 'chinese', 'indians', 'japanese', 'mongols'
     ];
 
     for (let i = 0; i < game.settings.numberOfOpponents; i++) {
-        const civilization = availableCivilizations[i % availableCivilizations.length];
-        const rivalId = `rival${i + 1}`;
-        const rivalName = `Civilización ${i + 1}`;
+      const civilization = availableCivilizations[i % availableCivilizations.length];
+      const rivalId = `rival${i + 1}`;
+      const rivalName = `Civilización ${i + 1}`;
 
-        const startingPosition = this.findSuitableStartingPosition(game.map);
+      const startingPosition = this.findSuitableStartingPosition(game.map);
 
-        // Crear una ciudad inicial para la civilización rival
-        const settler = UnitModel.createSettler(rivalId, startingPosition.x, startingPosition.y, 1);
-        const city = this.cityService.foundCity(
-            `Ciudad ${rivalName}`,
-            settler,
-            game.map,
-            game.turn
-        );
+      // Crear una ciudad inicial para la civilización rival
+      const settler = UnitModel.createSettler(rivalId, startingPosition.x, startingPosition.y, 1);
+      const city = this.cityService.foundCity(
+        `Ciudad ${rivalName}`,
+        settler,
+        game.map,
+        game.turn
+      );
 
-        if (city) {
-            city.ownerId = rivalId;
-            game.cities.push(city);
-        }
+      if (city) {
+        city.ownerId = rivalId;
+        game.cities.push(city);
+      }
 
-        // Crear unidades iniciales para la civilización rival
-        const units = [
-            UnitModel.createWarrior(rivalId, startingPosition.x, startingPosition.y, 1),
-            UnitModel.createArcher(rivalId, startingPosition.x, startingPosition.y, 1)
-        ];
+      // Crear unidades iniciales para la civilización rival
+      const units = [
+        UnitModel.createWarrior(rivalId, startingPosition.x, startingPosition.y, 1),
+        UnitModel.createArcher(rivalId, startingPosition.x, startingPosition.y, 1)
+      ];
 
-        game.units.push(...units);
+      game.units.push(...units);
 
-        // Añadir la civilización rival al estado del juego
-        game.players.push({
-            id: rivalId,
-            name: rivalName,
-            civilization: civilization,
-            resources: {
-                gold: 50,
-                goldPerTurn: 2,
-                science: 0,
-                sciencePerTurn: 1,
-                culture: 0,
-                culturePerTurn: 1,
-                happiness: 0
-            },
-            research: {
-                progress: 0,
-                turnsRemaining: 0
-            },
-            technologies: [],
-            availableTechnologies: ['agriculture', 'mining', 'sailing'],
-            era: 'ancient'
-        });
+      // Añadir la civilización rival al estado del juego
+      game.players.push({
+        id: rivalId,
+        name: rivalName,
+        civilization: civilization,
+        resources: {
+          gold: 50,
+          goldPerTurn: 2,
+          science: 0,
+          sciencePerTurn: 1,
+          culture: 0,
+          culturePerTurn: 1,
+          happiness: 0
+        },
+        research: {
+          progress: 0,
+          turnsRemaining: 0
+        },
+        technologies: [],
+        availableTechnologies: ['agriculture', 'mining', 'sailing'],
+        era: 'ancient'
+      });
     }
 
     this.currentGameSubject.next({ ...game });
@@ -1238,7 +1238,7 @@ async loadGame(gameId: string): Promise<GameSession | null> {
       localGame.id = createdGame._id;
 
       // Actualizar el estado del juego
-      this.currentGameSubject.next({...localGame});
+      this.currentGameSubject.next({ ...localGame });
 
       this.notificationService.success('Juego creado', `Juego "${gameSettings.gameName}" creado correctamente`);
       return true;
@@ -1535,11 +1535,11 @@ async loadGame(gameId: string): Promise<GameSession | null> {
     // Convertir el estado del juego
     //const gameState = this.convertApiGameStateToLocalFormat(apiGameState);
     const gameState = JSON.parse(apiGameState, (key, value) => {
-          if (value && typeof value === 'object' && value.__type === 'Date') {
-            return new Date(value.value);
-          }
-          return value;
-        });
+      if (value && typeof value === 'object' && value.__type === 'Date') {
+        return new Date(value.value);
+      }
+      return value;
+    });
     // Crear el objeto GameSession
     return gameState
   }
@@ -1550,12 +1550,12 @@ async loadGame(gameId: string): Promise<GameSession | null> {
   private convertApiGameStateToLocalFormat(apiGameState: string): any {
     // Extraer datos del jugador y la IA
     const playerData = JSON.parse(apiGameState, (key, value) => {
-        if (value && typeof value === 'object' && value.__type === 'Date') {
-          return new Date(value.value);
-        }
-        return value;
-      });
-      alert(playerData);
+      if (value && typeof value === 'object' && value.__type === 'Date') {
+        return new Date(value.value);
+      }
+      return value;
+    });
+    alert(playerData);
     return playerData;
   }
 
