@@ -16,12 +16,12 @@ export class RegisterComponent {
   isSubmitting = false;
   errorMessage = '';
   successMessage = '';
-  
+
   get username() { return this.registerForm.get('username'); }
   get email() { return this.registerForm.get('email'); }
   get password() { return this.registerForm.get('password'); }
   get confirmPassword() { return this.registerForm.get('confirmPassword'); }
-  
+
   constructor(
     private readonly fb: FormBuilder,
     private readonly router: Router,
@@ -36,14 +36,14 @@ export class RegisterComponent {
       validators: this.passwordMatchValidator
     });
   }
-  
+
   passwordMatchValidator(g: FormGroup) {
     const password = g.get('password')?.value;
     const confirmPassword = g.get('confirmPassword')?.value;
-    
+
     return password === confirmPassword ? null : { passwordMismatch: true };
   }
-  
+
   async onSubmit() {
     if (this.registerForm.invalid) {
       return;
@@ -59,7 +59,7 @@ export class RegisterComponent {
     } catch (err: any) {
       // Manejar errores del nuevo backend
       let msg = 'Error al registrar usuario.';
-      if (err.error && err.error.detail) {
+      if (err.error?.detail) {
         msg = err.error.detail;
       }
       this.errorMessage = msg;
