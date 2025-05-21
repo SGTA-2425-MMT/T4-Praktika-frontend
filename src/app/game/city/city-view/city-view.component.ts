@@ -1,4 +1,3 @@
-import { unitLevel } from './../../../core/models/unit.model';
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { City } from '../../../core/models/city.model';
@@ -6,7 +5,6 @@ import { CityBuildingsComponent } from '../city-buildings/city-buildings.compone
 import { CityService } from '../../../core/services/city.service';
 import { GameService } from '../../../core/services/game.service';
 import { TechnologyService } from '../../../core/services/technology.service';
-import { Unit } from '../../../core/models/unit.model';
 
 @Component({
   selector: 'app-city-view',
