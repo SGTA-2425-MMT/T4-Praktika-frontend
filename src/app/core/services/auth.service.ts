@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { firstValueFrom, Observable, BehaviorSubject } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom, BehaviorSubject } from 'rxjs';
 
 interface LoginResponse {
   access_token: string;
@@ -28,11 +27,11 @@ export interface UserProfile {
 })
 export class AuthService {
   private readonly apiUrl = '/api/auth';
-  private currentUserSubject = new BehaviorSubject<UserProfile | null>(null);
-  
+  private readonly currentUserSubject = new BehaviorSubject<UserProfile | null>(null);
+
   // Observable para que los componentes puedan suscribirse a cambios en el usuario actual
   public currentUser$ = this.currentUserSubject.asObservable();
-  
+
   constructor(private readonly router: Router, private readonly http: HttpClient) {
     // Intenta cargar el perfil del usuario si hay un token almacenado
     if (this.getToken()) {
@@ -51,10 +50,10 @@ export class AuthService {
     try {
       // Podemos enviar los datos como parámetros de consulta o como un JSON
       const response = await firstValueFrom(
-        this.http.post<RegisterResponse>(`${this.apiUrl}/register`, { 
-          username, 
-          email, 
-          password 
+        this.http.post<RegisterResponse>(`${this.apiUrl}/register`, {
+          username,
+          email,
+          password
         })
       );
       return response;
@@ -73,7 +72,7 @@ export class AuthService {
       const formData = new URLSearchParams();
       formData.append('username', username);
       formData.append('password', password);
-      
+
       const response = await firstValueFrom(
         this.http.post<LoginResponse>(`${this.apiUrl}/token`, formData.toString(), {
           headers: {
@@ -81,13 +80,13 @@ export class AuthService {
           }
         })
       );
-      
+
       // Guardar el token
       localStorage.setItem('access_token', response.access_token);
-      
+
       // Cargar el perfil del usuario
       await this.loadUserProfile();
-      
+
       return true;
     } catch (err: any) {
       localStorage.removeItem('access_token');
