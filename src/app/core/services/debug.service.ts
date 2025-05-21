@@ -9,7 +9,7 @@ import { ApiService } from '../api.service';
 })
 export class DebugService {
   private debugModeEnabled = false;
-  private debugModeSubject = new BehaviorSubject<boolean>(this.debugModeEnabled);
+  private readonly debugModeSubject = new BehaviorSubject<boolean>(this.debugModeEnabled);
 
   constructor(
     private readonly gameService: GameService,
