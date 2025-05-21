@@ -1,14 +1,12 @@
 import { Injectable } from '@angular/core';
-import { GameService } from './game.service';
+import { GameService, GameSession } from './game.service';
 import { MapService } from './map.service';
 import { FogOfWarService } from './fog-of-war.service';
 import { NotificationService } from './notification.service';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { BuildingCategory, Era, City } from '../models/city.model';
 import * as UnitModel from '../models/unit.model';
-import { GameSession } from './game.service';
 import { TechnologyService } from './technology.service';
-import { TechEra } from '../models/technology.model';
 import { ApiService, CheatRequest } from '../api.service';
 
 export interface CheatLogEntry {
@@ -26,15 +24,14 @@ export class CheatService {
   private cheatLogs: CheatLogEntry[] = [];
 
   // Observable para notificar cuando los trucos están habilitados/deshabilitados
-  private cheatsEnabledSubject = new BehaviorSubject<boolean>(this.cheatsEnabled);
+  private readonly cheatsEnabledSubject = new BehaviorSubject<boolean>(this.cheatsEnabled);
   public cheatsEnabled$ = this.cheatsEnabledSubject.asObservable();
 
   constructor(
-    private gameService: GameService,
-    private mapService: MapService,
-    private fogOfWarService: FogOfWarService,
-    private apiService: ApiService,
-    private notificationService: NotificationService
+    private readonly gameService: GameService,
+    private readonly fogOfWarService: FogOfWarService,
+    private readonly apiService: ApiService,
+    private readonly notificationService: NotificationService
   ) {
     console.log(`Modo de trucos ${this.cheatsEnabled ? 'activado' : 'desactivado'}`);
   }
@@ -86,34 +83,34 @@ export class CheatService {
     }
 
     switch (code) {
-      case 'eraiki_guztiak':
+      case 'build_all':
         result = this.buildAll(context);
         break;
-      case 'berehalako_porrota':
+      case 'instant_defeat':
         result = this.instantDefeat(context);
         break;
-      case 'berehalako_garaipena':
+      case 'instant_victory':
         result = this.instantVictory(context);
         break;
-      case 'tanke_eskuadroia':
+      case 'add_tank_squad':
         result = this.addTankSquad(context);
         break;
-      case 'teknologia_aurreratua':
+      case 'give_advanced_tech':
         result = this.giveAdvancedTech(context);
         break;
-      case 'maila_igo':
+      case 'level_up_city':
         result = this.levelUpCity(context);
         break;
-      case 'baliabide_maximoak':
+      case 'max_resources':
         result = this.maximizeResources(context);
         break;
-      case 'mugimendu_infinitua':
+      case 'infinite_movement':
         result = this.enableInfiniteMovement(context);
         break;
-      case 'zorion_maximoa':
+      case 'maximize_happiness':
         result = this.maximizeHappiness(context);
         break;
-      case 'mapa_agertu':
+      case 'reveal_map':
         result = this.revealMap(context);
         break;
       case 'help':
@@ -230,7 +227,7 @@ export class CheatService {
    */
   private validateGameContext(context: any): boolean {
     // Verificar que existe un contexto y que contiene información básica del juego
-    return context && context.gameId && this.gameService.currentGame !== null;
+    return context?.gameId && this.gameService.currentGame !== null;
   }
 
   /**
@@ -248,7 +245,7 @@ export class CheatService {
 
     // Log para consola con formato especial para identificar fácilmente
     console.log(`%c[CHEAT] ${entry.timestamp.toISOString()} - Código: ${code} - Resultado: ${result}`,
-                'color: #ff5722; font-weight: bold;');
+      'color: #ff5722; font-weight: bold;');
   }
 
   /**
@@ -287,18 +284,18 @@ export class CheatService {
   private getCheatHelp(): string {
     return `
       Trucos disponibles:
-      - eraiki_guztiak: Construye todos los edificios en la ciudad
-        Uso: eraiki_guztiak (si solo tienes una ciudad)
-        Uso: eraiki_guztiak:NOMBRE_CIUDAD (si tienes varias ciudades)
-      - berehalako_porrota: Derrota inmediata
-      - berehalako_garaipena: Victoria inmediata
-      - tanke_eskuadroia: Añade 5 tanques a la ciudad seleccionada
-      - teknologia_aurreratua: Desbloquea una tecnología avanzada
-      - maila_igo: Sube de nivel la ciudad seleccionada
-      - baliabide_maximoak: Maximiza todos los recursos
-      - mugimendu_infinitua: Habilita movimiento infinito para todas las unidades
-      - zorion_maximoa: Maximiza la felicidad de la ciudad seleccionada
-      - mapa_agertu: Revela todo el mapa (elimina la niebla de guerra)
+      - build_all: Construye todos los edificios en la ciudad
+        Uso: build_all (si solo tienes una ciudad)
+        Uso: build_all:NOMBRE_CIUDAD (si tienes varias ciudades)
+      - instant_defeat: Derrota inmediata
+      - instant_victory: Victoria inmediata
+      - add_tank_squad: Añade 5 tanques a la ciudad seleccionada
+      - give_advanced_tech: Desbloquea una tecnología avanzada
+      - level_up_city: Sube de nivel la ciudad seleccionada
+      - max_resources: Maximiza todos los recursos
+      - infinite_movement: Habilita movimiento infinito para todas las unidades
+      - maximize_happiness: Maximiza la felicidad de la ciudad seleccionada
+      - reveal_map: Revela todo el mapa (elimina la niebla de guerra)
       - help: Muestra esta ayuda
     `;
   }
@@ -325,9 +322,6 @@ export class CheatService {
     // Si solo hay una ciudad, usarla automáticamente
     if (playerCities.length === 1) {
       const city = playerCities[0];
-
-      // Obtener el servicio de ciudad para construir los edificios
-      const cityService = this.gameService.getCityService();
 
       // Simular la construcción de todos los edificios disponibles
       console.log(`Construyendo todos los edificios en ${city.name}`);
@@ -399,7 +393,7 @@ export class CheatService {
           cost: 75,
           upgradeCost: 150,
           maintenance: 2,
-          effects: { },
+          effects: {},
           description: 'Permite entrenar unidades militares más efectivas',
           icon: '⚔️',
           constructionTurn: currentGame.turn,
@@ -436,7 +430,7 @@ export class CheatService {
 
     // Si el contexto incluye el nombre de una ciudad específica
     // También verificamos si se usó la sintaxis "eraiki_guztiak:CIUDAD"
-    let cityName = context.specificCity || (context.params ? context.params.cityName : null);
+    let cityName = context.specificCity ?? (context.params ? context.params.cityName : null);
 
     // Comprobar si el comando incluye una ciudad específica con el formato "eraiki_guztiak:CIUDAD"
     const cmdParts = context.command ? context.command.split(':') : [];
@@ -520,7 +514,7 @@ export class CheatService {
             cost: 75,
             upgradeCost: 150,
             maintenance: 2,
-            effects: { },
+            effects: {},
             description: 'Permite entrenar unidades militares más efectivas',
             icon: '⚔️',
             constructionTurn: currentGame.turn,
@@ -672,7 +666,7 @@ export class CheatService {
     }
 
     // Si hay múltiples ciudades, buscar la ciudad seleccionada en el contexto
-    let cityName = context.specificCity || (context.params ? context.params.cityName : null);
+    let cityName = context.specificCity ?? (context.params ? context.params.cityName : null);
 
     // Comprobar si el comando incluye una ciudad específica con el formato "tanke_eskuadroia:CIUDAD"
     const cmdParts = context.command ? context.command.split(':') : [];
@@ -707,8 +701,8 @@ export class CheatService {
   private createTanksNearCity(city: City, currentGame: GameSession, amount: number): string {
     // Posibles posiciones relativas alrededor de la ciudad
     const relativePositions = [
-      {x: 0, y: 1}, {x: 1, y: 0}, {x: 0, y: -1}, {x: -1, y: 0}, // Cardinal
-      {x: 1, y: 1}, {x: 1, y: -1}, {x: -1, y: -1}, {x: -1, y: 1} // Diagonal
+      { x: 0, y: 1 }, { x: 1, y: 0 }, { x: 0, y: -1 }, { x: -1, y: 0 }, // Cardinal
+      { x: 1, y: 1 }, { x: 1, y: -1 }, { x: -1, y: -1 }, { x: -1, y: 1 } // Diagonal
     ];
 
     let tanksAdded = 0;
@@ -733,7 +727,7 @@ export class CheatService {
 
         // Comprobamos que las coordenadas estén dentro de los límites del mapa
         if (pos.y >= 0 && pos.y < mapHeight &&
-            pos.x >= 0 && pos.x < mapWidth) {
+          pos.x >= 0 && pos.x < mapWidth) {
           // Acceder correctamente al array bidimensional de tiles
           tileFound = currentGame.map.tiles[pos.y][pos.x];
         }
@@ -755,27 +749,27 @@ export class CheatService {
           if (!isOccupied && isPassable) {
             // Crear un nuevo tanque
             const tank: UnitModel.Unit = {
-                id: `tank_${Date.now() + i}`,
-                name: 'Tank',
-                type: 'tank',
-                owner: currentGame.currentPlayerId,
-                position: pos,
-                movementPoints: 3,
-                maxMovementPoints: 3,
-                strength: 50,
-                health: 150,
-                maxHealth: 150,
-                isRanged: false,
-                canMove: true,
-                isFortified: false,
-                maxattacksPerTurn: 1,
-                attacksPerTurn: 1,
-                level: 1,
-                cost: 0,
-                turnsToComplete: 0,
-                availableActions: ['move', 'attack', 'retreat'],
-                attackRange: 1,
-                canSwim: false
+              id: `tank_${Date.now() + i}`,
+              name: 'Tank',
+              type: 'tank',
+              owner: currentGame.currentPlayerId,
+              position: pos,
+              movementPoints: 3,
+              maxMovementPoints: 3,
+              strength: 50,
+              health: 150,
+              maxHealth: 150,
+              isRanged: false,
+              canMove: true,
+              isFortified: false,
+              maxattacksPerTurn: 1,
+              attacksPerTurn: 1,
+              level: 1,
+              cost: 0,
+              turnsToComplete: 0,
+              availableActions: ['move', 'attack', 'retreat'],
+              attackRange: 1,
+              canSwim: false
             };
 
             // Añadir el tanque al juego
@@ -879,7 +873,7 @@ export class CheatService {
           const notificationService = this.gameService['injector'].get(NotificationService);
           notificationService.success(
             'Tecnología avanzada desbloqueada',
-            `Has desbloqueado la tecnología: ${techDetails?.name || selectedTech}`,
+            `Has desbloqueado la tecnología: ${techDetails?.name ?? selectedTech}`,
             {
               duration: 5000,
               icon: '🧪'
@@ -892,7 +886,7 @@ export class CheatService {
         // Actualizar el estado del juego
         this.gameService.updateGame();
 
-        return `Has desbloqueado la tecnología avanzada: ${techDetails?.name || selectedTech}.`;
+        return `Has desbloqueado la tecnología avanzada: ${techDetails?.name ?? selectedTech}.`;
       }
 
       return 'No se pudo encontrar una tecnología avanzada para desbloquear.';
@@ -961,9 +955,9 @@ export class CheatService {
     }
 
     // Si hay múltiples ciudades, buscar la ciudad seleccionada en el contexto
-    let cityName = context.specificCity || (context.params ? context.params.cityName : null);
+    let cityName = context.specificCity ?? (context.params ? context.params.cityName : null);
 
-    // Comprobar si el comando incluye una ciudad específica con el formato "maila_igo:CIUDAD"
+    // Comprobar si el comando incluye una ciudad específica con el formato "level_up:CIUDAD"
     const cmdParts = context.command ? context.command.split(':') : [];
     if (cmdParts.length > 1) {
       cityName = cmdParts[1].trim();
@@ -983,7 +977,7 @@ export class CheatService {
     }
 
     // Si hay varias ciudades y no se especificó ninguna, mostrar lista de opciones
-    let message = 'Tienes varias ciudades. Usa el comando "maila_igo:NOMBRE_CIUDAD" especificando el nombre de la ciudad que quieres mejorar.\n\nCiudades disponibles:\n';
+    let message = 'Tienes varias ciudades. Usa el comando "level_up:NOMBRE_CIUDAD" especificando el nombre de la ciudad que quieres mejorar.\n\nCiudades disponibles:\n';
 
     playerCities.forEach(city => {
       message += `- ${city.name}\n`;
@@ -1196,7 +1190,7 @@ export class CheatService {
     }
 
     // Si hay múltiples ciudades, buscar la ciudad seleccionada en el contexto
-    let cityName = context.specificCity || (context.params ? context.params.cityName : null);
+    let cityName = context.specificCity ?? (context.params ? context.params.cityName : null);
 
     // Comprobar si el comando incluye una ciudad específica con el formato "zorion_maximoa:CIUDAD"
     const cmdParts = context.command ? context.command.split(':') : [];
@@ -1292,9 +1286,9 @@ export class CheatService {
     console.log('Solicitud para revelar todo el mapa');
 
     const currentGame = this.gameService.currentGame;
-    if (currentGame && currentGame.map) {
+    if (currentGame?.map) {
       try {
-        // Implementación real para revelar todo el mapa
+        // Implementación real para revelar el mapa entero
         this.fogOfWarService.revealAllMap(currentGame.map, currentGame.currentPlayerId);
         console.log('Mapa completamente revelado');
         return 'El mapa completo ha sido revelado.';
