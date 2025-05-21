@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MapViewComponent } from './map/map-view/map-view.component';
@@ -6,7 +6,7 @@ import { TechTreeComponent } from './technology/tech-tree/tech-tree.component';
 import { NotificationPanelComponent } from './notification-panel/notification-panel.component';
 import { GameService, GameSession } from '../core/services/game.service';
 import { DebugService } from '../core/services/debug.service';
-import { CheatService, CheatLogEntry } from '../core/services/cheat.service';
+import { CheatService } from '../core/services/cheat.service';
 import { CheatConsoleComponent } from './cheat-console/cheat-console.component';
 import { Subscription } from 'rxjs';
 
@@ -23,10 +23,10 @@ export class GameComponent implements OnInit, OnDestroy {
   error = '';
   subscription: Subscription = new Subscription();
   showTechTree = false; // Estado para mostrar/ocultar el árbol tecnológico
-  
+
   // Referencia al componente de consola de trucos
   @ViewChild(CheatConsoleComponent) cheatConsoleRef!: CheatConsoleComponent;
-  
+
   // Estado para mostrar/ocultar la consola de trucos
   showCheatConsole = false;
 
@@ -105,7 +105,7 @@ export class GameComponent implements OnInit, OnDestroy {
         } else {
           alert('Ha ocurrido un error al guardar la partida');
         }
-      } catch (error) {
+      } catch {
         alert('Ha ocurrido un error al guardar la partida');
       }
     }
@@ -219,17 +219,17 @@ export class GameComponent implements OnInit, OnDestroy {
       }
     }, 100);
   }
-  
+
   executeCheat(command: string): void {
     const context = this.getCurrentGameContext();
     const result = this.cheatService.executeCheat(command, context);
-    
+
     // Enviar respuesta al componente de la consola de trucos
     if (this.cheatConsoleRef) {
       this.cheatConsoleRef.addResponse(result);
     }
   }
-  
+
   closeCheatConsole(): void {
     this.showCheatConsole = false;
   }
