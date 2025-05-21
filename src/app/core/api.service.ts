@@ -1,4 +1,3 @@
-import { GameSession } from './services/game.service';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -114,7 +113,7 @@ export class ApiService {
    * Requiere autenticación con token JWT
    * @param gameId El ID del juego a guardar
    * @param gamesession El estado del juego a guardar
-   */  saveGame(gameId: string, gamesession:String): Observable<GameOut> {
+   */  saveGame(gameId: string, gamesession: string): Observable<GameOut> {
     // The backend expects { gamesession: string } as the request body
     return this.http.post<GameOut>(`${this.baseUrl}/games/${gameId}/save`, { gamesession });
   }
