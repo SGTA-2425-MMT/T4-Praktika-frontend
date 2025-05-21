@@ -1,3 +1,4 @@
+import { GameSession } from './services/game.service';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -15,20 +16,7 @@ export interface GameMap {
   stored_tiles?: any[][]; // Para guardar los datos completos de las casillas
 }
 
-export interface GameStatePlayer {
-  cities: any[];
-  units: any[];
-  technologies: any[];
-  resources: Record<string, any>;
-}
 
-export interface GameState {
-  turn: number;
-  current_player: string;
-  player: GameStatePlayer;
-  ai: GameStatePlayer;
-  map: GameMap;
-}
 
 export interface GameOut {
   _id: string;
@@ -39,7 +27,7 @@ export interface GameOut {
   last_saved: string;
   is_autosave: boolean;
   cheats_used: string[];
-  game_state: GameState;
+  gamesession: string
 }
 
 export interface ScenarioOut {
@@ -54,7 +42,7 @@ export interface ScenarioOut {
 export interface GameCreate {
   name: string;
   scenario_id: string;
-  game_state: GameState;
+  gamesession: string
 }
 
 export interface PlayerAction {
@@ -74,7 +62,7 @@ export interface CheatRequest {
 export interface CheatResponse {
   message: string;
   success: boolean;
-  game_state?: GameState;
+  GameSession: string
 }
 
 @Injectable({
@@ -125,11 +113,12 @@ export class ApiService {
    * Guarda el estado actual de un juego
    * Requiere autenticación con token JWT
    * @param gameId El ID del juego a guardar
-   * @param gameState El estado del juego a guardar
-   */
-  saveGame(gameId: string, gameState: GameState): Observable<GameOut> {
-    return this.http.post<GameOut>(`${this.baseUrl}/games/${gameId}/save`, gameState);
+   * @param gamesession El estado del juego a guardar
+   */  saveGame(gameId: string, gamesession:String): Observable<GameOut> {
+    // The backend expects { gamesession: string } as the request body
+    return this.http.post<GameOut>(`${this.baseUrl}/games/${gameId}/save`, { gamesession });
   }
+  // The updateGameSession functionality is now incorporated directly in the saveGame method
 
   /**
    * Aplica una acción del jugador

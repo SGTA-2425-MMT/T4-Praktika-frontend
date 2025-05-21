@@ -6,7 +6,10 @@ export interface Civilization {
   leader: string; // Nombre del líder (opcional)
   description: string; // Descripción de la civilización
   bonus: string; // Ventaja especial
-  startingPosition: { x: number; y: number } | null; // Posición inicial (puede ser null y asignarse en runtime)
+  startingPosition: { x: number; y: number } | null;
+  isPlayer: boolean; // haz otro boolean para indicar si el jugador ha encontrado la civilización
+  isDiscovered: boolean;
+  cooldown: number; // Indica el cooldown de interacción (en turnos)
 }
 
 export const CIVILIZATIONS: Civilization[] = [
@@ -16,7 +19,11 @@ export const CIVILIZATIONS: Civilization[] = [
     leader: 'Isabel I',
     description: 'Imperio marítimo y comercial.',
     bonus: 'Bonificación de oro y movimiento extra en barcos.',
-    startingPosition: {x: 25, y: 15} // Se asigna al generar el mapa
+    startingPosition: {x: 25, y: 15},
+    isPlayer: false,
+    isDiscovered: false,
+    cooldown: 0
+
   },
   {
     id: 'egypt',
@@ -24,7 +31,10 @@ export const CIVILIZATIONS: Civilization[] = [
     leader: 'Cleopatra',
     description: 'Civilización del Nilo, constructores de maravillas.',
     bonus: 'Construcción de maravillas más rápida.',
-    startingPosition: {x: 42, y: 25} // Se asigna al generar el mapa
+    startingPosition: {x: 42, y: 25},
+    isPlayer: false,
+    isDiscovered: false,
+    cooldown: 0
   },
   {
     id: 'greece',
@@ -32,7 +42,10 @@ export const CIVILIZATIONS: Civilization[] = [
     leader: 'Socrates',
     description: 'Cuna de la filosofía y la democracia.',
     bonus: 'Bonificación de ciencia y cultura.',
-    startingPosition: {x: 40, y: 40} // Se asigna al generar el mapa
+    startingPosition: {x: 40, y: 40} ,
+    isPlayer: false,
+    isDiscovered: false,
+    cooldown: 0
   },
   {
     id: 'france',
@@ -40,7 +53,10 @@ export const CIVILIZATIONS: Civilization[] = [
     leader: 'Napoleón',
     description: 'Potencia cultural y militar.',
     bonus: 'Unidades militares más baratas y cultura extra.',
-    startingPosition: null
+    startingPosition: null,
+    isPlayer: false,
+    isDiscovered: false,
+    cooldown: 0
   },
   {
     id: 'rome',
@@ -48,7 +64,10 @@ export const CIVILIZATIONS: Civilization[] = [
     leader: 'Julio César',
     description: 'Imperio expansivo y disciplinado.',
     bonus: 'Ciudades fundadas empiezan con edificios básicos.',
-    startingPosition: null
+    startingPosition: null,
+    isPlayer: false,
+    isDiscovered: false,
+    cooldown: 0
   },
   {
     id: 'china',
@@ -56,6 +75,9 @@ export const CIVILIZATIONS: Civilization[] = [
     leader: 'Qin Shi Huang', // Cambiado de Confucio a Qin Shi Huang
     description: 'Civilización milenaria de grandes inventos.',
     bonus: 'Progreso tecnológico acelerado.',
-    startingPosition: null
+    startingPosition: null,
+    isPlayer: false,
+    isDiscovered: false,
+    cooldown: 0
   }
 ];

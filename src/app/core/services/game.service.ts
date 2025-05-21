@@ -15,7 +15,7 @@ import { UnitAction } from '../models/unit.model';
 import { NotificationService } from './notification.service';
 import { SharedWarGameService } from './shared-war-game.service';
 import { BuildingsService } from '../services/buildings.service';
-import { ApiService, GameCreate, GameOut, GameState, ScenarioOut, PlayerAction } from '../../core/api.service';
+import { ApiService, GameCreate, GameOut, ScenarioOut, PlayerAction } from '../../core/api.service';
 
 export interface GameSettings {
   gameName: string;
@@ -39,6 +39,7 @@ export interface GameSession {
   difficulty: string;
   createdAt: Date;
   lastSaved?: Date;
+  newGame: boolean;
 
   currentPhase: 'diplomacia_decisiones' | 'creacion_investigacion' | 'movimiento_accion' | 'ia';
   researchProgress?: {
@@ -155,6 +156,7 @@ export class GameService {
       culturePerTurn: 0,
       happiness: 0,
       era: 'ancient',
+      newGame: true,
       players: [
         {
           id: 'player1',
@@ -231,25 +233,48 @@ export class GameService {
     this.revealAroundUnit(map, position, radius);
   }
 
-  async loadGame(gameId: string): Promise<GameSession | null> {
-    try {
-      const success = await this.loadGameFromApi(gameId);
-      if (success) {
-        return this.currentGame;
-      } else {
-        // Fallback al método antiguo si falla la carga desde la API
-        const game = this.savedGames.find(game => game.id === gameId);
-        if (game) {
-          this.currentGameSubject.next(game);
-          return game;
-        }
-      }
-    } catch (error) {
-      console.error('Error al cargar el juego:', error);
+async loadGame(gameId: string): Promise<GameSession | null> {
+  // Si el ID es local/temporal, cargar solo desde localStorage
+  if (gameId.startsWith('game_')) {
+    const game = this.savedGames.find(game => game.id === gameId);
+    if (game) {
+      this.currentGameSubject.next(game);
+      this.notificationService.info('Cargado localmente', 'El juego se cargó desde el almacenamiento local');
+      return game;
+    } else {
+      this.notificationService.error('Error', 'No se pudo cargar el juego');
       return null;
+    }
+  }
+  // Si el ID no es local, intentar cargar desde la API y hacer fallback a localStorage
+  try {
+    const success = await this.loadGameFromApi(gameId);
+    if (success) {
+      return this.currentGame;
+    } else {
+      const game = this.savedGames.find(game => game.id === gameId);
+      if (game) {
+        this.currentGameSubject.next(game);
+        this.notificationService.info('Cargado localmente', 'El juego se cargó desde el almacenamiento local');
+        return game;
+      } else {
+        this.notificationService.error('Error', 'No se pudo cargar el juego');
+      }
+    }
+  } catch (error) {
+    console.error('Error al cargar el juego:', error);
+    const game = this.savedGames.find(game => game.id === gameId);
+    if (game) {
+      this.currentGameSubject.next(game);
+      this.notificationService.info('Cargado localmente', 'El juego se cargó desde el almacenamiento local');
+      return game;
+    } else {
+      this.notificationService.error('Error', 'No se pudo cargar el juego');
     }
     return null;
   }
+  return null;
+}
 
   async saveGame(): Promise<boolean> {
     // Guarda el juego en la API
@@ -263,7 +288,7 @@ export class GameService {
       const localGames: GameSession[] = apiGames.map(apiGame => {
         return this.convertApiGameToLocalFormat(apiGame);
       });
-      
+
       // Actualizar la lista local
       this.savedGames = localGames;
       return [...this.savedGames];
@@ -1135,7 +1160,7 @@ export class GameService {
   }
 
   // ==================== MÉTODOS DE INTEGRACIÓN CON LA API ====================
-  
+
   /**
    * Obtiene los escenarios disponibles desde la API
    */
@@ -1148,7 +1173,7 @@ export class GameService {
       return [];
     }
   }
-  
+
   /**
    * Carga los juegos guardados del usuario actual desde la API
    */
@@ -1163,7 +1188,7 @@ export class GameService {
       return [];
     }
   }
-  
+
   /**
    * Carga un juego específico desde la API
    * @param gameId ID del juego a cargar
@@ -1171,13 +1196,13 @@ export class GameService {
   async loadGameFromApi(gameId: string): Promise<boolean> {
     try {
       const gameData = await firstValueFrom(this.apiService.getGame(gameId));
-      
+
       // Convertir el formato de la API al formato local
       const gameSession = this.convertApiGameToLocalFormat(gameData);
-      
+
       // Actualizar el estado del juego
       this.currentGameSubject.next(gameSession);
-      
+
       this.notificationService.success('Juego cargado', `Juego "${gameData.name}" cargado correctamente`);
       return true;
     } catch (error) {
@@ -1186,7 +1211,7 @@ export class GameService {
       return false;
     }
   }
-  
+
   /**
    * Crea un nuevo juego en la API
    * @param gameSettings Configuración del nuevo juego
@@ -1195,26 +1220,26 @@ export class GameService {
     try {
       // Primero crear el juego en local
       const localGame = this.createNewGame(gameSettings);
-      
+
       // Convertir el juego local al formato de la API
       const apiGameState = this.convertLocalGameToApiFormat(localGame);
-      
+
       // Crear el objeto GameCreate para la API
       const gameCreate: GameCreate = {
         name: gameSettings.gameName,
         scenario_id: scenarioId,
-        game_state: apiGameState
+        gamesession: apiGameState
       };
-      
+
       // Enviar la petición a la API
       const createdGame = await firstValueFrom(this.apiService.createGame(gameCreate));
-      
+
       // Actualizar el ID del juego local con el ID asignado por la API
       localGame.id = createdGame._id;
-      
+
       // Actualizar el estado del juego
       this.currentGameSubject.next({...localGame});
-      
+
       this.notificationService.success('Juego creado', `Juego "${gameSettings.gameName}" creado correctamente`);
       return true;
     } catch (error) {
@@ -1223,9 +1248,10 @@ export class GameService {
       return false;
     }
   }
-  
+
   /**
    * Guarda el estado actual del juego en la API
+   * Si existe un juego con el mismo nombre, lo sobrescribe (update), si no, crea uno nuevo
    * @param isAutosave Indica si es un autoguardado (true) o un guardado manual (false)
    */
   async saveGameToApi(isAutosave: boolean = false): Promise<boolean> {
@@ -1235,66 +1261,68 @@ export class GameService {
         console.error('No hay juego activo para guardar');
         return false;
       }
-      
-      // Verificar si el ID es temporal (comienza con "game_")
-      // solo en este caso creamos un nuevo juego
-      if (currentGame.id.startsWith('game_')) {
-        console.log('Guardando como nuevo juego (primera vez)...');
-        // Si es un ID temporal, tenemos que crear un nuevo juego
-        const apiGameState = this.convertLocalGameToApiFormat(currentGame);
-        
-        // Crear el objeto GameCreate para la API
-        const gameCreate: GameCreate = {
-          name: currentGame.name,
-          scenario_id: "default", // Usar un escenario por defecto
-          game_state: apiGameState
-        };
-        
-        // Enviar la petición de crear juego a la API
-        const createdGame = await firstValueFrom(this.apiService.createGame(gameCreate));
-        
-        // Actualizar el ID del juego local con el ID asignado por la API
-        currentGame.id = createdGame._id;
-        
-        // Actualizar el estado del juego
-        this.currentGameSubject.next({...currentGame});
-        
-        // Añadir a la lista local de juegos guardados si no existe
-        if (!this.savedGames.some(game => game.id === currentGame.id)) {
-          this.savedGames.push({...currentGame});
-          this.persistSavedGames();
-        }
-        
-        if (!isAutosave) {
-          this.notificationService.success('Guardado', 'Juego guardado correctamente');
-        }
-        
-        return true;
-      } else {
-        console.log(`Sobrescribiendo juego existente con ID: ${currentGame.id}`);
-        // Si ya tiene un ID válido, actualizar el juego existente
-        const apiGameState = this.convertLocalGameToApiFormat(currentGame);
-        
-        // Enviar la petición a la API
-        await firstValueFrom(this.apiService.saveGame(currentGame.id, apiGameState));
-        
-        // Actualizar la fecha de último guardado
+
+      // Buscar si ya existe un juego con el mismo nombre (ignorando mayúsculas/minúsculas)
+      const apiGames = await this.loadSavedGamesFromApi();
+      const existingGame = apiGames.find(g => g.name.trim().toLowerCase() === currentGame.name.trim().toLowerCase());
+      const apiGameState = this.convertLocalGameToApiFormat(currentGame);
+
+      if (existingGame && (!currentGame.id || existingGame._id !== currentGame.id)) {
+        // Sobrescribir el juego existente por nombre
+        console.log(`Sobrescribiendo juego existente con nombre: ${currentGame.name}`);
+        currentGame.id = existingGame._id;
+        this.currentGame.newGame = false;
+        await firstValueFrom(this.apiService.saveGame(existingGame._id, apiGameState));
         currentGame.lastSaved = new Date();
-        
         // Actualizar la copia en la lista de juegos guardados
         const savedGameIndex = this.savedGames.findIndex(game => game.id === currentGame.id);
         if (savedGameIndex !== -1) {
-          this.savedGames[savedGameIndex] = {...currentGame};
+          this.savedGames[savedGameIndex] = { ...currentGame };
         } else {
-          // Si por alguna razón no está en la lista, añadirlo
-          this.savedGames.push({...currentGame});
+          this.savedGames.push({ ...currentGame });
         }
         this.persistSavedGames();
-        
+        if (!isAutosave) {
+          this.notificationService.success('Guardado', 'Juego sobrescrito correctamente');
+        }
+        return true;
+      }
+
+      // Si es un juego nuevo (sin ID real o marcado como newGame), crear uno nuevo
+      if (currentGame.newGame || !currentGame.id || currentGame.id.startsWith('game_')) {
+        console.log('Guardando como nuevo juego (primera vez)...');
+        const gameCreate: GameCreate = {
+          name: currentGame.name,
+          scenario_id: 'default',
+          gamesession: apiGameState
+        };
+        const createdGame = await firstValueFrom(this.apiService.createGame(gameCreate));
+        currentGame.id = createdGame._id;
+        this.currentGameSubject.next({ ...currentGame });
+        if (!this.savedGames.some(game => game.id === currentGame.id)) {
+          this.savedGames.push({ ...currentGame });
+          this.persistSavedGames();
+        }
+        if (!isAutosave) {
+          this.notificationService.success('Guardado', 'Juego guardado correctamente');
+        }
+        return true;
+      } else {
+        // Si ya tiene un ID válido, actualizar el juego existente
+        console.log(`Actualizando juego existente con ID: ${currentGame.id}`);
+        this.currentGame.newGame = false;
+        await firstValueFrom(this.apiService.saveGame(currentGame.id, apiGameState));
+        currentGame.lastSaved = new Date();
+        const savedGameIndex = this.savedGames.findIndex(game => game.id === currentGame.id);
+        if (savedGameIndex !== -1) {
+          this.savedGames[savedGameIndex] = { ...currentGame };
+        } else {
+          this.savedGames.push({ ...currentGame });
+        }
+        this.persistSavedGames();
         if (!isAutosave) {
           this.notificationService.success('Guardado', 'Juego actualizado correctamente');
         }
-        
         return true;
       }
     } catch (error) {
@@ -1305,7 +1333,7 @@ export class GameService {
       return false;
     }
   }
-  
+
   /**
    * Envía una acción de jugador a la API
    * @param action Acción a realizar
@@ -1317,7 +1345,7 @@ export class GameService {
         console.error('No hay juego activo para enviar acción');
         return false;
       }
-      
+
       // Verificar si necesitamos guardar primero (si el ID es temporal)
       if (currentGame.id.startsWith('game_')) {
         const saved = await this.saveGameToApi(true);
@@ -1326,14 +1354,14 @@ export class GameService {
           return false;
         }
       }
-      
+
       // Enviar la acción a la API
       const updatedGame = await firstValueFrom(this.apiService.applyAction(currentGame.id, action));
-      
+
       // Actualizar el estado del juego con la respuesta de la API
       const gameSession = this.convertApiGameToLocalFormat(updatedGame);
       this.currentGameSubject.next(gameSession);
-      
+
       return true;
     } catch (error) {
       console.error('Error al enviar acción de jugador:', error);
@@ -1341,7 +1369,7 @@ export class GameService {
       return false;
     }
   }
-  
+
   /**
    * Envía múltiples acciones de jugador a la API
    * @param actions Array de acciones a realizar
@@ -1353,14 +1381,14 @@ export class GameService {
         console.error('No hay juego activo para enviar acciones');
         return false;
       }
-      
+
       // Enviar las acciones a la API
       const updatedGame = await firstValueFrom(this.apiService.applyAction(currentGame.id, actions));
-      
+
       // Actualizar el estado del juego con la respuesta de la API
       const gameSession = this.convertApiGameToLocalFormat(updatedGame);
       this.currentGameSubject.next(gameSession);
-      
+
       return true;
     } catch (error) {
       console.error('Error al enviar acciones de jugador:', error);
@@ -1368,7 +1396,7 @@ export class GameService {
       return false;
     }
   }
-  
+
   /**
    * Finaliza el turno del jugador y activa la IA
    */
@@ -1379,22 +1407,22 @@ export class GameService {
         console.error('No hay juego activo para finalizar turno');
         return false;
       }
-      
+
       // Primero procesamos la fase de IA (esto es local)
       if (currentGame.currentPhase !== 'ia') {
         this.changePhase('ia');
       }
-      
+
       // Enviar la solicitud de finalizar turno a la API
       const updatedGame = await firstValueFrom(this.apiService.endTurn(currentGame.id));
-      
+
       // Actualizar el estado del juego con la respuesta de la API
       const gameSession = this.convertApiGameToLocalFormat(updatedGame);
       this.currentGameSubject.next(gameSession);
-      
+
       // Comenzar un nuevo turno
       this.startTurn();
-      
+
       return true;
     } catch (error) {
       console.error('Error al finalizar turno:', error);
@@ -1402,7 +1430,7 @@ export class GameService {
       return false;
     }
   }
-  
+
   /**
    * Aplica un cheat code al juego
    * @param cheatCode Código de la trampa
@@ -1415,36 +1443,36 @@ export class GameService {
         console.error('No hay juego activo para aplicar trampa');
         return false;
       }
-      
+
       // Crear el objeto de solicitud de trampa
       const cheatRequest = {
         game_id: currentGame.id,
         cheat_code: cheatCode,
         target: target
       };
-      
+
       // Enviar la solicitud a la API
       const response = await firstValueFrom(this.apiService.applyCheat(currentGame.id, cheatRequest));
-      
+
       // Si la trampa fue exitosa y devolvió un nuevo estado del juego, actualizarlo
-      if (response.success && response.game_state) {
+      if (response.success && response.GameSession) {
         // Convertir el estado de la API al formato local
-        const gameSession = this.convertApiGameStateToLocalFormat(response.game_state);
-        
+        const gameSession = this.convertApiGameStateToLocalFormat(response.GameSession);
+
         // Actualizar solo el estado del juego, manteniendo el resto de propiedades
         this.currentGameSubject.next({
           ...currentGame,
           ...gameSession
         });
       }
-      
+
       // Mostrar mensaje de éxito o error
       if (response.success) {
         this.notificationService.success('Trampa aplicada', response.message || 'Trampa aplicada correctamente');
       } else {
         this.notificationService.error('Error', response.message || 'La trampa no tuvo efecto');
       }
-      
+
       return response.success;
     } catch (error) {
       console.error('Error al aplicar trampa:', error);
@@ -1452,7 +1480,7 @@ export class GameService {
       return false;
     }
   }
-  
+
   /**
    * Activa el autoguardado periódico
    * @param intervalMinutes Intervalo de autoguardado en minutos
@@ -1462,7 +1490,7 @@ export class GameService {
     if (this._autoSaveInterval) {
       clearInterval(this._autoSaveInterval);
     }
-    
+
     // Configurar nuevo intervalo
     this._autoSaveInterval = setInterval(() => {
       if (this.currentGame) {
@@ -1477,10 +1505,10 @@ export class GameService {
           });
       }
     }, intervalMinutes * 60 * 1000);
-    
+
     console.log(`Autoguardado activado cada ${intervalMinutes} minutos`);
   }
-  
+
   /**
    * Desactiva el autoguardado periódico
    */
@@ -1491,320 +1519,57 @@ export class GameService {
       console.log('Autoguardado desactivado');
     }
   }
-  
+
   // Variable privada para almacenar el intervalo de autoguardado
   private _autoSaveInterval: any;
-  
+
   // ==================== MÉTODOS DE CONVERSIÓN DE FORMATO ====================
-  
+
   /**
    * Convierte un juego del formato de la API al formato local
    */
   private convertApiGameToLocalFormat(apiGame: GameOut): GameSession {
     // Extraer el estado del juego de la API
-    const apiGameState = apiGame.game_state;
-    
+    const apiGameState = apiGame.gamesession;
+
     // Convertir el estado del juego
-    const gameState = this.convertApiGameStateToLocalFormat(apiGameState);
-    
+    //const gameState = this.convertApiGameStateToLocalFormat(apiGameState);
+    const gameState = JSON.parse(apiGameState, (key, value) => {
+          if (value && typeof value === 'object' && value.__type === 'Date') {
+            return new Date(value.value);
+          }
+          return value;
+        });
     // Crear el objeto GameSession
-    return {
-      id: apiGame._id,
-      name: apiGame.name,
-      turn: apiGameState.turn,
-      currentPlayerId: apiGameState.current_player,
-      map: gameState.map,
-      units: gameState.units,
-      unitLevelTracker: UnitModel.UNIT_LEVEL_TRACKER, // Usar el tracker local
-      cities: gameState.cities,
-      Buildings: gameState.Buildings || [],
-      playerCivilization: 'default', // Ajustar según sea necesario
-      difficulty: 'normal', // Ajustar según sea necesario
-      createdAt: new Date(apiGame.created_at),
-      lastSaved: apiGame.last_saved ? new Date(apiGame.last_saved) : undefined,
-      currentPhase: 'diplomacia_decisiones', // Por defecto
-      discoveredTechnologies: gameState.discoveredTechnologies || [],
-      availableTechnologies: gameState.availableTechnologies || [],
-      gold: gameState.gold || 0,
-      goldPerTurn: gameState.goldPerTurn || 0,
-      science: gameState.science || 0,
-      sciencePerTurn: gameState.sciencePerTurn || 0,
-      culture: gameState.culture || 0,
-      culturePerTurn: gameState.culturePerTurn || 0,
-      happiness: gameState.happiness || 0,
-      era: gameState.era || 'ancient',
-      players: gameState.players || [{
-        id: apiGameState.current_player,
-        name: 'Player 1',
-        civilization: 'default',
-        resources: {
-          gold: gameState.gold || 0,
-          goldPerTurn: gameState.goldPerTurn || 0,
-          science: gameState.science || 0,
-          sciencePerTurn: gameState.sciencePerTurn || 0,
-          culture: gameState.culture || 0,
-          culturePerTurn: gameState.culturePerTurn || 0,
-          happiness: gameState.happiness || 0
-        },
-        research: {
-          progress: 0,
-          turnsRemaining: 0
-        },
-        technologies: gameState.discoveredTechnologies || [],
-        availableTechnologies: gameState.availableTechnologies || [],
-        era: gameState.era || 'ancient'
-      }],
-      settings: {
-        gameName: apiGame.name,
-        mapSize: 'medium', // Por defecto
-        civilization: 'default', // Por defecto
-        difficulty: 'normal', // Por defecto
-        numberOfOpponents: 3 // Por defecto
-      }
-    };
+    return gameState
   }
-  
+
   /**
    * Convierte el estado del juego del formato de la API al formato local
    */
-  private convertApiGameStateToLocalFormat(apiGameState: GameState): any {
+  private convertApiGameStateToLocalFormat(apiGameState: string): any {
     // Extraer datos del jugador y la IA
-    const playerData = apiGameState.player;
-    const aiData = apiGameState.ai;
-    
-    // Convertir el mapa
-    const map: GameMap = {
-      width: apiGameState.map.size.width,
-      height: apiGameState.map.size.height,
-      tiles: [], // Inicializaremos este array a continuación
-    };
-    
-    // Inicializar los tiles del mapa con valores básicos
-    for (let y = 0; y < map.height; y++) {
-      map.tiles[y] = [];
-      for (let x = 0; x < map.width; x++) {
-        // Verificar si existe información del terreno previa 
-        // (stored_tiles sería una propiedad personalizada que hayamos añadido en el backend)
-        let existingTile: any = undefined;
-        
-        // Intentar obtener los datos de la casilla si existen en una propiedad personalizada
-        if (apiGameState.map.stored_tiles && 
-            apiGameState.map.stored_tiles[y] && 
-            apiGameState.map.stored_tiles[y][x]) {
-          existingTile = apiGameState.map.stored_tiles[y][x];
+    const playerData = JSON.parse(apiGameState, (key, value) => {
+        if (value && typeof value === 'object' && value.__type === 'Date') {
+          return new Date(value.value);
         }
-        
-        if (existingTile) {
-          // Usar la información existente
-          map.tiles[y][x] = {
-            ...existingTile,
-            // Asegurar que todos los campos requeridos estén presentes
-            id: existingTile.id || `tile_${x}_${y}`,
-            x: x,
-            y: y,
-            isExplored: existingTile.isExplored !== undefined ? existingTile.isExplored : false,
-            isVisible: existingTile.isVisible !== undefined ? existingTile.isVisible : false,
-            building: existingTile.building || 'none' as ImprovementType,
-            city: existingTile.city || { id: '', name: '', level: 'none' }
-          };
-        } else {
-          // Crear casilla con terreno generado
-          let terrainType: 'plains' | 'grassland' | 'desert' | 'water' = 'plains';
-          
-          // Generar un tipo de terreno consistente
-          const coordSum = (x * 3 + y * 7) % 10;
-          if (coordSum < 2) terrainType = 'water';
-          else if (coordSum < 5) terrainType = 'grassland';
-          else if (coordSum < 7) terrainType = 'desert';
-          else if (coordSum < 9) terrainType = 'plains';
-          
-          map.tiles[y][x] = {
-            id: `tile_${x}_${y}`,
-            x,
-            y,
-            terrain: terrainType,
-            movementCost: terrainType === 'water' ? 2 : 1,
-            isExplored: false,
-            isVisible: false,
-            building: 'none' as ImprovementType,
-            defense: 1,
-            yields: {
-              food: terrainType === 'grassland' ? 2 : (terrainType === 'plains' ? 1 : 0),
-              production: terrainType === 'plains' ? 1 : 0,
-              gold: 0
-            },
-            city: {
-              id: '',
-              name: '',
-              level: 'none'
-            }
-          };
-        }
-      }
-    }
-    
-    // Combinar unidades del jugador y la IA
-    const allUnits = [
-      ...(playerData.units || []),
-      ...(aiData.units || [])
-    ];
-    
-    // Combinar ciudades del jugador y la IA
-    const allCities = [
-      ...(playerData.cities || []),
-      ...(aiData.cities || [])
-    ];
-    
-    // Hacer visibles áreas alrededor de las unidades del jugador
-    allUnits.forEach(unit => {
-      if (unit.owner === apiGameState.current_player && unit.position) {
-        this.revealAroundUnit(map, unit.position, 3);
-      }
-    });
-    
-    // Hacer visibles áreas alrededor de las ciudades
-    allCities.forEach(city => {
-      if (city.position) {
-        // Añadir ciudad al tile
-        if (city.position.y >= 0 && city.position.y < map.height && 
-            city.position.x >= 0 && city.position.x < map.width) {
-          map.tiles[city.position.y][city.position.x].city = {
-            id: city.id,
-            name: city.name,
-            level: city.level || 'settlement'
-          };
-        }
-        // Revelar más área alrededor de las ciudades del jugador
-        const revealRadius = city.ownerId === apiGameState.current_player ? 4 : 2;
-        this.revealAroundUnit(map, city.position, revealRadius);
-      }
-    });
-    
-    // Combinar tecnologías del jugador y la IA
-    const playerTechnologies = playerData.technologies || [];
-    
-    return {
-      map,
-      units: allUnits,
-      cities: allCities,
-      discoveredTechnologies: playerTechnologies,
-      gold: playerData.resources?.['gold'] || 0,
-      goldPerTurn: playerData.resources?.['gold_per_turn'] || 0,
-      science: playerData.resources?.['science'] || 0,
-      sciencePerTurn: playerData.resources?.['science_per_turn'] || 0,
-      culture: playerData.resources?.['culture'] || 0,
-      culturePerTurn: playerData.resources?.['culture_per_turn'] || 0,
-      happiness: playerData.resources?.['happiness'] || 0
-    };
+        return value;
+      });
+      alert(playerData);
+    return playerData;
   }
-  
+
   /**
    * Convierte un juego del formato local al formato de la API
-   */
-  private convertLocalGameToApiFormat(localGame: GameSession): GameState {
-    // Separar unidades del jugador y la IA
-    const playerUnits = localGame.units.filter(unit => unit.owner === localGame.currentPlayerId);
-    const aiUnits = localGame.units.filter(unit => unit.owner !== localGame.currentPlayerId);
-    
-    // Separar ciudades del jugador y la IA
-    const playerCities = localGame.cities.filter(city => city.ownerId === localGame.currentPlayerId);
-    const aiCities = localGame.cities.filter(city => city.ownerId !== localGame.currentPlayerId);
-    
-    // Crear datos de exploración y objetos visibles del mapa
-    const explored: number[][] = [];
-    const visible_objects = [];
-    
-    // Verificar que el mapa y sus tiles existan
-    if (localGame.map && localGame.map.tiles) {
-      // Guardar el estado de exploración como números (0 = no explorado, 1 = explorado)
-      for (let y = 0; y < localGame.map.height; y++) {
-        explored[y] = [];
-        if (localGame.map.tiles[y]) { // Verificar que la fila exista
-          for (let x = 0; x < localGame.map.width; x++) {
-            const tile = localGame.map.tiles[y][x];
-            if (tile) { // Verificar que el tile exista
-              explored[y][x] = tile.isExplored ? 1 : 0; // Convertir booleano a número
-              
-              // Guardar objetos visibles (ciudades, mejoras, características)
-              if (tile.building && tile.building !== 'none') {
-                visible_objects.push({
-                  type: 'improvement',
-                  id: `improvement_${x}_${y}`,
-                  position: { x, y },
-                  improvement_type: tile.building
-                });
-              }
-              
-              if (tile.city && tile.city.id) {
-                visible_objects.push({
-                  type: 'city',
-                  id: tile.city.id,
-                  position: { x, y }
-                });
-              }
-              
-              if (tile.featureType) {
-                visible_objects.push({
-                  type: 'feature',
-                  id: `feature_${x}_${y}`,
-                  position: { x, y },
-                  feature_type: tile.featureType
-                });
-              }
-            } else {
-              // Si no hay tile, marcar como no explorado
-              explored[y][x] = 0;
-            }
-          }
-        } else {
-          // Si no hay fila, inicializarla con todos los elementos no explorados
-          for (let x = 0; x < localGame.map.width; x++) {
-            explored[y][x] = 0;
-          }
-        }
+   */  private convertLocalGameToApiFormat(localGame: GameSession): string {
+    const json = JSON.stringify(localGame, (key, value) => {
+      if (value instanceof Date) {
+        return { __type: 'Date', value: value.toISOString() };
       }
-    }
-    
-    // Guardar también los datos completos de los tiles (solo si existen)
-    const mapTiles = localGame.map && localGame.map.tiles ? 
-      JSON.parse(JSON.stringify(localGame.map.tiles)) : 
-      []; // Array vacío si no hay tiles
-    
-    // Crear el estado del juego en formato API
-    return {
-      turn: localGame.turn,
-      current_player: localGame.currentPlayerId,
-      player: {
-        cities: playerCities,
-        units: playerUnits,
-        technologies: localGame.discoveredTechnologies,
-        resources: {
-          gold: localGame.gold,
-          gold_per_turn: localGame.goldPerTurn,
-          science: localGame.science,
-          science_per_turn: localGame.sciencePerTurn,
-          culture: localGame.culture,
-          culture_per_turn: localGame.culturePerTurn,
-          happiness: localGame.happiness
-        }
-      },
-      ai: {
-        cities: aiCities,
-        units: aiUnits,
-        technologies: [], // La IA podría tener sus propias tecnologías
-        resources: {
-          // Recursos de la IA (podríamos obtenerlos de jugadores IA)
-        }
-      },
-      map: {
-        size: {
-          width: localGame.map?.width || 0,
-          height: localGame.map?.height || 0
-        },
-        explored: explored,
-        visible_objects: visible_objects,
-        stored_tiles: mapTiles // Usar una propiedad personalizada para guardar los tiles completos
-      }
-    };
+      return value;
+    });
+
+    // Return the formatted game state as a string
+    return json;
   }
 }
