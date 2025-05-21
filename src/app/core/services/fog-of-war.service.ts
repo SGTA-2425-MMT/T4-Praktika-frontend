@@ -1,6 +1,6 @@
 
 import { Injectable } from '@angular/core';
-import { GameMap, MapTile } from '../models/map.model';
+import { GameMap } from '../models/map.model';
 import { Unit, UnitType } from '../models/unit.model';
 
 @Injectable({
@@ -58,7 +58,10 @@ export class FogOfWarService {
   resetVisibility(map: GameMap): void {
     for (let y = 0; y < map.height; y++) {
       for (let x = 0; x < map.width; x++) {
-        //map.tiles[y][x].isVisible = false;
+        if (map.tiles[y]?.[x]) {
+          map.tiles[y][x].isVisible = false;
+          map.tiles[y][x].isExplored = false;
+        }
       }
     }
   }
@@ -76,12 +79,12 @@ export class FogOfWarService {
     }
   }
 
-    // Revela todo el mapa para un jugador específico (función para trucos)
+    // Revela el mapa entero para un jugador específico (función para trucos)
   revealAllMap(map: GameMap, playerId: string): void {
     console.log(`Revelando todo el mapa para el jugador ${playerId}`);
     for (let y = 0; y < map.height; y++) {
       for (let x = 0; x < map.width; x++) {
-        if (map.tiles[y] && map.tiles[y][x]) {
+        if (map.tiles[y]?.[x]) {
           map.tiles[y][x].isExplored = true;
           map.tiles[y][x].isVisible = true;
         }
