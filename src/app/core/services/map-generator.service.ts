@@ -1,4 +1,3 @@
-import { createSettler } from './../models/unit.model';
 import { Injectable } from '@angular/core';
 import { GameMap, MapTile, TerrainType, ResourceType, FeatureType } from '../models/map.model';
 
