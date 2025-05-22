@@ -14,7 +14,7 @@ import { CheatLogEntry } from '../../core/services/cheat.service';
           <h3>Panel de Trucos</h3>
           <button class="close-btn" (click)="closeConsole()">×</button>
         </div>
-        
+
         <div class="console-body">
           <div class="console-output">
             <div *ngFor="let entry of consoleHistory" class="console-entry">
@@ -25,7 +25,7 @@ import { CheatLogEntry } from '../../core/services/cheat.service';
               </div>
             </div>
           </div>
-          
+
           <div class="console-help" *ngIf="showHelp">
             <h4>Trucos disponibles:</h4>
             <ul>
@@ -34,7 +34,7 @@ import { CheatLogEntry } from '../../core/services/cheat.service';
               </li>
             </ul>
           </div>
-          
+
           <div class="console-logs" *ngIf="showLogs">
             <h4>Registro de trucos utilizados:</h4>
             <table>
@@ -55,7 +55,7 @@ import { CheatLogEntry } from '../../core/services/cheat.service';
             </table>
           </div>
         </div>
-        
+
         <div class="console-input">
           <span class="prompt">&gt;</span>
           <input
@@ -68,7 +68,7 @@ import { CheatLogEntry } from '../../core/services/cheat.service';
           />
           <button class="execute-btn" (click)="executeCommand()" [disabled]="processing">Ejecutar</button>
         </div>
-        
+
         <div class="console-footer">
           <button class="footer-btn" (click)="toggleHelp()">
             {{ showHelp ? 'Ocultar ayuda' : 'Mostrar ayuda' }}
@@ -98,7 +98,7 @@ import { CheatLogEntry } from '../../core/services/cheat.service';
       align-items: center;
       z-index: 1000;
     }
-    
+
     .cheat-console {
       width: 700px;
       max-width: 90%;
@@ -112,7 +112,7 @@ import { CheatLogEntry } from '../../core/services/cheat.service';
       color: #e0e0e0;
       font-family: 'Courier New', monospace;
     }
-    
+
     .console-header {
       display: flex;
       justify-content: space-between;
@@ -122,13 +122,13 @@ import { CheatLogEntry } from '../../core/services/cheat.service';
       background-color: #333;
       border-radius: 6px 6px 0 0;
     }
-    
+
     .console-header h3 {
       margin: 0;
       color: #ff5722;
       font-size: 16px;
     }
-    
+
     .close-btn {
       background: none;
       border: none;
@@ -136,7 +136,7 @@ import { CheatLogEntry } from '../../core/services/cheat.service';
       font-size: 24px;
       cursor: pointer;
     }
-    
+
     .console-body {
       flex-grow: 1;
       overflow-y: auto;
@@ -145,55 +145,55 @@ import { CheatLogEntry } from '../../core/services/cheat.service';
       flex-direction: column;
       gap: 10px;
     }
-    
+
     .console-output {
       flex-grow: 1;
       overflow-y: auto;
       padding-right: 5px;
       min-height: 100px;
     }
-    
+
     .console-entry {
       margin-bottom: 6px;
     }
-    
+
     .command {
       color: #64dd17;
     }
-    
+
     .result {
       color: #e0e0e0;
     }
-    
+
     .error {
       color: #ff5252;
     }
-    
+
     .icon {
       display: inline-block;
       width: 20px;
       margin-right: 5px;
     }
-    
+
     .timestamp {
       color: #888;
       margin-right: 10px;
       font-size: 0.8em;
     }
-    
+
     .console-input {
       display: flex;
       padding: 10px;
       background-color: #2d2d2d;
     }
-    
+
     .prompt {
       color: #ff5722;
       font-weight: bold;
       margin-right: 8px;
       font-size: 18px;
     }
-    
+
     input {
       flex-grow: 1;
       background-color: #1e1e1e;
@@ -202,7 +202,7 @@ import { CheatLogEntry } from '../../core/services/cheat.service';
       padding: 8px;
       font-family: 'Courier New', monospace;
     }
-    
+
     .execute-btn {
       background-color: #ff5722;
       color: #fff;
@@ -212,16 +212,16 @@ import { CheatLogEntry } from '../../core/services/cheat.service';
       cursor: pointer;
       border-radius: 4px;
     }
-    
+
     .execute-btn:hover {
       background-color: #ff7043;
     }
-    
+
     .execute-btn:disabled {
       background-color: #666;
       cursor: not-allowed;
     }
-    
+
     .console-footer {
       display: flex;
       align-items: center;
@@ -230,7 +230,7 @@ import { CheatLogEntry } from '../../core/services/cheat.service';
       gap: 10px;
       flex-wrap: wrap;
     }
-    
+
     .footer-btn {
       background-color: #333;
       color: #e0e0e0;
@@ -240,39 +240,39 @@ import { CheatLogEntry } from '../../core/services/cheat.service';
       border-radius: 4px;
       font-size: 12px;
     }
-    
+
     .footer-btn:hover {
       background-color: #444;
     }
-    
+
     .timestamps-toggle {
       margin-left: auto;
       display: flex;
       align-items: center;
       gap: 5px;
     }
-    
+
     .console-help {
       background-color: #2d2d2d;
       padding: 10px;
       border-radius: 4px;
       margin: 10px 0;
     }
-    
+
     .console-help h4 {
       margin-top: 0;
       color: #ff5722;
     }
-    
+
     .console-help ul {
       margin: 0;
       padding-left: 20px;
     }
-    
+
     .console-help li {
       margin-bottom: 5px;
     }
-    
+
     .console-logs {
       background-color: #2d2d2d;
       padding: 10px;
@@ -280,23 +280,23 @@ import { CheatLogEntry } from '../../core/services/cheat.service';
       margin: 10px 0;
       overflow-x: auto;
     }
-    
+
     .console-logs h4 {
       margin-top: 0;
       color: #ff5722;
     }
-    
+
     table {
       width: 100%;
       border-collapse: collapse;
     }
-    
+
     th, td {
       text-align: left;
       padding: 6px;
       border-bottom: 1px solid #444;
     }
-    
+
     th {
       color: #ff5722;
     }
@@ -306,39 +306,40 @@ export class CheatConsoleComponent implements OnInit {
   @Input() visible = false;
   @Output() execute = new EventEmitter<string>();
   @Output() close = new EventEmitter<void>();
-  
+
   commandInput = '';
   processing = false;
   showHelp = false;
   showLogs = false;
   showTimestamps = false;
-  
+
   consoleHistory: {
     content: string;
     timestamp: Date;
     isCommand: boolean;
     isError: boolean;
   }[] = [];
-  
+
   // Logs de trucos recibidos del servicio
   @Input() cheatLogs: CheatLogEntry[] = [];
-  
-  // Definición de los trucos disponibles
-  availableCheats = [
-    { code: 'eraiki_guztiak', description: 'Construye todos los edificios en la ciudad seleccionada' },
-    { code: 'berehalako_porrota', description: 'Causa una derrota inmediata' },
-    { code: 'berehalako_garaipena', description: 'Causa una victoria inmediata' },
-    { code: 'tanke_eskuadroia', description: 'Añade 5 tanques a la ciudad seleccionada' },
-    { code: 'teknologia_aurreratua', description: 'Desbloquea una tecnología avanzada' },
-    { code: 'maila_igo', description: 'Sube de nivel la ciudad seleccionada' },
-    { code: 'baliabide_maximoak', description: 'Maximiza todos los recursos disponibles' },
-    { code: 'mugimendu_infinitua', description: 'Permite movimiento infinito para tus unidades' },
-    { code: 'zorion_maximoa', description: 'Maximiza la felicidad de la ciudad seleccionada' },
-    { code: 'mapa_agertu', description: 'Revela todo el mapa (elimina la niebla de guerra)' },
-    { code: 'help', description: 'Muestra la ayuda con todos los comandos disponibles' },
-    { code: 'clear', description: 'Limpia la consola de comandos' },
-  ];
 
+  // Definición de los trucos disponibles
+  // tengo que cambiar el nobre de todos estos:
+  // ponlos asi: /*[CHEAT] 2025-05-22T16:17:55.796Z - Código: help - Resultado:       Trucos disponibles:      - build_all: Construye todos los edificios en la ciudad        Uso: build_all (si solo tienes una ciudad)        Uso: build_all:NOMBRE_CIUDAD (si tienes varias ciudades)      - instant_defeat: Derrota inmediata      - instant_victory: Victoria inmediata      - add_tank_squad: Añade 5 tanques a la ciudad seleccionada      - give_advanced_tech: Desbloquea una tecnología avanzada      - level_up_city: Sube de nivel la ciudad seleccionada      - max_resources: Maximiza todos los recursos      - infinite_movement: Habilita movimiento infinito para todas las unidades      - maximize_happiness: Maximiza la felicidad de la ciudad seleccionada      - reveal_map: Revela todo el mapa (elimina la niebla de guerra)      - help: Muestra esta ayuda     */
+
+  availableCheats = [
+    { code: 'build_all', description: 'Construye todos los edificios en la ciudad seleccionada. Uso: build_all (si solo tienes una ciudad) o build_all:NOMBRE_CIUDAD (si tienes varias ciudades)' },
+    { code: 'instant_defeat', description: 'Derrota inmediata' },
+    { code: 'instant_victory', description: 'Victoria inmediata' },
+    { code: 'add_tank_squad', description: 'Añade 5 tanques a la ciudad seleccionada' },
+    { code: 'give_advanced_tech', description: 'Desbloquea una tecnología avanzada' },
+    { code: 'level_up_city', description: 'Sube de nivel la ciudad seleccionada' },
+    { code: 'max_resources', description: 'Maximiza todos los recursos' },
+    { code: 'infinite_movement', description: 'Habilita movimiento infinito para todas las unidades' },
+    { code: 'maximize_happiness', description: 'Maximiza la felicidad de la ciudad seleccionada' },
+    { code: 'reveal_map', description: 'Revela todo el mapa (elimina la niebla de guerra)' },
+    { code: 'help', description: 'Muestra esta ayuda' }
+  ];
   constructor() {}
 
   ngOnInit(): void {
@@ -349,21 +350,21 @@ export class CheatConsoleComponent implements OnInit {
     if (!this.commandInput.trim() || this.processing) {
       return;
     }
-    
+
     const command = this.commandInput.trim();
     this.addConsoleEntry(command, true);
-    
+
     // Comando especial para limpiar la consola
     if (command.toLowerCase() === 'clear') {
       this.clearConsole();
       return;
     }
-    
+
     this.processing = true;
-    
+
     // Emitir el comando al componente padre para procesarlo
     this.execute.emit(command);
-    
+
     // Limpiar el input
     this.commandInput = '';
   }
@@ -381,7 +382,7 @@ export class CheatConsoleComponent implements OnInit {
       isCommand,
       isError
     });
-    
+
     // Programar un scroll a la última entrada
     setTimeout(() => {
       const outputElement = document.querySelector('.console-output');
