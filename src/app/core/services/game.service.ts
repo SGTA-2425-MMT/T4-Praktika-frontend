@@ -1,3 +1,4 @@
+import { EndTurnResponse } from './../api.service';
 import { Building as Building2 } from './../models/building.model';
 import { Injectable, Injector } from '@angular/core';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
@@ -358,6 +359,8 @@ export class GameService {
     // Cambiar fase
     game.currentPhase = 'diplomacia_decisiones';
     this.currentGameSubject.next({ ...game });
+    // Iniciar el nuevo turno igual que en el flujo de la API
+    this.startTurn();
   }
 
   private processUnitEndturn(): void {
@@ -365,6 +368,8 @@ export class GameService {
     if (!game) return;
 
     game.units.forEach(unit => {
+      unit.movementPoints = unit.maxMovementPoints;
+      unit.canMove=true;
       unit.attacksPerTurn = unit.maxattacksPerTurn;
       if (unit.health <= 0 && this.currentGame) {
         game.units = game.units.filter(u => u.id !== unit.id);
@@ -1402,11 +1407,11 @@ export class GameService {
         currentGame.units = currentGame.units.filter(u => u.owner !== playerData.id)
           .concat(playerData.units || []);
       }
-      // Incrementar el turno localmente
-      currentGame.turn += 1;
+      // Eliminar el incremento manual del turno
+      // currentGame.turn += 1;
+      // Notificar el nuevo estado y reiniciar el turno correctamente
       this.currentGameSubject.next({ ...currentGame });
-
-      // Comenzar un nuevo turno
+      this.endTurn();
       this.startTurn();
       return true;
     } catch (error) {
