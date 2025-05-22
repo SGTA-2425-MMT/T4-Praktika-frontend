@@ -150,8 +150,10 @@ export class PlayerActionService {
       // Mostrar indicador de carga
       this.notificationService.info('Turno IA', 'Procesando turno de la IA...', { duration: 0 });
 
-      // Enviar la solicitud de finalizar turno a la API
-      const updatedGame = await firstValueFrom(this.apiService.endTurn(currentGame.id));
+      // Serializar el estado de juego actual
+      const gameSessionString = this.gameService.convertLocalGameToApiFormat(currentGame);
+      // Enviar la solicitud de finalizar turno a la API con el payload correcto
+      const updatedGame = await firstValueFrom(this.apiService.endTurn(currentGame.id, gameSessionString));
 
       // Actualizar el estado del juego local con el nuevo estado recibido
       await this.gameService.loadGameFromApi(currentGame.id);

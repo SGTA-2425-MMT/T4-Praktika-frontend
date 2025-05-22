@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { City } from './models/city.model';
+import * as UnitModel from './models/unit.model';
 
 // Interfaces para los modelos de datos
 export interface MapSize {
@@ -64,6 +66,14 @@ export interface CheatResponse {
   GameSession: string
 }
 
+export interface EndTurnResponse {
+  players: Array<{
+    id: string;
+    cities: City[];
+    units: UnitModel.Unit[];
+  }>;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -96,7 +106,12 @@ export class ApiService {
    * @param gameData Los datos para el nuevo juego
    */
   createGame(gameData: GameCreate): Observable<GameOut> {
-    return this.http.post<GameOut>(`${this.baseUrl}/games`, gameData);
+    // Serializar gamesession a string si es un objeto
+    const payload = {
+      ...gameData,
+      gamesession: typeof gameData.gamesession === 'string' ? gameData.gamesession : JSON.stringify(gameData.gamesession)
+    };
+    return this.http.post<GameOut>(`${this.baseUrl}/games`, payload);
   }
 
   /**
@@ -112,12 +127,26 @@ export class ApiService {
    * Guarda el estado actual de un juego
    * Requiere autenticación con token JWT
    * @param gameId El ID del juego a guardar
-   * @param gamesession El estado del juego a guardar
-   */  saveGame(gameId: string, gamesession: string): Observable<GameOut> {
-    // The backend expects { gamesession: string } as the request body
-    return this.http.post<GameOut>(`${this.baseUrl}/games/${gameId}/save`, { gamesession });
+   * @param gamesession El estado del juego a guardar (objeto o string)
+   */
+  saveGame(gameId: string, gamesession: any): Observable<GameOut> {
+    // Serializar gamesession a string si es un objeto
+    const payload = {
+      gamesession: typeof gamesession === 'string' ? gamesession : JSON.stringify(gamesession)
+    };
+    return this.http.post<GameOut>(`${this.baseUrl}/games/${gameId}/save`, payload);
   }
-  // The updateGameSession functionality is now incorporated directly in the saveGame method
+
+  /**
+   * Finaliza el turno del jugador y activa la IA
+   * Requiere autenticación con token JWT
+   * @param gameId El ID del juego
+   * @param playersPayload El payload reducido: { players: [...] }
+   */
+  endTurn(gameId: string, playersPayload: any): Observable<EndTurnResponse> {
+    // Enviar el payload tal cual, sin serializar a string
+    return this.http.post<EndTurnResponse>(`${this.baseUrl}/games/${gameId}/endTurn`, playersPayload);
+  }
 
   /**
    * Aplica una acción del jugador
@@ -127,15 +156,6 @@ export class ApiService {
    */
   applyAction(gameId: string, action: PlayerAction | PlayerAction[]): Observable<GameOut> {
     return this.http.post<GameOut>(`${this.baseUrl}/games/${gameId}/action`, action);
-  }
-
-  /**
-   * Finaliza el turno del jugador y activa la IA
-   * Requiere autenticación con token JWT
-   * @param gameId El ID del juego
-   */
-  endTurn(gameId: string): Observable<GameOut> {
-    return this.http.post<GameOut>(`${this.baseUrl}/games/${gameId}/endTurn`, {});
   }
 
   /**

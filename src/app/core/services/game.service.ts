@@ -14,6 +14,7 @@ import { NotificationService } from './notification.service';
 import { SharedWarGameService } from './shared-war-game.service';
 import { BuildingsService } from '../services/buildings.service';
 import { ApiService, GameCreate, GameOut, ScenarioOut, PlayerAction } from '../../core/api.service';
+import { IaService } from '../ia.service';
 
 export interface GameSettings {
   gameName: string;
@@ -39,7 +40,7 @@ export interface GameSession {
   lastSaved?: Date;
   newGame: boolean;
 
-  currentPhase: 'diplomacia_decisiones' | 'creacion_investigacion' | 'movimiento_accion' | 'ia';
+  currentPhase: 'diplomacia_decisiones' | 'creacion_investigacion' | 'movimiento_accion';
   researchProgress?: {
     currentTechnology: string;
     progress: number;
@@ -97,7 +98,8 @@ export class GameService {
     private readonly cityService: CityService,
     private readonly technologyService: TechnologyService,
     private readonly injector: Injector,
-    private readonly apiService: ApiService // Inyectar ApiService
+    private readonly apiService: ApiService,
+    private readonly iaService: IaService // Inyectar IaService
   ) {
     this.loadSavedGames();
     // Hacer que el servicio sea accesible globalmente para llamarlo desde cualquier componente
@@ -313,11 +315,7 @@ export class GameService {
   }
 
   endTurn(): void {
-    // Primero procesamos la fase de IA (si no está en esa fase)
-    if (this.currentGame && this.currentGame.currentPhase !== 'ia') {
-      this.changePhase('ia');
-    }
-    // Luego procesamos el final del turno
+    // Procesar el final del turno directamente, sin fase 'ia'
     this.processEndOfTurn();
   }
 
@@ -388,26 +386,25 @@ export class GameService {
     const phases: (
       'diplomacia_decisiones' |
       'creacion_investigacion' |
-      'movimiento_accion' |
-      'ia'
+      'movimiento_accion'
     )[] = [
         'diplomacia_decisiones',
         'creacion_investigacion',
-        'movimiento_accion',
-        'ia'
+        'movimiento_accion'
       ];
 
-    const currentIndex = phases.indexOf(game.currentPhase);
+    const currentIndex = phases.indexOf(game.currentPhase as any);
 
     if (currentIndex < phases.length - 1) {
       this.changePhase(phases[currentIndex + 1]);
     } else {
-      this.processEndOfTurn();
-      this.startTurn();
+      // Al finalizar la última fase, el usuario debe pulsar "Fin de turno" para ejecutar la IA
+      // No se avanza automáticamente a la IA
+      // Se puede mostrar un aviso o habilitar el botón de fin de turno aquí si se desea
     }
   }
 
-  changePhase(phase: 'diplomacia_decisiones' | 'creacion_investigacion' | 'movimiento_accion' | 'ia'): void {
+  changePhase(phase: 'diplomacia_decisiones' | 'creacion_investigacion' | 'movimiento_accion'): void {
     const game = this.currentGame;
     if (!game) return;
 
@@ -427,11 +424,6 @@ export class GameService {
       case 'movimiento_accion':
         this.updateAvailableActions();
         break;
-
-      case 'ia':
-        this.processAI();
-        // Ya no llamamos a processEndOfTurn() aquí porque se maneja en endTurn()
-        return;
     }
 
     this.currentGameSubject.next({ ...game });
@@ -449,38 +441,12 @@ export class GameService {
     game.culture += game.culturePerTurn;
   }
 
+  /**
+   * Llama a ensureRivalUnits antes de procesar el turno de la IA
+   */
   private processAI(): void {
-    const game = this.currentGame;
-    if (!game) return;
-
-    game.units
-      .filter(unit => unit.owner !== game.currentPlayerId && unit.owner !== 'neutral')
-      .forEach(rivalUnit => {
-        // Encontrar la unidad enemiga más cercana
-        const nearestEnemy = game.units
-          .filter(unit => unit.owner === game.currentPlayerId)
-          .reduce((closest: UnitModel.Unit | null, current: UnitModel.Unit) => {
-            const distanceToCurrent = Math.abs(rivalUnit.position.x - current.position.x) +
-              Math.abs(rivalUnit.position.y - current.position.y);
-            const distanceToClosest = closest ? Math.abs(rivalUnit.position.x - closest.position.x) +
-              Math.abs(rivalUnit.position.y - closest.position.y) : Infinity;
-            return distanceToCurrent < distanceToClosest ? current : closest;
-          }, null);
-
-        if (nearestEnemy) {
-          const dx = Math.sign(nearestEnemy.position.x - rivalUnit.position.x);
-          const dy = Math.sign(nearestEnemy.position.y - rivalUnit.position.y);
-
-          // Moverse un casillero hacia el enemigo más cercano
-          rivalUnit.position.x += dx;
-          rivalUnit.position.y += dy;
-
-          // Atacar si está en rango
-          if (this.isUnitInRange(rivalUnit, nearestEnemy)) {
-            this.attackUnit(rivalUnit, nearestEnemy);
-          }
-        }
-      });
+    // Ahora la IA del backend se encarga de los movimientos y acciones de los rivales.
+    // Esta función queda como placeholder para posibles hooks locales o animaciones.
   }
 
   attackUnit(attacker: UnitModel.Unit, defender: UnitModel.Unit): boolean {
@@ -1268,47 +1234,17 @@ export class GameService {
    * Si existe un juego con el mismo nombre, lo sobrescribe (update), si no, crea uno nuevo
    * @param isAutosave Indica si es un autoguardado (true) o un guardado manual (false)
    */
-  async saveGameToApi(isAutosave: boolean = false): Promise<boolean> {
+  private async saveGameToApi(isAutosave: boolean): Promise<boolean> {
+    const currentGame = this.currentGame;
+    if (!currentGame) return false;
     try {
-      const currentGame = this.currentGame;
-      if (!currentGame) {
-        console.error('No hay juego activo para guardar');
-        return false;
-      }
-
-      // Buscar si ya existe un juego con el mismo nombre (ignorando mayúsculas/minúsculas)
-      const apiGames = await this.loadSavedGamesFromApi();
-      const existingGame = apiGames.find(g => g.name.trim().toLowerCase() === currentGame.name.trim().toLowerCase());
-      const apiGameState = this.convertLocalGameToApiFormat(currentGame);
-
-      if (existingGame && (!currentGame.id || existingGame._id !== currentGame.id)) {
-        // Sobrescribir el juego existente por nombre
-        console.log(`Sobrescribiendo juego existente con nombre: ${currentGame.name}`);
-        currentGame.id = existingGame._id;
-        this.currentGame.newGame = false;
-        await firstValueFrom(this.apiService.saveGame(existingGame._id, apiGameState));
-        currentGame.lastSaved = new Date();
-        // Actualizar la copia en la lista de juegos guardados
-        const savedGameIndex = this.savedGames.findIndex(game => game.id === currentGame.id);
-        if (savedGameIndex !== -1) {
-          this.savedGames[savedGameIndex] = { ...currentGame };
-        } else {
-          this.savedGames.push({ ...currentGame });
-        }
-        this.persistSavedGames();
-        if (!isAutosave) {
-          this.notificationService.success('Guardado', 'Juego sobrescrito correctamente');
-        }
-        return true;
-      }
-
-      // Si es un juego nuevo (sin ID real o marcado como newGame), crear uno nuevo
-      if (currentGame.newGame || !currentGame.id || currentGame.id.startsWith('game_')) {
-        console.log('Guardando como nuevo juego (primera vez)...');
-        const gameCreate: GameCreate = {
+      // Si el ID es temporal/local, crear en la API
+      if (currentGame.id.startsWith('game_')) {
+        // Crear solo si no existe en la API
+        const gameCreate = {
           name: currentGame.name,
           scenario_id: 'default',
-          gamesession: apiGameState
+          gamesession: this.convertLocalGameToApiFormat(currentGame)
         };
         const createdGame = await firstValueFrom(this.apiService.createGame(gameCreate));
         currentGame.id = createdGame._id;
@@ -1322,10 +1258,8 @@ export class GameService {
         }
         return true;
       } else {
-        // Si ya tiene un ID válido, actualizar el juego existente
-        console.log(`Actualizando juego existente con ID: ${currentGame.id}`);
-        this.currentGame.newGame = false;
-        await firstValueFrom(this.apiService.saveGame(currentGame.id, apiGameState));
+        // Si ya tiene un ID válido, actualizar el juego existente SIEMPRE
+        await firstValueFrom(this.apiService.saveGame(currentGame.id, this.convertLocalGameToApiFormat(currentGame)));
         currentGame.lastSaved = new Date();
         const savedGameIndex = this.savedGames.findIndex(game => game.id === currentGame.id);
         if (savedGameIndex !== -1) {
@@ -1412,7 +1346,7 @@ export class GameService {
   }
 
   /**
-   * Finaliza el turno del jugador y activa la IA
+   * Finaliza el turno del jugador y actualiza solo con la respuesta del backend
    */
   async endTurnWithApi(): Promise<boolean> {
     try {
@@ -1422,21 +1356,58 @@ export class GameService {
         return false;
       }
 
-      // Primero procesamos la fase de IA (esto es local)
-      if (currentGame.currentPhase !== 'ia') {
-        this.changePhase('ia');
+      // Guardar la partida antes de finalizar el turno
+      const saved = await this.saveGame();
+      if (!saved) {
+        this.notificationService.error('Error', 'No se pudo guardar la partida antes de finalizar el turno');
+        return false;
       }
 
-      // Enviar la solicitud de finalizar turno a la API
-      const updatedGame = await firstValueFrom(this.apiService.endTurn(currentGame.id));
+      // Extraer solo ciudades y unidades agrupadas por civilización
+      const minimalPayload = this.extractCitiesAndUnitsByCivilization(currentGame);
 
-      // Actualizar el estado del juego con la respuesta de la API
-      const gameSession = this.convertApiGameToLocalFormat(updatedGame);
-      this.currentGameSubject.next(gameSession);
+      // Definir interfaz mínima para la respuesta de endTurn
+      interface EndTurnResponse {
+        players: Array<{
+          id: string;
+          cities: City[];
+          units: UnitModel.Unit[];
+        }>;
+      }
+      // Enviar la solicitud de finalizar turno a la API SOLO con el payload reducido
+      const updatedGame: EndTurnResponse = await firstValueFrom(this.apiService.endTurn(currentGame.id, minimalPayload));
+
+      // Log y comprobación defensiva
+      console.log('Respuesta de endTurn:', updatedGame);
+      let playersArray: Array<{ id: string; cities: City[]; units: UnitModel.Unit[] }> = [];
+      if (Array.isArray(updatedGame.players)) {
+        playersArray = updatedGame.players;
+      } else if (
+        updatedGame.players &&
+        typeof updatedGame.players === 'object' &&
+        Array.isArray((updatedGame.players as any).players)
+      ) {
+        playersArray = (updatedGame.players as any).players;
+      } else {
+        this.notificationService.error('Error', 'La respuesta de endTurn no contiene un array players. Consulta la consola para ver la respuesta real.');
+        return false;
+      }
+
+      // Actualizar solo las ciudades y unidades del GameSession local
+      for (const playerData of playersArray) {
+        // Actualizar ciudades
+        currentGame.cities = currentGame.cities.filter(c => c.ownerId !== playerData.id)
+          .concat(playerData.cities || []);
+        // Actualizar unidades
+        currentGame.units = currentGame.units.filter(u => u.owner !== playerData.id)
+          .concat(playerData.units || []);
+      }
+      // Incrementar el turno localmente
+      currentGame.turn += 1;
+      this.currentGameSubject.next({ ...currentGame });
 
       // Comenzar un nuevo turno
       this.startTurn();
-
       return true;
     } catch (error) {
       console.error('Error al finalizar turno:', error);
@@ -1575,15 +1546,75 @@ export class GameService {
 
   /**
    * Convierte un juego del formato local al formato de la API
-   */  private convertLocalGameToApiFormat(localGame: GameSession): string {
-    const json = JSON.stringify(localGame, (key, value) => {
-      if (value instanceof Date) {
-        return { __type: 'Date', value: value.toISOString() };
-      }
-      return value;
-    });
+   */
+  public convertLocalGameToApiFormat(localGame: GameSession): any {
+    // Asegurar estructura mínima antes de enviar
+    return this.ensureMinimalGameSessionStructure(localGame);
+  }
 
-    // Return the formatted game state as a string
-    return json;
+  /**
+   * Devuelve un objeto con la estructura mínima requerida para gamesession
+   */
+  private ensureMinimalGameSessionStructure(game: any): any {
+    const current_player = game.current_player ?? game.currentPlayerId ?? '';
+    let player = game.player;
+    if (!player && Array.isArray(game.players)) {
+      player = game.players.find((p: any) => p.id === current_player) ?? {};
+    }
+    player = {
+      cities: player?.cities ?? [],
+      units: player?.units ?? [],
+      technologies: player?.technologies ?? [],
+      resources: player?.resources ?? {}
+    };
+    let ai = game.ai;
+    if (!ai && Array.isArray(game.players)) {
+      ai = game.players.filter((p: any) => p.id !== current_player);
+    }
+    ai = (ai ?? []).map((a: any) => ({
+      cities: a?.cities ?? [],
+      units: a?.units ?? [],
+      technologies: a?.technologies ?? [],
+      resources: a?.resources ?? {}
+    }));
+    // map: asegurar que solo tiene size, explored y visible_objects
+    let map = game.map ?? {};
+    const size = map.size ?? { width: 10, height: 10 };
+    let explored = map.explored;
+    if (!Array.isArray(explored) || explored.length !== size.height || !Array.isArray(explored[0]) || explored[0].length !== size.width) {
+      explored = Array.from({ length: size.height }, () => Array(size.width).fill(0));
+    }
+    const visible_objects = map.visible_objects ?? [];
+    map = {
+      size,
+      explored,
+      visible_objects
+    };
+    const turn = game.turn ?? 0;
+    return {
+      current_player,
+      player,
+      ai,
+      map,
+      turn,
+      ...game // Se añaden el resto de campos originales
+    };
+  }
+
+  /**
+   * Extrae solo las ciudades y unidades agrupadas por civilización/jugador
+   * Siempre incluye un array 'players' aunque solo haya uno
+   */
+  private extractCitiesAndUnitsByCivilization(game: GameSession) {
+    // Si no hay jugadores definidos, incluir al menos el jugador actual
+    let playersArr = (game.players && game.players.length > 0)
+      ? game.players
+      : [{ id: game.currentPlayerId }];
+    const players = playersArr.map(player => ({
+      id: player.id,
+      cities: game.cities.filter(city => city.ownerId === player.id),
+      units: game.units.filter(unit => unit.owner === player.id)
+    }));
+    return { players };
   }
 }

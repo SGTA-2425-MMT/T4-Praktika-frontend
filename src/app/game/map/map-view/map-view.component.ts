@@ -891,4 +891,57 @@ closeSidebar(): void {
   // Asegurarnos de que cualquier otro menú contextual también se cierre
   this.showWorkerActionsMenu = false;
 }
+
+// Animar los movimientos y daños de las unidades IA tras el turno
+// NOTA: Ahora este método debe recibir los cambios calculados a partir de comparar el estado anterior y el nuevo
+// de las unidades de los jugadores IA (id que empieza por 'rival') tras el endTurn. El frontend ya no recibe 'ai_units' ni 'unitUpdates'.
+async animateAIUnitUpdates(updates: { id: string; newPosition: { x: number; y: number }; newHealth: number }[]): Promise<void> {
+  if (!this.gameSession) return;
+  const TILE_SIZE = 120;
+  for (const update of updates) {
+    const unit = this.gameSession.units.find(u => u.id === update.id);
+    if (!unit) continue;
+    // Animar movimiento si la posición cambió
+    const fromX = unit.position.x;
+    const fromY = unit.position.y;
+    const toX = update.newPosition.x;
+    const toY = update.newPosition.y;
+    if (fromX !== toX || fromY !== toY) {
+      // Animación simple: mover el icono de la unidad visualmente
+      const unitElem = document.querySelector(`.unit-indicator[data-unit-id="${unit.id}"]`) as HTMLElement;
+      if (unitElem) {
+        unitElem.style.transition = 'transform 0.5s';
+        unitElem.style.transform = `translate(${(toX - fromX) * TILE_SIZE}px, ${(toY - fromY) * TILE_SIZE}px)`;
+        await new Promise(res => setTimeout(res, 500));
+        unitElem.style.transition = '';
+        unitElem.style.transform = '';
+      }
+    }
+    // Animar daño si la salud disminuyó
+    if (update.newHealth < unit.health) {
+      const damage = unit.health - update.newHealth;
+      // Usar AnimationService si Phaser está listo
+      if (this.animationService.isPhaserReady()) {
+        this.animationService.playExplosion(toX * TILE_SIZE + 60, toY * TILE_SIZE + 60, damage);
+      } else {
+        // Fallback: animación de texto flotante
+        const mapContainer = this.mapContainer?.nativeElement;
+        if (mapContainer) {
+          const damageElem = document.createElement('div');
+          damageElem.textContent = `-${damage}`;
+          damageElem.style.position = 'absolute';
+          damageElem.style.left = `${toX * TILE_SIZE + 60}px`;
+          damageElem.style.top = `${toY * TILE_SIZE + 60}px`;
+          damageElem.style.color = 'red';
+          damageElem.style.fontSize = '24px';
+          damageElem.style.fontWeight = 'bold';
+          damageElem.style.transform = 'translate(-50%, -50%)';
+          damageElem.style.zIndex = '1000';
+          mapContainer.appendChild(damageElem);
+          setTimeout(() => damageElem.remove(), 1000);
+        }
+      }
+    }
+  }
+}
 }
