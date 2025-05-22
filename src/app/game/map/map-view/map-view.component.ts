@@ -618,6 +618,11 @@ moveSelectedUnit(targetTile: MapTile): void {
 
   // Verificar si la unidad puede realizar una acción específica
   canUnitPerformAction(unit: Unit, action: UnitAction): boolean {
+    if ((action === 'attack') && (unit.type === 'warrior' || unit.type === 'archer' || unit.type === 'artillery'
+          || unit.type === 'horseman' || unit.type === 'galley' || unit.type === 'rifleman' || unit.type === 'tank'
+          || unit.type === 'catapult')) {
+            return true;
+    }
     return unit?.availableActions?.includes(action) ?? false;
   }
 

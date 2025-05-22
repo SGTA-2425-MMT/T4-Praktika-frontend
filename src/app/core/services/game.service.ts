@@ -325,6 +325,8 @@ export class GameService {
     const game = this.currentGame;
     if (!game) return;
 
+    this.processUnitEndturn();
+
     // Procesar ciudades (crecimiento, producción, etc.)
     this.processCitiesEndTurn();
 
@@ -358,6 +360,18 @@ export class GameService {
     // Cambiar fase
     game.currentPhase = 'diplomacia_decisiones';
     this.currentGameSubject.next({ ...game });
+  }
+
+  private processUnitEndturn(): void {
+    const game = this.currentGame;
+    if (!game) return;
+
+    game.units.forEach(unit => {
+      unit.attacksPerTurn = unit.maxattacksPerTurn;
+      if (unit.health <= 0 && this.currentGame) {
+        game.units = game.units.filter(u => u.id !== unit.id);
+      }
+    });
   }
 
   startTurn(): void {
@@ -474,6 +488,7 @@ export class GameService {
   }
 
   private updateAvailableActions(): void {
+    /*
     const game = this.currentGame;
     if (!game) return;
 
@@ -505,7 +520,7 @@ export class GameService {
 
         unit.availableActions = availableActions;
       }
-    });
+    });*/
   }
 
   isUnitInRange(attacker: UnitModel.Unit, target: UnitModel.Unit): boolean {
