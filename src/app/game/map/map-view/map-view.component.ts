@@ -151,7 +151,7 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
     }
 
     // Si el tile no es válido o no está explorado, salir
-    if (!this.gameSession || !tile.isExplored) {
+    if (!this.gameSession || !tile.isVisible) {
       return;
     }
 
@@ -727,7 +727,7 @@ moveSelectedUnit(targetTile: MapTile): void {
         const ny = y + dir.dy;
         if (nx < 0 || ny < 0 || nx >= map.width || ny >= map.height) continue;
         const tile = map.tiles[ny][nx];
-        if (!tile.isExplored) continue;
+        if (!tile.isVisible) continue;
         if (!this.movementService.canMoveTo(tile, unit)) continue;
         const cost = tile.movementCost || 1;
         if (movesLeft - cost < 0) continue;

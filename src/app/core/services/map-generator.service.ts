@@ -45,8 +45,7 @@ export class MapGeneratorService {
           terrain,
           movementCost: this.getMovementCost(terrain),
           defense: this.getDefenseBonus(terrain),
-          isVisible: true,
-          isExplored: true,
+          isVisible: false,
           yields: this.calculateBaseYield(terrain),
           city: {
             id: "0",

@@ -163,7 +163,7 @@ export class TileComponent implements OnInit, OnDestroy {
 
   getTileClasses(): { [key: string]: boolean } {
     // Si no está explorado, solo mostrar como inexplorado
-    if (!this.tile.isExplored) {
+    if (!this.tile.isVisible) {
       return { 'tile-unexplored': true };
     }
 
@@ -174,7 +174,7 @@ export class TileComponent implements OnInit, OnDestroy {
       'tile-path': this.isPathTile,
       'tile-with-unit': this.hasUnit && this.unitCanMove,
       'tile-unit-selected': this.isUnitSelected,
-      'tile-explored-not-visible': this.tile.isExplored && !this.tile.isVisible,
+      'tile-explored-not-visible': this.tile.isVisible && !this.tile.isVisible,
       'tile-movable': this.isMovableTile, // Clase CSS para casillas a las que se puede mover
       'tile-attackable': this.isAttackable, // Add attackable class
       'settler': this.unitType === 'settler',

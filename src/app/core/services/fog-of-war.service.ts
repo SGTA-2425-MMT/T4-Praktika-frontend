@@ -29,7 +29,6 @@ export class FogOfWarService {
 
           if (distance <= visionRange) {
             // Marcar como explorada y visible
-            tile.isExplored = true;
             tile.isVisible = true;
 
             // En un juego real, aquí guardaríamos la información de qué jugador ha explorado la casilla
@@ -59,8 +58,7 @@ export class FogOfWarService {
     for (let y = 0; y < map.height; y++) {
       for (let x = 0; x < map.width; x++) {
         if (map.tiles[y]?.[x]) {
-          map.tiles[y][x].isVisible = false;
-          map.tiles[y][x].isExplored = false;
+          //map.tiles[y][x].isVisible = false;
         }
       }
     }
@@ -85,7 +83,6 @@ export class FogOfWarService {
     for (let y = 0; y < map.height; y++) {
       for (let x = 0; x < map.width; x++) {
         if (map.tiles[y]?.[x]) {
-          map.tiles[y][x].isExplored = true;
           map.tiles[y][x].isVisible = true;
         }
       }

@@ -777,7 +777,6 @@ export class GameService {
 
         if (x >= 0 && x < map.width && y >= 0 && y < map.height) {
           if (Math.sqrt(dx * dx + dy * dy) <= radius) {
-            map.tiles[y][x].isExplored = true;
             map.tiles[y][x].isVisible = true;
           }
         }

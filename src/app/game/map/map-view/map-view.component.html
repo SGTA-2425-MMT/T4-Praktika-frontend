@@ -76,6 +76,7 @@
           [unitLevel]="getUnitLevelAt(tile.x, tile.y)" [buildingType]="getBuildingTypeAt(tile.x, tile.y)"
           [isMovableTile]="gameSession.currentPhase === 'movimiento_accion' && isTileMovable(tile.x, tile.y)"
           [isAttackable]="isTileAttackable(tile.x, tile.y)" [era]="gameSession.era" (tileClick)="onTileClick(tile)">
+          
         </app-tile>
         }
       </div>

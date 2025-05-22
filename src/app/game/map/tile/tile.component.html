@@ -17,11 +17,11 @@
   <div class="debug-coords" *ngIf="tile.isExplored">{{tile.x}},{{tile.y}}</div>-->
 
   <!-- Características adicionales usando emojis -->
-  <div *ngIf="tile.isExplored && tile.featureType && tile.featureType !== 'none'"
+  <div *ngIf="tile.isVisible"
     class="feature-image feature-{{tile.featureType}}" [style.opacity]="tile.isVisible ? '1' : '0.7'"></div>
 
   <!-- Recursos con emojis -->
-  <div *ngIf="tile.isExplored && tile.isVisible && tile.resource" class="resource-image resource-{{tile.resource}}">
+  <div *ngIf=" tile.isVisible && tile.resource" class="resource-image resource-{{tile.resource}}">
     <span *ngIf="isStrategicResource(tile.resource)">⚔️</span>
     <!--<span *ngIf="isFoodResource(tile.resource)">🍎</span>
     <span *ngIf="isLuxuryResource(tile.resource)">💎</span>-->
@@ -37,7 +37,7 @@
   }
 
   <!-- Mejoras de terreno -->
-  <div *ngIf="tile.isExplored && tile.isVisible && tile.building && tile.building !== 'none'"
+  <div *ngIf=" tile.isVisible && tile.building && tile.building !== 'none'"
     class="improvement-image improvement-{{tile.building}}">
     <span *ngIf="tile.building === 'farm'">🌾</span>
     <span *ngIf="tile.building === 'gold_mine'">⛏️</span>
@@ -46,6 +46,6 @@
 
   </div>
 
-  <div *ngIf="!tile.isExplored" class="fog-of-war"></div>
-  <div *ngIf="tile.isExplored && !tile.isVisible" class="fog-overlay"></div>
+  <div *ngIf="!tile.isVisible" class="fog-of-war"></div>
+  <div *ngIf="tile.isVisible && !tile.isVisible" class="fog-overlay"></div>
 </div>
