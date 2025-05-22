@@ -36,7 +36,6 @@
           <div class="phase" [class.active]="gameSession.currentPhase === 'diplomacia_decisiones'"></div>
           <div class="phase" [class.active]="gameSession.currentPhase === 'creacion_investigacion'"></div>
           <div class="phase" [class.active]="gameSession.currentPhase === 'movimiento_accion'"></div>
-          <div class="phase" [class.active]="gameSession.currentPhase === 'ia'"></div>
         </div>
       </div>
       <!-- Botones de guardar y salir -->
@@ -76,7 +75,7 @@
 
     <!-- Panel inferior de acciones -->
     <footer class="game-footer">
-      <button class="btn-next-phase" (click)="nextPhase()" *ngIf="gameSession.currentPhase !== 'ia'">
+      <button class="btn-next-phase" (click)="nextPhase()" *ngIf="gameSession?.currentPhase !== 'movimiento_accion'">
         Siguiente Fase
       </button>
       <button class="btn-end-turn" (click)="endTurn()">

@@ -26,6 +26,7 @@ export class GameComponent implements OnInit, OnDestroy {
 
   // Referencia al componente de consola de trucos
   @ViewChild(CheatConsoleComponent) cheatConsoleRef!: CheatConsoleComponent;
+  @ViewChild(MapViewComponent) mapViewRef!: MapViewComponent;
 
   // Estado para mostrar/ocultar la consola de trucos
   showCheatConsole = false;
@@ -118,13 +119,13 @@ export class GameComponent implements OnInit, OnDestroy {
     }
   }
 
-  endTurn(): void {
-    // El método endTurn ahora procesará completamente el final del turno
-    this.gameService.endTurn();
+  async endTurn(): Promise<void> {
+    // Usar el nuevo flujo: solo actualiza el estado del juego
+    const result = await this.gameService.endTurnWithApi();
     this.gameSession = this.gameService.currentGame;
+    // Si se desea animar cambios de unidades IA, aquí se puede comparar el estado anterior y el nuevo
+    // y pasar los cambios a mapViewRef.animateAIUnitUpdates().
     this.showNewTurnNotification();
-
-    // También iniciamos el nuevo turno
     this.startTurn();
   }
 
@@ -155,7 +156,6 @@ export class GameComponent implements OnInit, OnDestroy {
       case 'diplomacia_decisiones': return 'Diplomacia y Decisiones';
       case 'creacion_investigacion': return 'Construcción e Investigación';
       case 'movimiento_accion': return 'Movimiento y Acción';
-      case 'ia': return 'IA';
       default: return 'Desconocida';
     }
   }
