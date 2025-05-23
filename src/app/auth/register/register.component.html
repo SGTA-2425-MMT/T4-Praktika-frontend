@@ -1,7 +1,3 @@
-<span class="register-title">
-  Civilization
-  <span class="register-subtitle">UPV EHU</span>
-</span>
 <div class="register-container">
   <div class="register-card">
     <div class="register-header">
@@ -12,10 +8,10 @@
     <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
       <div class="form-group">
         <label for="username">Nombre del Líder</label>
-        <input 
-          type="text" 
-          id="username" 
-          formControlName="username" 
+        <input
+          type="text"
+          id="username"
+          formControlName="username"
           [class.is-invalid]="username?.invalid && (username?.dirty || username?.touched)"
           placeholder="Tu nombre de líder"
         >
@@ -33,10 +29,10 @@
 
       <div class="form-group">
         <label for="email">Correo Real</label>
-        <input 
-          type="email" 
-          id="email" 
-          formControlName="email" 
+        <input
+          type="email"
+          id="email"
+          formControlName="email"
           [class.is-invalid]="email?.invalid && (email?.dirty || email?.touched)"
           placeholder="ejemplo@correo.com"
         >
@@ -54,10 +50,10 @@
 
       <div class="form-group">
         <label for="password">Sello Imperial</label>
-        <input 
-          type="password" 
-          id="password" 
-          formControlName="password" 
+        <input
+          type="password"
+          id="password"
+          formControlName="password"
           [class.is-invalid]="password?.invalid && (password?.dirty || password?.touched)"
           placeholder="Crea tu sello secreto"
         >
@@ -72,13 +68,13 @@
           </div>
         }
       </div>
-      
+
       <div class="form-group">
         <label for="confirmPassword">Confirmar Sello</label>
-        <input 
-          type="password" 
-          id="confirmPassword" 
-          formControlName="confirmPassword" 
+        <input
+          type="password"
+          id="confirmPassword"
+          formControlName="confirmPassword"
           [class.is-invalid]="confirmPassword?.invalid && (confirmPassword?.dirty || confirmPassword?.touched)"
           placeholder="Confirma tu sello secreto"
         >
@@ -107,9 +103,9 @@
       }
 
       <div class="form-actions">
-        <button 
-          type="submit" 
-          [disabled]="registerForm.invalid || isSubmitting" 
+        <button
+          type="submit"
+          [disabled]="registerForm.invalid || isSubmitting"
           class="btn-primary"
         >
           {{ isSubmitting ? 'Fundando civilización...' : 'Fundar Civilización' }}
