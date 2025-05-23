@@ -15,10 +15,10 @@ export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   isSubmitting = false;
   errorMessage = '';
-  
+
   get username() { return this.loginForm.get('username'); }
   get password() { return this.loginForm.get('password'); }
-  
+
   constructor(
     private readonly fb: FormBuilder,
     private readonly authService: AuthService,
@@ -33,11 +33,11 @@ export class LoginComponent implements OnInit {
   ngOnInit() {
     // Precargar credenciales como solicitado
     this.loginForm.setValue({
-      username: 'testuser',
-      password: 'testpassword'
+      username: 'pepe',
+      password: 'pepepe'
     });
   }
-  
+
   async onSubmit() {
     if (this.loginForm.invalid) {
       return;
@@ -54,36 +54,17 @@ export class LoginComponent implements OnInit {
         this.errorMessage = 'Nombre de usuario o contraseña incorrectos.';
       }
     } catch (err: any) {
-      // Handle new backend error format (object) and legacy (string)
+      // Manejar errores del nuevo backend
       let msg = 'Error de inicio de sesión.';
-      const detail = err?.error?.detail;
-      if (detail && typeof detail === 'object' && detail !== null) {
-        if (typeof detail.error_description === 'string' && detail.error_description) {
-          msg = detail.error_description;
-        } else if (typeof detail.error === 'string' && detail.error) {
-          msg = detail.error;
-        } else {
-          msg = JSON.stringify(detail, null, 2);
-        }
-      } else if (typeof detail === 'string') {
-        const match = detail.match(/\{.*\}/);
-        if (match) {
-          try {
-            const json = JSON.parse(match[0]);
-            msg = json.error_description || json.error || match[0];
-          } catch {
-            msg = detail;
-          }
-        } else {
-          msg = detail;
-        }
+      if (err.error?.detail) {
+        msg = err.error.detail;
       }
       this.errorMessage = msg;
     } finally {
       this.isSubmitting = false;
     }
   }
-  
+
   goToRegister() {
     this.router.navigate(['/auth/register']);
   }

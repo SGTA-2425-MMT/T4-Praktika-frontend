@@ -221,4 +221,13 @@ export class NewGameComponent {
   returnToMainMenu(): void {
     this.router.navigate(['/main-menu']);
   }
+
+  // Manejar eventos de teclado en las opciones de civilización
+  onCivilizationOptionKeyDown(event: KeyboardEvent, civValue: string): void {
+    // Si se presiona Enter o Espacio, seleccionar esta civilización
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.selectCivilization(civValue);
+    }
+  }
 }

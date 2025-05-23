@@ -1,6 +1,8 @@
+import { GameService, GameSession } from './game.service';
 import { Injectable } from '@angular/core';
 import { Unit } from '../models/unit.model';
 import { City } from '../models/city.model';
+
 
 @Injectable({
   providedIn: 'root',
@@ -55,9 +57,7 @@ export class SharedWarGameService {
     }
   }
 
-  removeUnitFromGame(unit: Unit): void {
-    console.log(`Unidad ${unit.id} eliminada del juego.`);
-  }
+
 
   captureCity(attacker: Unit, city: City): void {
     console.log(`Unidad ${attacker.id} ha capturado la ciudad ${city.name}.`);

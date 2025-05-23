@@ -96,8 +96,6 @@ export class TileComponent implements OnInit, OnDestroy {
     if (worker.currentAction === 'build_road') {
       totalTurns = 3;
     } else if (worker.currentAction.startsWith('build_road')) {
-      const improvementType = worker.currentAction.replace('build_', '');
-      const improvement = this.tileImprovementService.getImprovementInfo(improvementType as any);
       totalTurns = 1;
     } else if (worker.currentAction === 'build_farm') {
       totalTurns = 3;
@@ -116,6 +114,15 @@ export class TileComponent implements OnInit, OnDestroy {
 
   onClick(): void {
     this.tileClick.emit();
+  }
+
+  // Manejar eventos de teclado
+  onKeyDown(event: KeyboardEvent): void {
+    // Si se presiona Enter o Espacio, actuar como si se hubiera hecho clic
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.onClick();
+    }
   }
 
   getUnitSymbol(): string {
@@ -156,7 +163,7 @@ export class TileComponent implements OnInit, OnDestroy {
 
   getTileClasses(): { [key: string]: boolean } {
     // Si no está explorado, solo mostrar como inexplorado
-    if (!this.tile.isExplored) {
+    if (!this.tile.isVisible) {
       return { 'tile-unexplored': true };
     }
 
@@ -167,7 +174,7 @@ export class TileComponent implements OnInit, OnDestroy {
       'tile-path': this.isPathTile,
       'tile-with-unit': this.hasUnit && this.unitCanMove,
       'tile-unit-selected': this.isUnitSelected,
-      'tile-explored-not-visible': this.tile.isExplored && !this.tile.isVisible,
+      'tile-explored-not-visible': this.tile.isVisible && !this.tile.isVisible,
       'tile-movable': this.isMovableTile, // Clase CSS para casillas a las que se puede mover
       'tile-attackable': this.isAttackable, // Add attackable class
       'settler': this.unitType === 'settler',
@@ -247,9 +254,6 @@ export class TileComponent implements OnInit, OnDestroy {
     // Añadir clases para el tipo de edificio
     if (this.buildingType === 'none') {
       classes['build'] = true;
-      //if (this.buildingType === 'build') {
-      //classes['building-in-progress'] = true;
-      //}
     }
 
     return classes;

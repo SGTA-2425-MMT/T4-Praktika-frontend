@@ -1,6 +1,6 @@
 
 import { Injectable } from '@angular/core';
-import { GameMap, MapTile } from '../models/map.model';
+import { GameMap } from '../models/map.model';
 import { Unit, UnitType } from '../models/unit.model';
 
 @Injectable({
@@ -29,7 +29,6 @@ export class FogOfWarService {
 
           if (distance <= visionRange) {
             // Marcar como explorada y visible
-            tile.isExplored = true;
             tile.isVisible = true;
 
             // En un juego real, aquí guardaríamos la información de qué jugador ha explorado la casilla
@@ -58,7 +57,9 @@ export class FogOfWarService {
   resetVisibility(map: GameMap): void {
     for (let y = 0; y < map.height; y++) {
       for (let x = 0; x < map.width; x++) {
-        //map.tiles[y][x].isVisible = false;
+        if (map.tiles[y]?.[x]) {
+          //map.tiles[y][x].isVisible = false;
+        }
       }
     }
   }
@@ -72,6 +73,18 @@ export class FogOfWarService {
     for (const unit of units) {
       if (unit.owner === playerId) {
         this.updateVisibility(map, unit, playerId);
+      }
+    }
+  }
+
+    // Revela el mapa entero para un jugador específico (función para trucos)
+  revealAllMap(map: GameMap, playerId: string): void {
+    console.log(`Revelando todo el mapa para el jugador ${playerId}`);
+    for (let y = 0; y < map.height; y++) {
+      for (let x = 0; x < map.width; x++) {
+        if (map.tiles[y]?.[x]) {
+          map.tiles[y][x].isVisible = true;
+        }
       }
     }
   }

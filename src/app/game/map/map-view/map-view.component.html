@@ -7,6 +7,7 @@
     [class.visible]="(selectedUnit || selectedCity) && (currentPhase === 'movimiento_accion' || currentPhase === 'creacion_investigacion')">
     <div class="sidebar-header">
       <h3>Panel de Control</h3>
+      <button class="close-sidebar-btn" (click)="closeSidebar()">✕</button>
     </div>
 
     <div class="sidebar-content">
@@ -75,6 +76,7 @@
           [unitLevel]="getUnitLevelAt(tile.x, tile.y)" [buildingType]="getBuildingTypeAt(tile.x, tile.y)"
           [isMovableTile]="gameSession.currentPhase === 'movimiento_accion' && isTileMovable(tile.x, tile.y)"
           [isAttackable]="isTileAttackable(tile.x, tile.y)" [era]="gameSession.era" (tileClick)="onTileClick(tile)">
+          
         </app-tile>
         }
       </div>

@@ -1,15 +1,13 @@
-import { Component, ElementRef, HostListener, Injector, Input, OnDestroy, OnInit, Output, ViewChild, EventEmitter, OnChanges, SimpleChanges, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, HostListener, Injector, Input, OnInit, Output, ViewChild, EventEmitter, OnChanges, SimpleChanges, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { GameService } from '../../../core/services/game.service';
-import { GameSession } from '../../../core/services/game.service';
+import { GameService, GameSession } from '../../../core/services/game.service';
 import { WarService } from '../../../core/services/war.service';
 import { TileImprovementService } from '../../../core/services/tile-improvement.service';
 import { FogOfWarService } from '../../../core/services/fog-of-war.service';
 import { MovementService } from '../../../core/services/movement.service';
-import { MapCoordinate } from '../../../core/models/map.model';
+import { MapCoordinate, MapTile } from '../../../core/models/map.model';
 import { AnimationService } from '../../../core/services/animation.service';
-import { GameMap, ImprovementType, MapTile, ResourceType, TerrainType } from '../../../core/models/map.model';
 import { Unit, UnitAction } from '../../../core/models/unit.model';
 import { City } from '../../../core/models/city.model';
 import { TileComponent } from '../tile/tile.component';
@@ -153,7 +151,7 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
     }
 
     // Si el tile no es válido o no está explorado, salir
-    if (!this.gameSession || !tile.isExplored) {
+    if (!this.gameSession || !tile.isVisible) {
       return;
     }
 
@@ -538,7 +536,7 @@ moveSelectedUnit(targetTile: MapTile): void {
         break;
       case 'catapult':
         cost = 0;
-        break;  
+        break;
       case 'artillery':
         cost = 0;
         break;
@@ -598,7 +596,7 @@ moveSelectedUnit(targetTile: MapTile): void {
     );
 
     if (!result.canBuild) {
-      alert(result.reason || 'No se puede construir aquí');
+      alert(result.reason ?? 'No se puede construir aquí');
       return;
     }
 
@@ -611,7 +609,7 @@ moveSelectedUnit(targetTile: MapTile): void {
     const newBuilding: Building = {
       ...template,
       id: template.type + '_' + Date.now(),
-      cityId: result.nearestCity?.id || '',
+      cityId: result.nearestCity?.id ?? '',
       position: { x, y },
       built: false,
     };
@@ -620,6 +618,11 @@ moveSelectedUnit(targetTile: MapTile): void {
 
   // Verificar si la unidad puede realizar una acción específica
   canUnitPerformAction(unit: Unit, action: UnitAction): boolean {
+    if ((action === 'attack') && (unit.type === 'warrior' || unit.type === 'archer' || unit.type === 'artillery'
+          || unit.type === 'horseman' || unit.type === 'galley' || unit.type === 'rifleman' || unit.type === 'tank'
+          || unit.type === 'catapult')) {
+            return true;
+    }
     return unit?.availableActions?.includes(action) ?? false;
   }
 
@@ -668,28 +671,17 @@ moveSelectedUnit(targetTile: MapTile): void {
     alert('Construyendo mejora de terreno...'+this.selectedUnit?.buildingImprovement);
     if (!this.selectedUnit || !this.gameSession || this.selectedUnit.type !== 'worker') {
       console.warn('[buildImprovement] No hay unidad seleccionada, no hay sesión de juego, o la unidad no es trabajador');
-      return;
     }
   }
 
 
   // Cancelar la acción actual del trabajador
   cancelWorkerAction(): void {
-    /*
-    if (!this.selectedUnit || !this.gameSession || this.selectedUnit.type !== 'worker') {
+    console.log('Cancelando acción del trabajador...');
+    if (!this.selectedUnit || this.selectedUnit.type !== 'worker') {
+      console.warn('[cancelWorkerAction] No hay unidad seleccionada o la unidad no es trabajador');
       return;
     }
-
-    this.selectedUnit.currentAction = undefined;
-    this.selectedUnit.buildingImprovement = undefined;
-    this.selectedUnit.turnsToComplete = undefined;
-
-    // Restaurar los puntos de movimiento si se cancela la acción
-    if (this.selectedUnit.movementPoints === 0 && this.selectedUnit.maxMovementPoints > 0) {
-      this.selectedUnit.movementPoints = 1; // Permitir al menos un movimiento
-    }
-
-    console.log(`Acción del trabajador cancelada`);*/
     this.showWorkerActionsMenu = false;
   }
 
@@ -740,7 +732,7 @@ moveSelectedUnit(targetTile: MapTile): void {
         const ny = y + dir.dy;
         if (nx < 0 || ny < 0 || nx >= map.width || ny >= map.height) continue;
         const tile = map.tiles[ny][nx];
-        if (!tile.isExplored) continue;
+        if (!tile.isVisible) continue;
         if (!this.movementService.canMoveTo(tile, unit)) continue;
         const cost = tile.movementCost || 1;
         if (movesLeft - cost < 0) continue;
@@ -880,4 +872,76 @@ moveSelectedUnit(targetTile: MapTile): void {
       this.clearSelection();
     }
   }
+
+    /**
+ * Método para cerrar el panel lateral
+ */
+closeSidebar(): void {
+  console.log('Cerrando panel lateral');
+  // Si hay una unidad seleccionada, la deseleccionamos
+  if (this.selectedUnit) {
+    this.clearSelection();
+  }
+
+  // Si hay una ciudad seleccionada, la deseleccionamos
+  if (this.selectedCity) {
+    this.selectedCity = null;
+  }
+
+  // Asegurarnos de que cualquier otro menú contextual también se cierre
+  this.showWorkerActionsMenu = false;
+}
+
+// Animar los movimientos y daños de las unidades IA tras el turno
+// NOTA: Ahora este método debe recibir los cambios calculados a partir de comparar el estado anterior y el nuevo
+// de las unidades de los jugadores IA (id que empieza por 'rival') tras el endTurn. El frontend ya no recibe 'ai_units' ni 'unitUpdates'.
+async animateAIUnitUpdates(updates: { id: string; newPosition: { x: number; y: number }; newHealth: number }[]): Promise<void> {
+  if (!this.gameSession) return;
+  const TILE_SIZE = 120;
+  for (const update of updates) {
+    const unit = this.gameSession.units.find(u => u.id === update.id);
+    if (!unit) continue;
+    // Animar movimiento si la posición cambió
+    const fromX = unit.position.x;
+    const fromY = unit.position.y;
+    const toX = update.newPosition.x;
+    const toY = update.newPosition.y;
+    if (fromX !== toX || fromY !== toY) {
+      // Animación simple: mover el icono de la unidad visualmente
+      const unitElem = document.querySelector(`.unit-indicator[data-unit-id="${unit.id}"]`) as HTMLElement;
+      if (unitElem) {
+        unitElem.style.transition = 'transform 0.5s';
+        unitElem.style.transform = `translate(${(toX - fromX) * TILE_SIZE}px, ${(toY - fromY) * TILE_SIZE}px)`;
+        await new Promise(res => setTimeout(res, 500));
+        unitElem.style.transition = '';
+        unitElem.style.transform = '';
+      }
+    }
+    // Animar daño si la salud disminuyó
+    if (update.newHealth < unit.health) {
+      const damage = unit.health - update.newHealth;
+      // Usar AnimationService si Phaser está listo
+      if (this.animationService.isPhaserReady()) {
+        this.animationService.playExplosion(toX * TILE_SIZE + 60, toY * TILE_SIZE + 60, damage);
+      } else {
+        // Fallback: animación de texto flotante
+        const mapContainer = this.mapContainer?.nativeElement;
+        if (mapContainer) {
+          const damageElem = document.createElement('div');
+          damageElem.textContent = `-${damage}`;
+          damageElem.style.position = 'absolute';
+          damageElem.style.left = `${toX * TILE_SIZE + 60}px`;
+          damageElem.style.top = `${toY * TILE_SIZE + 60}px`;
+          damageElem.style.color = 'red';
+          damageElem.style.fontSize = '24px';
+          damageElem.style.fontWeight = 'bold';
+          damageElem.style.transform = 'translate(-50%, -50%)';
+          damageElem.style.zIndex = '1000';
+          mapContainer.appendChild(damageElem);
+          setTimeout(() => damageElem.remove(), 1000);
+        }
+      }
+    }
+  }
+}
 }

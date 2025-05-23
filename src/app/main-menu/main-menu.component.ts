@@ -32,6 +32,6 @@ export class MainMenuComponent {
   }
 
   async logout() {
-    await this.authService.logout();
+    this.authService.logout();
   }
 }

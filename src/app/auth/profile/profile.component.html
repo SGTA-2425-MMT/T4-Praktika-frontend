@@ -1,1 +1,90 @@
-<p>profile works!</p>
+<div class="profile-container">
+  <div class="profile-card">
+    <div class="profile-header">
+      <h1>Tu Perfil Imperial</h1>
+      <p>Administra tu identidad en el juego</p>
+    </div>
+
+    @if (isLoading) {
+      <div class="loading-spinner">
+        <p>Cargando información...</p>
+      </div>
+    } @else if (userProfile) {
+      <div class="profile-info">
+        <div class="profile-details">
+          <p><strong>ID:</strong> {{ userProfile._id }}</p>
+          <p><strong>Fecha de registro:</strong> {{ userProfile.created_at | date:'dd/MM/yyyy HH:mm' }}</p>
+          <p><strong>Último acceso:</strong> {{ userProfile.last_login ? (userProfile.last_login | date:'dd/MM/yyyy HH:mm') : 'Primera sesión' }}</p>
+        </div>
+
+        <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="profile-form">
+          <div class="form-group">
+            <label for="username">Nombre de usuario</label>
+            <input 
+              type="text" 
+              id="username" 
+              formControlName="username" 
+              [class.is-invalid]="profileForm.get('username')?.invalid && profileForm.get('username')?.touched"
+              placeholder="Tu nombre de usuario"
+            >
+            @if (profileForm.get('username')?.invalid && profileForm.get('username')?.touched) {
+              <div class="error-message">
+                El nombre de usuario es obligatorio y debe tener al menos 3 caracteres.
+              </div>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="email">Correo electrónico</label>
+            <input 
+              type="email" 
+              id="email" 
+              formControlName="email" 
+              [class.is-invalid]="profileForm.get('email')?.invalid && profileForm.get('email')?.touched"
+              placeholder="Tu correo electrónico"
+            >
+            @if (profileForm.get('email')?.invalid && profileForm.get('email')?.touched) {
+              <div class="error-message">
+                Por favor, introduce un correo electrónico válido.
+              </div>
+            }
+          </div>
+
+          @if (successMessage) {
+            <div class="alert alert-success">
+              {{ successMessage }}
+            </div>
+          }
+
+          @if (errorMessage) {
+            <div class="alert alert-danger">
+              {{ errorMessage }}
+            </div>
+          }
+
+          <div class="form-actions">
+            <button 
+              type="submit" 
+              [disabled]="profileForm.invalid || isSubmitting" 
+              class="btn-primary"
+            >
+              {{ isSubmitting ? 'Actualizando...' : 'Actualizar perfil' }}
+            </button>
+            
+            <button 
+              type="button" 
+              class="btn-secondary"
+              (click)="logout()"
+            >
+              Cerrar sesión
+            </button>
+          </div>
+        </form>
+      </div>
+    } @else {
+      <div class="error-message">
+        <p>No se pudo cargar la información del perfil. Por favor, intenta de nuevo más tarde.</p>
+      </div>
+    }
+  </div>
+</div>

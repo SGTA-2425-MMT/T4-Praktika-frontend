@@ -301,6 +301,23 @@
   }
 }
 
+/* Estilos para el botón de trucos */
+.btn-cheats {
+  background-color: #673ab7;
+  color: white;
+  border: 2px solid #4a148c;
+  padding: 8px 15px;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-left: auto; /* Mover el botón al lado derecho */
+
+  &:hover {
+    background-color: #7e57c2;
+  }
+}
+
 .tech-tree-content {
   flex: 1;
   overflow-y: auto;

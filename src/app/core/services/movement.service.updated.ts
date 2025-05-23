@@ -126,10 +126,10 @@ export class MovementService {
   // Verifica si una unidad puede moverse a una casilla
   canMoveTo(tile: MapTile, unit: Unit): boolean {
     // Verificar si el terreno es adecuado según el tipo de unidad
-    
+
     // Verificar si hay árboles (bosque o jungla) - Las unidades terrestres no pueden entrar a casillas con árboles
     // excepto los trabajadores que son los únicos que pueden quitar los árboles
-    if ((tile.featureType === 'forest' || tile.featureType === 'jungle') && 
+    if ((tile.featureType === 'forest' || tile.featureType === 'jungle') &&
         unit.type !== 'worker') {
       return false;
     }
@@ -185,9 +185,6 @@ export class MovementService {
 
     // Si no hay camino, no se puede mover
     if (path.length === 0) return false;
-
-    // Determinar la dirección del movimiento
-    const direction = destination.x > unit.position.x ? 'right' : 'left';
 
     // Mover la unidad
     unit.position = { x: destination.x, y: destination.y };

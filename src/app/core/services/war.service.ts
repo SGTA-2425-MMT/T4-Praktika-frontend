@@ -3,6 +3,8 @@ import { Unit } from '../models/unit.model';
 import { City } from '../models/city.model';
 import { AnimationService } from './animation.service';
 import { SharedWarGameService } from './shared-war-game.service';
+import { GameService } from './game.service';
+
 
 @Injectable({
   providedIn: 'root',
@@ -13,7 +15,8 @@ export class WarService {
 
   constructor(
     private readonly sharedWarGameService: SharedWarGameService,
-    private readonly animationService: AnimationService
+    private readonly animationService: AnimationService,
+    private gameService: GameService
   ) {}
 
   // Handle unit vs unit combat
@@ -36,58 +39,72 @@ export class WarService {
       console.log(`${defender.name} has been defeated!`);
     }
 
+    attacker.attacksPerTurn = attacker.attacksPerTurn ? attacker.attacksPerTurn - 1 : 0;
+
     return true;
   }
 
   // Handle unit vs city combat
+  /*
   attackCity(attacker: Unit, city: City): boolean {
     if (!this.canAttackCity(attacker, city)) {
-      console.error('Attack on city not allowed');
+      console.error('Attack not allowed');
       return false;
     }
 
-    // Calculate damage
-    const damage = attacker.strength;
-
-    // Apply damage to the city
-    this.sharedWarGameService.applyDamageToCity(city, damage);
-
-    // Decrement attacksPerTurn
-    if (attacker.attacksPerTurn && attacker.attacksPerTurn > 0) {
-      attacker.attacksPerTurn -= 1;
-    }
+    const damage = this.calculateDamage(attacker, city);
+    this.sharedWarGameService.applyDamageToUnit(city, damage);
 
     // Emit event for visualization
-    this.cityAttackEvent.emit({ attacker, city, damage });
+    this.unitAttackEvent.emit({ attacker, city, damage });
 
     console.log(`${attacker.name} attacked ${city.name} for ${damage} damage!`);
 
-    // Check if the city is captured
     if (city.health <= 0) {
-      this.captureCity(attacker, city);
-      console.log(`${city.name} has been captured by ${attacker.owner}!`);
+      this.removeUnit(city);
+      console.log(`${city.name} has been defeated!`);
     }
 
+    attacker.attacksPerTurn = attacker.attacksPerTurn ? attacker.attacksPerTurn - 1 : 0;
+
     return true;
-  }
+  }*/
 
   // Check if a unit can attack another unit
   private canAttack(attacker: Unit, defender: Unit): boolean {
     console.log('Checking if attack is allowed...');
     console.log('Attacker:', attacker);
     console.log('Defender:', defender);
+    
+    // Check if trying to attack an allied unit
+    if (attacker.owner === defender.owner) {
+      console.error('Attack not allowed: Cannot attack your own units.');
+      alert('Cannot attack your own units.');
+      return false;
+    }
 
     if (!attacker.attacksPerTurn || attacker.attacksPerTurn <= 0) {
       console.error('Attack not allowed: Attacker has no attacks left this turn.');
+      alert('No attacks left this turn.');
       return false; // No attacks left this turn
     }
 
-    if (attacker.isRanged){
-      const aDistance = this.getDistance(attacker.position, defender.position);
-      console.log('Ranged atack: ', aDistance);
-      if (attacker.maxRange! < aDistance) {
+    const distance = this.getDistance(attacker.position, defender.position);
+
+    if (attacker.isRanged) {
+      console.log('Ranged attack: Distance =', distance);
+      if (!attacker.maxRange || attacker.maxRange < distance) {
         console.error('Attack not allowed: Target is out of range for ranged units.');
+        alert('Target is out of range for this ranged unit.');
         return false; // Out of range for ranged units
+      }
+    } else {
+      console.log('Melee attack: Distance =', distance);
+      // For melee units, they can only attack adjacent units (distance = 1)
+      if (distance > 1) {
+        console.error('Attack not allowed: Target is not adjacent for melee units.');
+        alert('Target is not adjacent. Melee units can only attack adjacent tiles.');
+        return false; // Not adjacent for melee units
       }
     }
 
@@ -97,7 +114,33 @@ export class WarService {
 
   // Check if a unit can attack a city
   private canAttackCity(attacker: Unit, city: City): boolean {
-    if (attacker.movementPoints <= 0) return false; // No movement points left
+    console.log('Checking if attack is allowed...');
+    console.log('Attacker:', attacker);
+    console.log('Defender:', city);
+
+    if (!attacker.attacksPerTurn || attacker.attacksPerTurn <= 0) {
+      console.error('Attack not allowed: Attacker has no attacks left this turn.');
+      return false; // No attacks left this turn
+    }
+
+    const distance = this.getDistance(attacker.position, city.position);
+
+    if (attacker.isRanged) {
+      console.log('Ranged attack: Distance =', distance);
+      if (!attacker.maxRange || attacker.maxRange < distance) {
+        console.error('Attack not allowed: Target is out of range for ranged units.');
+        return false; // Out of range for ranged units
+      }
+    } else {
+      console.log('Melee attack: Distance =', distance);
+      // For melee units, they can only attack adjacent units (distance = 1)
+      if (distance > 1) {
+        console.error('Attack not allowed: Target is not adjacent for melee units.');
+        return false; // Not adjacent for melee units
+      }
+    }
+
+    console.log('Attack is allowed.');
     return true;
   }
 
@@ -139,23 +182,36 @@ export class WarService {
     return damage;
   }
 
-  // Remove a unit from the game
   private removeUnit(unit: Unit): void {
-    this.sharedWarGameService.removeUnitFromGame(unit);
+    const game = this.gameService.currentGame;
+    if (!game) {alert("noo"); return;}
+
+    game.units = game.units.filter(u => u.id !== unit.id);
   }
 
   // Capture a city
   private captureCity(attacker: Unit, city: City): void {
     this.sharedWarGameService.captureCity(attacker, city);
   }
-
   // Calculate distance between two positions
   private getDistance(pos1: { x: number; y: number }, pos2: { x: number; y: number }): number {
-    return Math.abs(pos1.x - pos2.x) + Math.abs(pos1.y - pos2.y); // Manhattan distance
+    // Using Chebyshev distance to count diagonal tiles as distance 1
+    return Math.max(Math.abs(pos1.x - pos2.x), Math.abs(pos1.y - pos2.y));
   }
-
   isUnitInRange(attacker: Unit, target: Unit): boolean {
-    return this.sharedWarGameService.isUnitInRange(attacker, target);
+    if (!attacker.attackRange) {
+      alert(`La unidad atacante ${attacker.id} no tiene un rango de ataque definido.`);
+      console.error(`La unidad atacante ${attacker.id} no tiene un rango de ataque definido.`);
+      return false;
+    }
+
+    const distance = this.getDistance(attacker.position, target.position);
+    if (distance > attacker.attackRange) {
+      alert(`La unidad ${attacker.id} no puede atacar a la unidad ${target.id} porque está fuera de rango.`);
+      console.error(`La unidad ${attacker.id} no puede atacar a la unidad ${target.id} porque está fuera de rango.`);
+      return false;
+    }
+    return distance <= attacker.attackRange;
   }
 
   triggerAttackAnimation(x: number, y: number, damage: number, attackType: 'melee' | 'ranged' | 'explosion'): void {
