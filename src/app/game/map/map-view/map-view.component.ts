@@ -43,6 +43,12 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
   private readonly phaserScene!: Phaser.Scene;
   showWorkerActionsMenu = false; // New property for worker actions menu
 
+  private isDraggingMap = false;
+  private dragStartX = 0;
+  private dragStartY = 0;
+  private scrollStartLeft = 0;
+  private scrollStartTop = 0;
+
   constructor(
     private readonly movementService: MovementService,
     private readonly fogOfWarService: FogOfWarService,
@@ -51,7 +57,7 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
     private readonly warService: WarService,
     private readonly injector: Injector,
     private readonly buildingsService: BuildingsService // <--- INJECTED
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Suscribirse a cambios en la ruta actual
@@ -91,10 +97,19 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
           this.centerCameraOnPosition(startingUnit.position.x, startingUnit.position.y);
         }
       }
+
+      // --- Drag-to-scroll: attach listeners to window for mousemove/mouseup ---
+      const container = this.mapContainer.nativeElement as HTMLElement;
+      container.addEventListener('mousedown', this.onMapMouseDown);
+      window.addEventListener('mousemove', this.onMapMouseMove);
+      window.addEventListener('mouseup', this.onMapMouseUp);
+      container.addEventListener('mouseleave', this.onMapMouseUp);
+      container.addEventListener('dragstart', (e) => e.preventDefault());
+      container.style.cursor = 'grab';
     }
-      setTimeout(() => {
-        this.animationService.initPhaser(this.mapContainer?.nativeElement);
-      }, 500);
+    setTimeout(() => {
+      this.animationService.initPhaser(this.mapContainer?.nativeElement);
+    }, 500);
   }
 
   // Centra la cámara en una posición del mapa
@@ -144,8 +159,8 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
     // Si estamos mostrando el menú de trabajador y hacemos clic en otra casilla (que no sea la del trabajador)
     // cerramos el menú y continuamos con la acción normal de clic
     if (this.showWorkerActionsMenu &&
-        this.selectedUnit &&
-        (tile.x !== this.selectedUnit.position.x || tile.y !== this.selectedUnit.position.y)) {
+      this.selectedUnit &&
+      (tile.x !== this.selectedUnit.position.x || tile.y !== this.selectedUnit.position.y)) {
       console.log('Cerrando menú de trabajador por clic en otra casilla');
       this.showWorkerActionsMenu = false;
     }
@@ -207,55 +222,55 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
     ) || null;
   }
 
-moveSelectedUnit(targetTile: MapTile): void {
-  if (!this.selectedUnit || !this.gameSession || this.gameSession.currentPhase != "movimiento_accion") return;
+  moveSelectedUnit(targetTile: MapTile): void {
+    if (!this.selectedUnit || !this.gameSession || this.gameSession.currentPhase != "movimiento_accion") return;
 
-  // If the unit is already on the target tile, do nothing
-  if (this.selectedUnit.position.x === targetTile.x &&
+    // If the unit is already on the target tile, do nothing
+    if (this.selectedUnit.position.x === targetTile.x &&
       this.selectedUnit.position.y === targetTile.y) {
-    return;
-  }
+      return;
+    }
 
-  // Determine the direction of movement
-  const direction = targetTile.x > this.selectedUnit.position.x ? 'right' : 'left';
+    // Determine the direction of movement
+    const direction = targetTile.x > this.selectedUnit.position.x ? 'right' : 'left';
 
-  // Update the direction class on the current tile
-  const currentTileElement = document.querySelector(`.tile[x="${this.selectedUnit.position.x}"][y="${this.selectedUnit.position.y}"]`);
-  if (currentTileElement) {
-    const unitIndicator = currentTileElement.querySelector('.unit-indicator');
-    if (unitIndicator) {
-      unitIndicator.classList.remove('left', 'right');
-      unitIndicator.classList.add(direction);
+    // Update the direction class on the current tile
+    const currentTileElement = document.querySelector(`.tile[x="${this.selectedUnit.position.x}"][y="${this.selectedUnit.position.y}"]`);
+    if (currentTileElement) {
+      const unitIndicator = currentTileElement.querySelector('.unit-indicator');
+      if (unitIndicator) {
+        unitIndicator.classList.remove('left', 'right');
+        unitIndicator.classList.add(direction);
+      }
+    }
+
+    // Move the unit using the movement service
+    const success = this.movementService.moveUnit(
+      this.selectedUnit,
+      { x: targetTile.x, y: targetTile.y },
+      this.gameSession.map,
+      (unit) => this.updateUnitVisibility(unit)
+    );
+
+    if (success) {
+      // Update the highlighted tile to follow the unit
+      this.highlightedTile = targetTile;
+
+      // Update the fog of war after movement
+      this.updateAllUnitsVisibility();
+
+      // Clear the path and movable tiles
+      this.movementService.setCurrentPath([]);
+      this.movableTiles = [];
+
+      // If the unit has no movement points left, deselect it
+      if (this.selectedUnit.movementPoints <= 0) {
+        this.clearSelection();
+      }
+    } else {
+      alert('No se puede mover a esa casilla');
     }
   }
-
-  // Move the unit using the movement service
-  const success = this.movementService.moveUnit(
-    this.selectedUnit,
-    { x: targetTile.x, y: targetTile.y },
-    this.gameSession.map,
-    (unit) => this.updateUnitVisibility(unit)
-  );
-
-  if (success) {
-    // Update the highlighted tile to follow the unit
-    this.highlightedTile = targetTile;
-
-    // Update the fog of war after movement
-    this.updateAllUnitsVisibility();
-
-    // Clear the path and movable tiles
-    this.movementService.setCurrentPath([]);
-    this.movableTiles = [];
-
-    // If the unit has no movement points left, deselect it
-    if (this.selectedUnit.movementPoints <= 0) {
-      this.clearSelection();
-    }
-  } else {
-    alert('No se puede mover a esa casilla');
-  }
-}
 
   // Selecciona una unidad
   selectUnit(unit: Unit): void {
@@ -299,7 +314,7 @@ moveSelectedUnit(targetTile: MapTile): void {
     }
 
     console.log(`Unidad seleccionada: ${this.selectedUnit.type} en posición (${this.selectedUnit.position.x}, ${this.selectedUnit.position.y})`);
-  // Para depuración: verificar si el botón está llamando a esta función
+    // Para depuración: verificar si el botón está llamando a esta función
 
     // Mostrar el diálogo para nombrar la ciudad
     this.showFoundCityDialog = true;
@@ -493,7 +508,7 @@ moveSelectedUnit(targetTile: MapTile): void {
 
     // Comprobar si las coordenadas están dentro de los límites del mapa
     if (targetX < 0 || targetX >= this.gameSession.map.width ||
-        targetY < 0 || targetY >= this.gameSession.map.height) {
+      targetY < 0 || targetY >= this.gameSession.map.height) {
       return;
     }
 
@@ -514,7 +529,7 @@ moveSelectedUnit(targetTile: MapTile): void {
   }
 
   // Actualizar el método que maneja la producción de la ciudad
-  onCityProduction(productionDetails: {type: string, name: string}): void {
+  onCityProduction(productionDetails: { type: string, name: string }): void {
     if (!this.selectedCity || !this.gameSession) return;
 
     // Buscar la ciudad en el arreglo de ciudades del juego
@@ -619,15 +634,15 @@ moveSelectedUnit(targetTile: MapTile): void {
   // Verificar si la unidad puede realizar una acción específica
   canUnitPerformAction(unit: Unit, action: UnitAction): boolean {
     if ((action === 'attack') && (unit.type === 'warrior' || unit.type === 'archer' || unit.type === 'artillery'
-          || unit.type === 'horseman' || unit.type === 'galley' || unit.type === 'rifleman' || unit.type === 'tank'
-          || unit.type === 'catapult')) {
-            return true;
+      || unit.type === 'horseman' || unit.type === 'galley' || unit.type === 'rifleman' || unit.type === 'tank'
+      || unit.type === 'catapult')) {
+      return true;
     }
     return unit?.availableActions?.includes(action) ?? false;
   }
 
   // Realizar una acción con la unidad seleccionada
-  performUnitAction(action: UnitAction, buildingType?:BuildingType): void {
+  performUnitAction(action: UnitAction, buildingType?: BuildingType): void {
     console.log(`Intentando realizar acción: ${action}`);
     if (!this.selectedUnit || !this.gameSession) {
       console.error('No hay unidad seleccionada o sesión de juego');
@@ -639,18 +654,18 @@ moveSelectedUnit(targetTile: MapTile): void {
       return;
     }
 
-    switch(action) {
+    switch (action) {
       case 'found_city':
         console.log('Llamando a foundCity() desde performUnitAction');
         this.foundCity();
         break;
       case 'build':
         const tileImprovementService = this.injector.get(TileImprovementService);
-        if(!buildingType) {
+        if (!buildingType) {
           console.error('No se ha especificado un tipo de edificio');
           return;
         }
-        else{
+        else {
           this.buildImprovement(); // <-- Aquí se llama correctamente con el tipo de mejora recibido
         }
         break;
@@ -667,8 +682,8 @@ moveSelectedUnit(targetTile: MapTile): void {
   }
 
   // Método para construir una mejora de terreno con un trabajador
-   buildImprovement(): void {
-    alert('Construyendo mejora de terreno...'+this.selectedUnit?.buildingImprovement);
+  buildImprovement(): void {
+    alert('Construyendo mejora de terreno...' + this.selectedUnit?.buildingImprovement);
     if (!this.selectedUnit || !this.gameSession || this.selectedUnit.type !== 'worker') {
       console.warn('[buildImprovement] No hay unidad seleccionada, no hay sesión de juego, o la unidad no es trabajador');
     }
@@ -687,7 +702,7 @@ moveSelectedUnit(targetTile: MapTile): void {
 
   // Método para obtener el nombre legible de una acción
   getActionName(action: UnitAction): string {
-    switch(action) {
+    switch (action) {
       case 'move': return 'Moviéndose';
       case 'attack': return 'Atacando';
       case 'found_city': return 'Fundando ciudad';
@@ -769,7 +784,7 @@ moveSelectedUnit(targetTile: MapTile): void {
     const healthPercentage = (defender.health / defender.maxHealth) * 100;
     const healthBarElement = document.getElementById(`health-bar-${defender.id}`);
     if (healthBarElement) {
-        healthBarElement.style.width = `${healthPercentage}%`;
+      healthBarElement.style.width = `${healthPercentage}%`;
     }
 
     // Lógica existente para animar el daño
@@ -791,15 +806,15 @@ moveSelectedUnit(targetTile: MapTile): void {
     const animationDuration = 1000; // 1 segundo
     const startTime = performance.now();
     const animate = (time: number) => {
-        const elapsed = time - startTime;
-        const progress = Math.min(elapsed / animationDuration, 1);
-        damageElement.style.top = `${y - 30 * progress}px`;
-        damageElement.style.opacity = `${1 - progress}`;
-        if (progress < 1) {
-            requestAnimationFrame(animate);
-        } else {
-            damageElement.remove(); // Eliminar el elemento después de la animación
-        }
+      const elapsed = time - startTime;
+      const progress = Math.min(elapsed / animationDuration, 1);
+      damageElement.style.top = `${y - 30 * progress}px`;
+      damageElement.style.opacity = `${1 - progress}`;
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        damageElement.remove(); // Eliminar el elemento después de la animación
+      }
     };
     requestAnimationFrame(animate);
   }
@@ -873,75 +888,109 @@ moveSelectedUnit(targetTile: MapTile): void {
     }
   }
 
-    /**
- * Método para cerrar el panel lateral
- */
-closeSidebar(): void {
-  console.log('Cerrando panel lateral');
-  // Si hay una unidad seleccionada, la deseleccionamos
-  if (this.selectedUnit) {
-    this.clearSelection();
-  }
-
-  // Si hay una ciudad seleccionada, la deseleccionamos
-  if (this.selectedCity) {
-    this.selectedCity = null;
-  }
-
-  // Asegurarnos de que cualquier otro menú contextual también se cierre
-  this.showWorkerActionsMenu = false;
-}
-
-// Animar los movimientos y daños de las unidades IA tras el turno
-// NOTA: Ahora este método debe recibir los cambios calculados a partir de comparar el estado anterior y el nuevo
-// de las unidades de los jugadores IA (id que empieza por 'rival') tras el endTurn. El frontend ya no recibe 'ai_units' ni 'unitUpdates'.
-async animateAIUnitUpdates(updates: { id: string; newPosition: { x: number; y: number }; newHealth: number }[]): Promise<void> {
-  if (!this.gameSession) return;
-  const TILE_SIZE = 120;
-  for (const update of updates) {
-    const unit = this.gameSession.units.find(u => u.id === update.id);
-    if (!unit) continue;
-    // Animar movimiento si la posición cambió
-    const fromX = unit.position.x;
-    const fromY = unit.position.y;
-    const toX = update.newPosition.x;
-    const toY = update.newPosition.y;
-    if (fromX !== toX || fromY !== toY) {
-      // Animación simple: mover el icono de la unidad visualmente
-      const unitElem = document.querySelector(`.unit-indicator[data-unit-id="${unit.id}"]`) as HTMLElement;
-      if (unitElem) {
-        unitElem.style.transition = 'transform 0.5s';
-        unitElem.style.transform = `translate(${(toX - fromX) * TILE_SIZE}px, ${(toY - fromY) * TILE_SIZE}px)`;
-        await new Promise(res => setTimeout(res, 500));
-        unitElem.style.transition = '';
-        unitElem.style.transform = '';
-      }
+  /**
+* Método para cerrar el panel lateral
+*/
+  closeSidebar(): void {
+    console.log('Cerrando panel lateral');
+    // Si hay una unidad seleccionada, la deseleccionamos
+    if (this.selectedUnit) {
+      this.clearSelection();
     }
-    // Animar daño si la salud disminuyó
-    if (update.newHealth < unit.health) {
-      const damage = unit.health - update.newHealth;
-      // Usar AnimationService si Phaser está listo
-      if (this.animationService.isPhaserReady()) {
-        this.animationService.playExplosion(toX * TILE_SIZE + 60, toY * TILE_SIZE + 60, damage);
-      } else {
-        // Fallback: animación de texto flotante
-        const mapContainer = this.mapContainer?.nativeElement;
-        if (mapContainer) {
-          const damageElem = document.createElement('div');
-          damageElem.textContent = `-${damage}`;
-          damageElem.style.position = 'absolute';
-          damageElem.style.left = `${toX * TILE_SIZE + 60}px`;
-          damageElem.style.top = `${toY * TILE_SIZE + 60}px`;
-          damageElem.style.color = 'red';
-          damageElem.style.fontSize = '24px';
-          damageElem.style.fontWeight = 'bold';
-          damageElem.style.transform = 'translate(-50%, -50%)';
-          damageElem.style.zIndex = '1000';
-          mapContainer.appendChild(damageElem);
-          setTimeout(() => damageElem.remove(), 1000);
+
+    // Si hay una ciudad seleccionada, la deseleccionamos
+    if (this.selectedCity) {
+      this.selectedCity = null;
+    }
+
+    // Asegurarnos de que cualquier otro menú contextual también se cierre
+    this.showWorkerActionsMenu = false;
+  }
+
+  // Animar los movimientos y daños de las unidades IA tras el turno
+  // NOTA: Ahora este método debe recibir los cambios calculados a partir de comparar el estado anterior y el nuevo
+  // de las unidades de los jugadores IA (id que empieza por 'rival') tras el endTurn. El frontend ya no recibe 'ai_units' ni 'unitUpdates'.
+  async animateAIUnitUpdates(updates: { id: string; newPosition: { x: number; y: number }; newHealth: number }[]): Promise<void> {
+    if (!this.gameSession) return;
+    const TILE_SIZE = 120;
+    for (const update of updates) {
+      const unit = this.gameSession.units.find(u => u.id === update.id);
+      if (!unit) continue;
+      // Animar movimiento si la posición cambió
+      const fromX = unit.position.x;
+      const fromY = unit.position.y;
+      const toX = update.newPosition.x;
+      const toY = update.newPosition.y;
+      if (fromX !== toX || fromY !== toY) {
+        // Animación simple: mover el icono de la unidad visualmente
+        const unitElem = document.querySelector(`.unit-indicator[data-unit-id="${unit.id}"]`) as HTMLElement;
+        if (unitElem) {
+          unitElem.style.transition = 'transform 0.5s';
+          unitElem.style.transform = `translate(${(toX - fromX) * TILE_SIZE}px, ${(toY - fromY) * TILE_SIZE}px)`;
+          await new Promise(res => setTimeout(res, 500));
+          unitElem.style.transition = '';
+          unitElem.style.transform = '';
+        }
+      }
+      // Animar daño si la salud disminuyó
+      if (update.newHealth < unit.health) {
+        const damage = unit.health - update.newHealth;
+        // Usar AnimationService si Phaser está listo
+        if (this.animationService.isPhaserReady()) {
+          this.animationService.playExplosion(toX * TILE_SIZE + 60, toY * TILE_SIZE + 60, damage);
+        } else {
+          // Fallback: animación de texto flotante
+          const mapContainer = this.mapContainer?.nativeElement;
+          if (mapContainer) {
+            const damageElem = document.createElement('div');
+            damageElem.textContent = `-${damage}`;
+            damageElem.style.position = 'absolute';
+            damageElem.style.left = `${toX * TILE_SIZE + 60}px`;
+            damageElem.style.top = `${toY * TILE_SIZE + 60}px`;
+            damageElem.style.color = 'red';
+            damageElem.style.fontSize = '24px';
+            damageElem.style.fontWeight = 'bold';
+            damageElem.style.transform = 'translate(-50%, -50%)';
+            damageElem.style.zIndex = '1000';
+            mapContainer.appendChild(damageElem);
+            setTimeout(() => damageElem.remove(), 1000);
+          }
         }
       }
     }
   }
-}
+
+  private onMapMouseDown = (event: MouseEvent): void => {
+    if (event.button !== 0) return;
+    if (!this.mapContainer?.nativeElement) return;
+    this.isDraggingMap = true;
+    this.dragStartX = event.clientX;
+    this.dragStartY = event.clientY;
+
+    const container = this.mapContainer.nativeElement as HTMLElement;
+    this.scrollStartLeft = container.scrollLeft;
+    this.scrollStartTop = container.scrollTop;
+
+    container.style.cursor = 'grabbing';
+    container.style.userSelect = 'none';
+    event.preventDefault();
+  }
+
+  private onMapMouseMove = (event: MouseEvent): void => {
+    if (!this.isDraggingMap || !this.mapContainer?.nativeElement) return;
+    const container = this.mapContainer.nativeElement as HTMLElement;
+    const dx = event.clientX - this.dragStartX;
+    const dy = event.clientY - this.dragStartY;
+    container.scrollLeft = this.scrollStartLeft - dx;
+    container.scrollTop = this.scrollStartTop - dy;
+  }
+
+  private onMapMouseUp = (_event: MouseEvent): void => {
+    if (!this.isDraggingMap || !this.mapContainer?.nativeElement) return;
+    this.isDraggingMap = false;
+
+    const container = this.mapContainer.nativeElement as HTMLElement;
+    container.style.cursor = 'grab';
+    container.style.userSelect = '';
+  }
 }
