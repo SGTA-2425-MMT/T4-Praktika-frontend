@@ -7,7 +7,7 @@
   background-size: cover;
   padding: 20px;
   position: relative;
-  
+
   &::before {
     content: '';
     position: absolute;
@@ -17,24 +17,6 @@
     bottom: 0;
     background-color: rgba(0, 0, 0, 0.5);
   }
-}
-
-.register-title {
-  display: block;
-  text-align: center;
-  font-size: 48px;
-  color: #f1c40f;
-  font-weight: bold;
-  margin-top: 40px;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.register-subtitle {
-  display: block;
-  text-align: center;
-  font-size: 24px;
-  color: #f1c40f;
-  margin-top: -10px;
 }
 
 .register-card {
@@ -64,7 +46,7 @@
 .register-header {
   text-align: center;
   margin-bottom: 30px;
-  
+
   h1 {
     color: #c9a45b;
     font-size: 2.2rem;
@@ -73,7 +55,7 @@
     font-family: 'Trajan Pro', 'Times New Roman', serif;
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
   }
-  
+
   p {
     color: #a7a7a7;
     font-size: 0.9rem;
@@ -83,7 +65,7 @@
 .register-form {
   .form-group {
     margin-bottom: 24px;
-    
+
     label {
       display: block;
       margin-bottom: 8px;
@@ -94,7 +76,7 @@
       font-size: 0.9rem;
       letter-spacing: 1px;
     }
-    
+
     input {
       width: 100%;
       padding: 12px 15px;
@@ -104,44 +86,44 @@
       font-size: 16px;
       transition: all 0.3s;
       box-sizing: border-box;
-      
+
       &:focus {
         outline: none;
         border-color: #c9a45b;
         box-shadow: 0 0 0 1px rgba(201, 164, 91, 0.5);
       }
-      
+
       &.is-invalid {
         border-color: #e63946;
       }
-      
+
       &::placeholder {
         color: rgba(255, 255, 255, 0.5);
       }
     }
-    
+
     .error-message {
       color: #e63946;
       font-size: 0.8rem;
       margin-top: 5px;
     }
   }
-  
+
   .alert {
     padding: 12px;
     margin-bottom: 20px;
     border: 1px solid transparent;
-    
+
     &.alert-danger {
       background-color: rgba(230, 57, 70, 0.2);
       color: #f48c89;
       border: 1px solid #e63946;
     }
   }
-  
+
   .form-actions {
     margin-top: 30px;
-    
+
     button {
       width: 100%;
       padding: 14px;
@@ -157,16 +139,16 @@
       font-family: 'Trajan Pro', 'Times New Roman', serif;
       position: relative;
       overflow: hidden;
-      
+
       &:hover:not(:disabled) {
         background: linear-gradient(to bottom, #deb978 0%, #a58339 100%);
       }
-      
+
       &:disabled {
         opacity: 0.5;
         cursor: not-allowed;
       }
-      
+
       &:active:not(:disabled) {
         background: linear-gradient(to bottom, #8c6d2e 0%, #c9a45b 100%);
       }
@@ -179,17 +161,17 @@
   margin-top: 25px;
   border-top: 1px solid rgba(201, 164, 91, 0.3);
   padding-top: 20px;
-  
+
   p {
     color: #a7a7a7;
     font-size: 0.9rem;
-    
+
     a {
       color: #c9a45b;
       text-decoration: none;
       font-weight: 500;
       transition: all 0.3s;
-      
+
       &:hover {
         color: #deb978;
         text-decoration: underline;
@@ -201,7 +183,7 @@
 .btn-danger {
   background-color: #e74c3c !important;
   color: white !important;
-  
+
   &:hover {
     background-color: #c0392b !important;
   }
