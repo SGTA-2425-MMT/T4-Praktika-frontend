@@ -106,6 +106,18 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
       container.addEventListener('mouseleave', this.onMapMouseUp);
       container.addEventListener('dragstart', (e) => e.preventDefault());
       container.style.cursor = 'grab';
+
+      // Clamp scroll position on any scroll event (wheel, touchpad, keyboard, etc.)
+      container.addEventListener('scroll', () => {
+        if (!this.gameSession) return;
+        const TILE_SIZE = 120;
+        const mapWidthPx = this.gameSession.map.width * TILE_SIZE;
+        const mapHeightPx = this.gameSession.map.height * TILE_SIZE;
+        let clampedLeft = Math.max(0, Math.min(container.scrollLeft, mapWidthPx - container.clientWidth));
+        let clampedTop = Math.max(0, Math.min(container.scrollTop, mapHeightPx - container.clientHeight));
+        if (container.scrollLeft !== clampedLeft) container.scrollLeft = clampedLeft;
+        if (container.scrollTop !== clampedTop) container.scrollTop = clampedTop;
+      });
     }
     setTimeout(() => {
       this.animationService.initPhaser(this.mapContainer?.nativeElement);
@@ -114,16 +126,21 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
 
   // Centra la cámara en una posición del mapa
   centerCameraOnPosition(x: number, y: number): void {
-    if (!this.mapContainer?.nativeElement) return;
+    if (!this.mapContainer?.nativeElement || !this.gameSession) return;
 
     const TILE_SIZE = 120; // Assuming each tile is 120px
     const container = this.mapContainer.nativeElement as HTMLElement;
+    const mapWidthPx = this.gameSession.map.width * TILE_SIZE;
+    const mapHeightPx = this.gameSession.map.height * TILE_SIZE;
 
     // Calculate the scroll position to center the camera
-    const scrollLeft = Math.max(0, x * TILE_SIZE - container.clientWidth / 2 + TILE_SIZE / 2);
-    const scrollTop = Math.max(0, y * TILE_SIZE - container.clientHeight / 2 + TILE_SIZE / 2);
+    let scrollLeft = x * TILE_SIZE - container.clientWidth / 2 + TILE_SIZE / 2;
+    let scrollTop = y * TILE_SIZE - container.clientHeight / 2 + TILE_SIZE / 2;
 
-    // Apply the calculated scroll positions
+    // Clamp scroll values
+    scrollLeft = Math.max(0, Math.min(scrollLeft, mapWidthPx - container.clientWidth));
+    scrollTop = Math.max(0, Math.min(scrollTop, mapHeightPx - container.clientHeight));
+
     container.scrollTo({ left: scrollLeft, top: scrollTop, behavior: 'smooth' });
   }
 
@@ -977,12 +994,21 @@ export class MapViewComponent implements OnInit, OnChanges, AfterViewInit {
   }
 
   private onMapMouseMove = (event: MouseEvent): void => {
-    if (!this.isDraggingMap || !this.mapContainer?.nativeElement) return;
+    if (!this.isDraggingMap || !this.mapContainer?.nativeElement || !this.gameSession) return;
     const container = this.mapContainer.nativeElement as HTMLElement;
     const dx = event.clientX - this.dragStartX;
     const dy = event.clientY - this.dragStartY;
-    container.scrollLeft = this.scrollStartLeft - dx;
-    container.scrollTop = this.scrollStartTop - dy;
+    const TILE_SIZE = 120;
+    const mapWidthPx = this.gameSession.map.width * TILE_SIZE;
+    const mapHeightPx = this.gameSession.map.height * TILE_SIZE;
+    // Calculate unclamped scroll values
+    let newScrollLeft = this.scrollStartLeft - dx;
+    let newScrollTop = this.scrollStartTop - dy;
+    // Clamp scroll values
+    newScrollLeft = Math.max(0, Math.min(newScrollLeft, mapWidthPx - container.clientWidth));
+    newScrollTop = Math.max(0, Math.min(newScrollTop, mapHeightPx - container.clientHeight));
+    container.scrollLeft = newScrollLeft;
+    container.scrollTop = newScrollTop;
   }
 
   private onMapMouseUp = (_event: MouseEvent): void => {
