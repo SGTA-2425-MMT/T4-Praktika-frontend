@@ -1,9 +1,8 @@
-import { Building } from './../models/city.model';
+import { EndTurnResponse } from './../api.service';
 import { Building as Building2 } from './../models/building.model';
-import { unitLevel } from './../models/unit.model';
 import { Injectable, Injector } from '@angular/core';
-import { BehaviorSubject, map, Observable } from 'rxjs';
-import { GameMap, MapTile, ImprovementType} from '../models/map.model';
+import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
+import { GameMap, MapTile, ImprovementType } from '../models/map.model';
 import * as UnitModel from '../models/unit.model';
 import { City } from '../models/city.model';
 import { MapGeneratorService } from './map-generator.service';
@@ -15,6 +14,8 @@ import { UnitAction } from '../models/unit.model';
 import { NotificationService } from './notification.service';
 import { SharedWarGameService } from './shared-war-game.service';
 import { BuildingsService } from '../services/buildings.service';
+import { ApiService, GameCreate, GameOut, ScenarioOut, PlayerAction } from '../../core/api.service';
+import { IaService } from '../ia.service';
 
 export interface GameSettings {
   gameName: string;
@@ -38,8 +39,9 @@ export interface GameSession {
   difficulty: string;
   createdAt: Date;
   lastSaved?: Date;
+  newGame: boolean;
 
-  currentPhase: 'diplomacia_decisiones' | 'creacion_investigacion' | 'movimiento_accion' | 'ia';
+  currentPhase: 'diplomacia_decisiones' | 'creacion_investigacion' | 'movimiento_accion';
   researchProgress?: {
     currentTechnology: string;
     progress: number;
@@ -55,7 +57,7 @@ export interface GameSession {
   culture: number;
   culturePerTurn: number;
   happiness: number;
-  era: 'ancient'  | 'medieval' | 'age_of_discovery' | 'modern';
+  era: 'ancient' | 'medieval' | 'age_of_discovery' | 'modern';
   players: {
     id: string;
     name: string;
@@ -84,19 +86,21 @@ export interface GameSession {
   providedIn: 'root'
 })
 export class GameService {
-  private currentGameSubject = new BehaviorSubject<GameSession | null>(null);
+  private readonly currentGameSubject = new BehaviorSubject<GameSession | null>(null);
   private savedGames: GameSession[] = [];
 
   // Subject para notificar cambios en las casillas
-  private tileUpdateSubject = new BehaviorSubject<MapTile | null>(null);
+  private readonly tileUpdateSubject = new BehaviorSubject<MapTile | null>(null);
   public tileUpdate$ = this.tileUpdateSubject.asObservable();
 
   constructor(
-    private sharedWarGameService: SharedWarGameService,
-    private mapGeneratorService: MapGeneratorService,
-    private cityService: CityService,
-    private technologyService: TechnologyService,
-    private injector: Injector
+    private readonly sharedWarGameService: SharedWarGameService,
+    private readonly mapGeneratorService: MapGeneratorService,
+    private readonly cityService: CityService,
+    private readonly technologyService: TechnologyService,
+    private readonly injector: Injector,
+    private readonly apiService: ApiService,
+    private readonly iaService: IaService // Inyectar IaService
   ) {
     this.loadSavedGames();
     // Hacer que el servicio sea accesible globalmente para llamarlo desde cualquier componente
@@ -153,6 +157,7 @@ export class GameService {
       culturePerTurn: 0,
       happiness: 0,
       era: 'ancient',
+      newGame: true,
       players: [
         {
           id: 'player1',
@@ -229,58 +234,97 @@ export class GameService {
     this.revealAroundUnit(map, position, radius);
   }
 
-  loadGame(gameId: string): GameSession | null {
-    const game = this.savedGames.find(game => game.id === gameId);
-    if (game) {
-      this.currentGameSubject.next(game);
-      return game;
+  async loadGame(gameId: string): Promise<GameSession | null> {
+    // Si el ID es local/temporal, cargar solo desde localStorage
+    if (gameId.startsWith('game_')) {
+      const game = this.savedGames.find(game => game.id === gameId);
+      if (game) {
+        this.currentGameSubject.next(game);
+        this.notificationService.info('Cargado localmente', 'El juego se cargó desde el almacenamiento local');
+        return game;
+      } else {
+        this.notificationService.error('Error', 'No se pudo cargar el juego');
+        return null;
+      }
+    }
+    // Si el ID no es local, intentar cargar desde la API y hacer fallback a localStorage
+    try {
+      const success = await this.loadGameFromApi(gameId);
+      if (success) {
+        return this.currentGame;
+      } else {
+        const game = this.savedGames.find(game => game.id === gameId);
+        if (game) {
+          this.currentGameSubject.next(game);
+          this.notificationService.info('Cargado localmente', 'El juego se cargó desde el almacenamiento local');
+          return game;
+        } else {
+          this.notificationService.error('Error', 'No se pudo cargar el juego');
+        }
+      }
+    } catch (error) {
+      console.error('Error al cargar el juego:', error);
+      const game = this.savedGames.find(game => game.id === gameId);
+      if (game) {
+        this.currentGameSubject.next(game);
+        this.notificationService.info('Cargado localmente', 'El juego se cargó desde el almacenamiento local');
+        return game;
+      } else {
+        this.notificationService.error('Error', 'No se pudo cargar el juego');
+      }
+      return null;
     }
     return null;
   }
 
-  saveGame(): boolean {
-    const game = this.currentGame;
-    if (!game) return false;
+  async saveGame(): Promise<boolean> {
+    // Guarda el juego en la API
+    return await this.saveGameToApi(false);
+  }
 
-    game.lastSaved = new Date();
-    const existingIndex = this.savedGames.findIndex(g => g.id === game.id);
-    if (existingIndex >= 0) {
-      this.savedGames[existingIndex] = game;
-    } else {
-      this.savedGames.push(game);
+  async getSavedGames(): Promise<GameSession[]> {
+    try {
+      const apiGames = await this.loadSavedGamesFromApi();
+      // Convertir los juegos del formato API al formato local
+      const localGames: GameSession[] = apiGames.map(apiGame => {
+        return this.convertApiGameToLocalFormat(apiGame);
+      });
+
+      // Actualizar la lista local
+      this.savedGames = localGames;
+      return [...this.savedGames];
+    } catch (error) {
+      console.error('Error al obtener juegos guardados desde la API:', error);
+      // Fallback a los juegos guardados localmente
+      return [...this.savedGames];
     }
-
-    this.persistSavedGames();
-    return true;
   }
 
-  getSavedGames(): GameSession[] {
-    return [...this.savedGames];
-  }
-
-  deleteGame(gameId: string): boolean {
-    const initialLength = this.savedGames.length;
-    this.savedGames = this.savedGames.filter(game => game.id !== gameId);
-
-    if (this.savedGames.length < initialLength) {
+  async deleteGame(gameId: string): Promise<boolean> {
+    try {
+      await firstValueFrom(this.apiService.deleteGame(gameId));
+      // Actualizar la lista local de juegos guardados
+      this.savedGames = this.savedGames.filter(game => game.id !== gameId);
       this.persistSavedGames();
+      this.notificationService.success('Juego eliminado', 'El juego se eliminó correctamente');
       return true;
+    } catch (error) {
+      console.error('Error al eliminar el juego:', error);
+      this.notificationService.error('Error', 'No se pudo eliminar el juego');
+      return false;
     }
-    return false;
   }
 
   endTurn(): void {
-    // Primero procesamos la fase de IA (si no está en esa fase)
-    if (this.currentGame && this.currentGame.currentPhase !== 'ia') {
-      this.changePhase('ia');
-    }
-    // Luego procesamos el final del turno
+    // Procesar el final del turno directamente, sin fase 'ia'
     this.processEndOfTurn();
   }
 
   private processEndOfTurn(): void {
     const game = this.currentGame;
     if (!game) return;
+
+    this.processUnitEndturn();
 
     // Procesar ciudades (crecimiento, producción, etc.)
     this.processCitiesEndTurn();
@@ -293,8 +337,7 @@ export class GameService {
 
 
     for (const building of allBuildings) {
-      if (building.turnsToBuild>0)
-      {
+      if (building.turnsToBuild > 0) {
         building.turnsToBuild--;
       }
       else if (building.turnsToBuild === 0 && !building.built) {
@@ -316,6 +359,22 @@ export class GameService {
     // Cambiar fase
     game.currentPhase = 'diplomacia_decisiones';
     this.currentGameSubject.next({ ...game });
+    // Iniciar el nuevo turno igual que en el flujo de la API
+    this.startTurn();
+  }
+
+  private processUnitEndturn(): void {
+    const game = this.currentGame;
+    if (!game) return;
+
+    game.units.forEach(unit => {
+      unit.movementPoints = unit.maxMovementPoints;
+      unit.canMove=true;
+      unit.attacksPerTurn = unit.maxattacksPerTurn;
+      if (unit.health <= 0 && this.currentGame) {
+        game.units = game.units.filter(u => u.id !== unit.id);
+      }
+    });
   }
 
   startTurn(): void {
@@ -332,26 +391,25 @@ export class GameService {
     const phases: (
       'diplomacia_decisiones' |
       'creacion_investigacion' |
-      'movimiento_accion' |
-      'ia'
+      'movimiento_accion'
     )[] = [
-      'diplomacia_decisiones',
-      'creacion_investigacion',
-      'movimiento_accion',
-      'ia'
-    ];
+        'diplomacia_decisiones',
+        'creacion_investigacion',
+        'movimiento_accion'
+      ];
 
-    const currentIndex = phases.indexOf(game.currentPhase);
+    const currentIndex = phases.indexOf(game.currentPhase as any);
 
     if (currentIndex < phases.length - 1) {
       this.changePhase(phases[currentIndex + 1]);
     } else {
-      this.processEndOfTurn();
-      this.startTurn();
+      // Al finalizar la última fase, el usuario debe pulsar "Fin de turno" para ejecutar la IA
+      // No se avanza automáticamente a la IA
+      // Se puede mostrar un aviso o habilitar el botón de fin de turno aquí si se desea
     }
   }
 
-  changePhase(phase: 'diplomacia_decisiones' | 'creacion_investigacion' | 'movimiento_accion' | 'ia'): void {
+  changePhase(phase: 'diplomacia_decisiones' | 'creacion_investigacion' | 'movimiento_accion'): void {
     const game = this.currentGame;
     if (!game) return;
 
@@ -371,11 +429,6 @@ export class GameService {
       case 'movimiento_accion':
         this.updateAvailableActions();
         break;
-
-      case 'ia':
-        this.processAI();
-        // Ya no llamamos a processEndOfTurn() aquí porque se maneja en endTurn()
-        return;
     }
 
     this.currentGameSubject.next({ ...game });
@@ -393,38 +446,12 @@ export class GameService {
     game.culture += game.culturePerTurn;
   }
 
+  /**
+   * Llama a ensureRivalUnits antes de procesar el turno de la IA
+   */
   private processAI(): void {
-    const game = this.currentGame;
-    if (!game) return;
-
-    game.units
-      .filter(unit => unit.owner !== game.currentPlayerId && unit.owner !== 'neutral')
-      .forEach(rivalUnit => {
-        // Encontrar la unidad enemiga más cercana
-        const nearestEnemy = game.units
-          .filter(unit => unit.owner === game.currentPlayerId)
-          .reduce((closest: UnitModel.Unit | null, current: UnitModel.Unit) => {
-            const distanceToCurrent = Math.abs(rivalUnit.position.x - current.position.x) +
-                                      Math.abs(rivalUnit.position.y - current.position.y);
-            const distanceToClosest = closest ? Math.abs(rivalUnit.position.x - closest.position.x) +
-                                               Math.abs(rivalUnit.position.y - closest.position.y) : Infinity;
-            return distanceToCurrent < distanceToClosest ? current : closest;
-          }, null);
-
-        if (nearestEnemy) {
-          const dx = Math.sign(nearestEnemy.position.x - rivalUnit.position.x);
-          const dy = Math.sign(nearestEnemy.position.y - rivalUnit.position.y);
-
-          // Moverse un casillero hacia el enemigo más cercano
-          rivalUnit.position.x += dx;
-          rivalUnit.position.y += dy;
-
-          // Atacar si está en rango
-          if (this.isUnitInRange(rivalUnit, nearestEnemy)) {
-            this.attackUnit(rivalUnit, nearestEnemy);
-          }
-        }
-      });
+    // Ahora la IA del backend se encarga de los movimientos y acciones de los rivales.
+    // Esta función queda como placeholder para posibles hooks locales o animaciones.
   }
 
   attackUnit(attacker: UnitModel.Unit, defender: UnitModel.Unit): boolean {
@@ -432,38 +459,39 @@ export class GameService {
   }
 
   private updateAvailableActions(): void {
+    /*
     const game = this.currentGame;
     if (!game) return;
 
     game.units.forEach(unit => {
-        if (unit.owner === game.currentPlayerId && unit.movementPoints > 0) {
-            const availableActions: UnitModel.UnitAction[] = ['move'];
+      if (unit.owner === game.currentPlayerId && unit.movementPoints > 0) {
+        const availableActions: UnitModel.UnitAction[] = ['move'];
 
-            if (unit.type === 'settler' && unit.movementPoints > 0) {
-                availableActions.push('found_city');
-            }
-
-            if (unit.type === 'worker' && unit.movementPoints > 0) {
-                availableActions.push('build');
-            }
-
-            if ((unit.type === 'warrior' || unit.type === 'archer' || unit.type ==='artillery'
-                || unit.type === 'horseman' || unit.type === 'galley' || unit.type === 'rifleman' || unit.type === 'tank' || unit.type === 'warship'
-                || unit.type === 'catapult' ) ) {
-                const enemyUnitsInRange = game.units.some(otherUnit =>
-                    otherUnit.owner !== game.currentPlayerId && // Asegurarse de que no sea del jugador actual
-                    otherUnit.owner !== 'neutral' && // Excluir unidades neutrales
-                    this.isUnitInRange(unit, otherUnit)
-                );
-
-                if (enemyUnitsInRange) {
-                    availableActions.push('attack');
-                }
-            }
-
-            unit.availableActions = availableActions;
+        if (unit.type === 'settler' && unit.movementPoints > 0) {
+          availableActions.push('found_city');
         }
-    });
+
+        if (unit.type === 'worker' && unit.movementPoints > 0) {
+          availableActions.push('build');
+        }
+
+        if ((unit.type === 'warrior' || unit.type === 'archer' || unit.type === 'artillery'
+          || unit.type === 'horseman' || unit.type === 'galley' || unit.type === 'rifleman' || unit.type === 'tank' || unit.type === 'warship'
+          || unit.type === 'catapult')) {
+          const enemyUnitsInRange = game.units.some(otherUnit =>
+            otherUnit.owner !== game.currentPlayerId && // Asegurarse de que no sea del jugador actual
+            otherUnit.owner !== 'neutral' && // Excluir unidades neutrales
+            this.isUnitInRange(unit, otherUnit)
+          );
+
+          if (enemyUnitsInRange) {
+            availableActions.push('attack');
+          }
+        }
+
+        unit.availableActions = availableActions;
+      }
+    });*/
   }
 
   isUnitInRange(attacker: UnitModel.Unit, target: UnitModel.Unit): boolean {
@@ -592,7 +620,7 @@ export class GameService {
 
     // Asegurar que se conserven los valores actualizados
     // y que se propague la notificación de cambio
-    this.currentGameSubject.next({...game});
+    this.currentGameSubject.next({ ...game });
     console.log('=== Investigación actualizada ===');
   }
 
@@ -633,7 +661,6 @@ export class GameService {
   }
 
   private createNewUnit(type: string, position: { x: number; y: number }, owner: string): UnitModel.Unit | null {
-    const id = `${type}_${Date.now()}`;
     const unitLevel = this.getUnitLevelByType(type); // Usar el método actualizado
     if (!unitLevel || unitLevel < 1) {
       console.error(`No se puede desarrollar unidad no desbloqueada: ${type}`);
@@ -641,25 +668,25 @@ export class GameService {
     }
     switch (type) {
       case 'warrior':
-        return UnitModel.createWarrior(owner , position.x, position.y, unitLevel);
+        return UnitModel.createWarrior(owner, position.x, position.y, unitLevel);
       case 'settler':
-        return UnitModel.createSettler(owner , position.x, position.y, unitLevel);
+        return UnitModel.createSettler(owner, position.x, position.y, unitLevel);
       case 'worker':
-        return UnitModel.createWorker(owner , position.x, position.y, unitLevel);
+        return UnitModel.createWorker(owner, position.x, position.y, unitLevel);
       case 'archer':
-        return UnitModel.createArcher(owner , position.x, position.y, unitLevel);
+        return UnitModel.createArcher(owner, position.x, position.y, unitLevel);
       case 'horseman':
-        return UnitModel.createHorseman(owner , position.x, position.y, unitLevel);
+        return UnitModel.createHorseman(owner, position.x, position.y, unitLevel);
       case 'catapult':
-        return UnitModel.createCatapult(owner , position.x, position.y, unitLevel); // Si hay un createSwordsman, cámbialo aquí
+        return UnitModel.createCatapult(owner, position.x, position.y, unitLevel); // Si hay un createSwordsman, cámbialo aquí
       case 'artillery':
-        return UnitModel.createArtillery(owner , position.x, position.y, unitLevel);
+        return UnitModel.createArtillery(owner, position.x, position.y, unitLevel);
       case 'galley':
-        return UnitModel.createGalley(owner , position.x, position.y, unitLevel);
+        return UnitModel.createGalley(owner, position.x, position.y, unitLevel);
       case 'tank':
-        return UnitModel.createTank(owner , position.x, position.y, unitLevel);
+        return UnitModel.createTank(owner, position.x, position.y, unitLevel);
       case 'rifleman':
-        return UnitModel.createRifleman(owner , position.x, position.y, unitLevel);
+        return UnitModel.createRifleman(owner, position.x, position.y, unitLevel);
       default:
         console.error(`Tipo de unidad desconocido: ${type}`);
         return null;
@@ -684,6 +711,10 @@ export class GameService {
 
   private getMapDimensions(size: string): { width: number; height: number } {
     switch (size) {
+      case 'small': return { width: 20, height: 20 };
+      case 'medium': return { width: 40, height: 40 };
+      case 'large': return { width: 50, height: 50 };
+      case 'huge': return { width: 60, height: 60 };
       default: return { width: 50, height: 50 };
     }
   }
@@ -696,7 +727,7 @@ export class GameService {
       const tile = map.tiles[y][x];
       // Verificar que el terreno sea adecuado Y no tenga bosque/jungla
       if ((tile.terrain === 'grassland' || tile.terrain === 'plains') &&
-          tile.featureType !== 'forest' && tile.featureType !== 'jungle') {
+        tile.featureType !== 'forest' && tile.featureType !== 'jungle') {
         console.log(`Posición inicial encontrada en (${x}, ${y}), terreno: ${tile.terrain}, característica: ${tile.featureType ?? 'ninguna'}`);
         return { x, y };
       }
@@ -712,7 +743,7 @@ export class GameService {
   private createStartingUnits(civilization: string, position: { x: number; y: number }): UnitModel.Unit[] {
     const settler = UnitModel.createSettler('player1', position.x, position.y, 1);
     const owner = 'player1';
-    const warrior = UnitModel.createWarrior(owner , position.x, position.y, 1);
+    const warrior = UnitModel.createWarrior(owner, position.x, position.y, 1);
     return [settler, warrior];
   }
 
@@ -732,7 +763,6 @@ export class GameService {
 
         if (x >= 0 && x < map.width && y >= 0 && y < map.height) {
           if (Math.sqrt(dx * dx + dy * dy) <= radius) {
-            map.tiles[y][x].isExplored = true;
             map.tiles[y][x].isVisible = true;
           }
         }
@@ -954,7 +984,7 @@ export class GameService {
 
     // No acumulamos el oro en este método para evitar acumulación duplicada
     // Notificar los cambios
-    this.currentGameSubject.next({...this.currentGame});
+    this.currentGameSubject.next({ ...this.currentGame });
   }
 
   // Método para procesar las acciones del Worker al final del turno
@@ -983,7 +1013,7 @@ export class GameService {
             console.log(`Trabajador completó la construcción de un camino en (${tile.x}, ${tile.y})`);
 
             // Notificar la actualización del tile
-            this.tileUpdateSubject.next({...tile});
+            this.tileUpdateSubject.next({ ...tile });
           } else if (unit.currentAction && unit.currentAction.startsWith('build_') && unit.currentAction !== 'build_road' as UnitAction) {
             // Para mejoras que no son caminos (granjas, minas, etc.)
             const actionStr = unit.currentAction;
@@ -993,14 +1023,14 @@ export class GameService {
             console.log(`Trabajador completó la construcción de ${improvementType} en (${tile.x}, ${tile.y})`);
 
             // Notificar la actualización del tile
-            this.tileUpdateSubject.next({...tile});
+            this.tileUpdateSubject.next({ ...tile });
           } else if (unit.currentAction?.startsWith('clear_')) {
             // Eliminar la característica del terreno
             tileImprovementService.removeFeature(tile);
             console.log(`Trabajador completó la eliminación de característica en (${tile.x}, ${tile.y})`);
 
             // Notificar la actualización del tile
-            this.tileUpdateSubject.next({...tile});
+            this.tileUpdateSubject.next({ ...tile });
           }
 
           // Actualizar la visualización de la casilla
@@ -1031,7 +1061,7 @@ export class GameService {
     if (!this.currentGame) return;
 
     // Crear una copia del objeto para asegurar que se detecten los cambios
-    const updatedGame = {...this.currentGame};
+    const updatedGame = { ...this.currentGame };
     this.currentGameSubject.next(updatedGame);
     console.log('Estado del juego actualizado manualmente');
   }
@@ -1051,66 +1081,545 @@ export class GameService {
 
     // Inicializar la lista de jugadores si no está definida
     if (!game.players) {
-        game.players = [];
+      game.players = [];
     }
 
     const availableCivilizations = [
-        'aztecs', 'egyptians', 'romans', 'greeks', 'chinese', 'indians', 'japanese', 'mongols'
+      'aztecs', 'egyptians', 'romans', 'greeks', 'chinese', 'indians', 'japanese', 'mongols'
     ];
 
     for (let i = 0; i < game.settings.numberOfOpponents; i++) {
-        const civilization = availableCivilizations[i % availableCivilizations.length];
-        const rivalId = `rival${i + 1}`;
-        const rivalName = `Civilización ${i + 1}`;
+      const civilization = availableCivilizations[i % availableCivilizations.length];
+      const rivalId = `rival${i + 1}`;
+      const rivalName = `Civilización ${i + 1}`;
 
-        const startingPosition = this.findSuitableStartingPosition(game.map);
+      const startingPosition = this.findSuitableStartingPosition(game.map);
 
-        // Crear una ciudad inicial para la civilización rival
-        const settler = UnitModel.createSettler(rivalId, startingPosition.x, startingPosition.y, 1);
-        const city = this.cityService.foundCity(
-            `Ciudad ${rivalName}`,
-            settler,
-            game.map,
-            game.turn
-        );
+      // Crear una ciudad inicial para la civilización rival
+      const settler = UnitModel.createSettler(rivalId, startingPosition.x, startingPosition.y, 1);
+      const city = this.cityService.foundCity(
+        `Ciudad ${rivalName}`,
+        settler,
+        game.map,
+        game.turn
+      );
 
-        if (city) {
-            city.ownerId = rivalId;
-            game.cities.push(city);
-        }
+      if (city) {
+        city.ownerId = rivalId;
+        game.cities.push(city);
+      }
 
-        // Crear unidades iniciales para la civilización rival
-        const units = [
-            UnitModel.createWarrior(rivalId, startingPosition.x, startingPosition.y, 1),
-            UnitModel.createArcher(rivalId, startingPosition.x, startingPosition.y, 1)
-        ];
+      // Crear unidades iniciales para la civilización rival
+      const units = [
+        UnitModel.createWarrior(rivalId, startingPosition.x, startingPosition.y, 1),
+        UnitModel.createArcher(rivalId, startingPosition.x, startingPosition.y, 1)
+      ];
 
-        game.units.push(...units);
+      game.units.push(...units);
 
-        // Añadir la civilización rival al estado del juego
-        game.players.push({
-            id: rivalId,
-            name: rivalName,
-            civilization: civilization,
-            resources: {
-                gold: 50,
-                goldPerTurn: 2,
-                science: 0,
-                sciencePerTurn: 1,
-                culture: 0,
-                culturePerTurn: 1,
-                happiness: 0
-            },
-            research: {
-                progress: 0,
-                turnsRemaining: 0
-            },
-            technologies: [],
-            availableTechnologies: ['agriculture', 'mining', 'sailing'],
-            era: 'ancient'
-        });
+      // Añadir la civilización rival al estado del juego
+      game.players.push({
+        id: rivalId,
+        name: rivalName,
+        civilization: civilization,
+        resources: {
+          gold: 50,
+          goldPerTurn: 2,
+          science: 0,
+          sciencePerTurn: 1,
+          culture: 0,
+          culturePerTurn: 1,
+          happiness: 0
+        },
+        research: {
+          progress: 0,
+          turnsRemaining: 0
+        },
+        technologies: [],
+        availableTechnologies: ['agriculture', 'mining', 'sailing'],
+        era: 'ancient'
+      });
     }
 
     this.currentGameSubject.next({ ...game });
+  }
+
+  // ==================== MÉTODOS DE INTEGRACIÓN CON LA API ====================
+
+  /**
+   * Obtiene los escenarios disponibles desde la API
+   */
+  async getAvailableScenarios(): Promise<ScenarioOut[]> {
+    try {
+      return await firstValueFrom(this.apiService.getScenarios());
+    } catch (error) {
+      console.error('Error al obtener escenarios:', error);
+      this.notificationService.error('Error', 'No se pudieron cargar los escenarios disponibles');
+      return [];
+    }
+  }
+
+  /**
+   * Carga los juegos guardados del usuario actual desde la API
+   */
+  async loadSavedGamesFromApi(): Promise<GameOut[]> {
+    try {
+      const games = await firstValueFrom(this.apiService.getGames());
+      console.log('Juegos cargados desde la API:', games);
+      return games;
+    } catch (error) {
+      console.error('Error al cargar juegos guardados:', error);
+      this.notificationService.error('Error', 'No se pudieron cargar los juegos guardados');
+      return [];
+    }
+  }
+
+  /**
+   * Carga un juego específico desde la API
+   * @param gameId ID del juego a cargar
+   */
+  async loadGameFromApi(gameId: string): Promise<boolean> {
+    try {
+      const gameData = await firstValueFrom(this.apiService.getGame(gameId));
+
+      // Convertir el formato de la API al formato local
+      const gameSession = this.convertApiGameToLocalFormat(gameData);
+
+      // Actualizar el estado del juego
+      this.currentGameSubject.next(gameSession);
+
+      this.notificationService.success('Juego cargado', `Juego "${gameData.name}" cargado correctamente`);
+      return true;
+    } catch (error) {
+      console.error('Error al cargar el juego:', error);
+      this.notificationService.error('Error', 'No se pudo cargar el juego');
+      return false;
+    }
+  }
+
+  /**
+   * Crea un nuevo juego en la API
+   * @param gameSettings Configuración del nuevo juego
+   */
+  async createNewGameInApi(gameSettings: GameSettings, scenarioId: string): Promise<boolean> {
+    try {
+      // Primero crear el juego en local
+      const localGame = this.createNewGame(gameSettings);
+
+      // Convertir el juego local al formato de la API
+      const apiGameState = this.convertLocalGameToApiFormat(localGame);
+
+      // Crear el objeto GameCreate para la API
+      const gameCreate: GameCreate = {
+        name: gameSettings.gameName,
+        scenario_id: scenarioId,
+        gamesession: apiGameState
+      };
+
+      // Enviar la petición a la API
+      const createdGame = await firstValueFrom(this.apiService.createGame(gameCreate));
+
+      // Actualizar el ID del juego local con el ID asignado por la API
+      localGame.id = createdGame._id;
+
+      // Actualizar el estado del juego
+      this.currentGameSubject.next({ ...localGame });
+
+      this.notificationService.success('Juego creado', `Juego "${gameSettings.gameName}" creado correctamente`);
+      return true;
+    } catch (error) {
+      console.error('Error al crear el juego:', error);
+      this.notificationService.error('Error', 'No se pudo crear el juego');
+      return false;
+    }
+  }
+
+  /**
+   * Guarda el estado actual del juego en la API
+   * Si existe un juego con el mismo nombre, lo sobrescribe (update), si no, crea uno nuevo
+   * @param isAutosave Indica si es un autoguardado (true) o un guardado manual (false)
+   */
+  private async saveGameToApi(isAutosave: boolean): Promise<boolean> {
+    const currentGame = this.currentGame;
+    if (!currentGame) return false;
+    try {
+      // Si el ID es temporal/local, crear en la API
+      if (currentGame.id.startsWith('game_')) {
+        // Crear solo si no existe en la API
+        const gameCreate = {
+          name: currentGame.name,
+          scenario_id: 'default',
+          gamesession: this.convertLocalGameToApiFormat(currentGame)
+        };
+        const createdGame = await firstValueFrom(this.apiService.createGame(gameCreate));
+        currentGame.id = createdGame._id;
+        this.currentGameSubject.next({ ...currentGame });
+        if (!this.savedGames.some(game => game.id === currentGame.id)) {
+          this.savedGames.push({ ...currentGame });
+          this.persistSavedGames();
+        }
+        if (!isAutosave) {
+          this.notificationService.success('Guardado', 'Juego guardado correctamente');
+        }
+        return true;
+      } else {
+        // Si ya tiene un ID válido, actualizar el juego existente SIEMPRE
+        await firstValueFrom(this.apiService.saveGame(currentGame.id, this.convertLocalGameToApiFormat(currentGame)));
+        currentGame.lastSaved = new Date();
+        const savedGameIndex = this.savedGames.findIndex(game => game.id === currentGame.id);
+        if (savedGameIndex !== -1) {
+          this.savedGames[savedGameIndex] = { ...currentGame };
+        } else {
+          this.savedGames.push({ ...currentGame });
+        }
+        this.persistSavedGames();
+        if (!isAutosave) {
+          this.notificationService.success('Guardado', 'Juego actualizado correctamente');
+        }
+        return true;
+      }
+    } catch (error) {
+      console.error('Error al guardar el juego:', error);
+      if (!isAutosave) {
+        this.notificationService.error('Error', 'No se pudo guardar el juego');
+      }
+      return false;
+    }
+  }
+
+  /**
+   * Envía una acción de jugador a la API
+   * @param action Acción a realizar
+   */
+  async sendPlayerAction(action: PlayerAction): Promise<boolean> {
+    try {
+      const currentGame = this.currentGame;
+      if (!currentGame) {
+        console.error('No hay juego activo para enviar acción');
+        return false;
+      }
+
+      // Verificar si necesitamos guardar primero (si el ID es temporal)
+      if (currentGame.id.startsWith('game_')) {
+        const saved = await this.saveGameToApi(true);
+        if (!saved) {
+          console.error('No se pudo guardar el juego antes de enviar la acción');
+          return false;
+        }
+      }
+
+      // Enviar la acción a la API
+      const updatedGame = await firstValueFrom(this.apiService.applyAction(currentGame.id, action));
+
+      // Actualizar el estado del juego con la respuesta de la API
+      const gameSession = this.convertApiGameToLocalFormat(updatedGame);
+      this.currentGameSubject.next(gameSession);
+
+      return true;
+    } catch (error) {
+      console.error('Error al enviar acción de jugador:', error);
+      this.notificationService.error('Error', 'No se pudo realizar la acción');
+      return false;
+    }
+  }
+
+  /**
+   * Envía múltiples acciones de jugador a la API
+   * @param actions Array de acciones a realizar
+   */
+  async sendMultiplePlayerActions(actions: PlayerAction[]): Promise<boolean> {
+    try {
+      const currentGame = this.currentGame;
+      if (!currentGame) {
+        console.error('No hay juego activo para enviar acciones');
+        return false;
+      }
+
+      // Enviar las acciones a la API
+      const updatedGame = await firstValueFrom(this.apiService.applyAction(currentGame.id, actions));
+
+      // Actualizar el estado del juego con la respuesta de la API
+      const gameSession = this.convertApiGameToLocalFormat(updatedGame);
+      this.currentGameSubject.next(gameSession);
+
+      return true;
+    } catch (error) {
+      console.error('Error al enviar acciones de jugador:', error);
+      this.notificationService.error('Error', 'No se pudieron realizar las acciones');
+      return false;
+    }
+  }
+
+  /**
+   * Finaliza el turno del jugador y actualiza solo con la respuesta del backend
+   */
+  async endTurnWithApi(): Promise<boolean> {
+    try {
+      const currentGame = this.currentGame;
+      if (!currentGame) {
+        console.error('No hay juego activo para finalizar turno');
+        return false;
+      }
+
+      // Guardar la partida antes de finalizar el turno
+      const saved = await this.saveGame();
+      if (!saved) {
+        this.notificationService.error('Error', 'No se pudo guardar la partida antes de finalizar el turno');
+        return false;
+      }
+
+      // Extraer solo ciudades y unidades agrupadas por civilización
+      const minimalPayload = this.extractCitiesAndUnitsByCivilization(currentGame);
+
+      // Definir interfaz mínima para la respuesta de endTurn
+      interface EndTurnResponse {
+        players: Array<{
+          id: string;
+          cities: City[];
+          units: UnitModel.Unit[];
+        }>;
+      }
+      // Enviar la solicitud de finalizar turno a la API SOLO con el payload reducido
+      const updatedGame: EndTurnResponse = await firstValueFrom(this.apiService.endTurn(currentGame.id, minimalPayload));
+
+      // Log y comprobación defensiva
+      console.log('Respuesta de endTurn:', updatedGame);
+      let playersArray: Array<{ id: string; cities: City[]; units: UnitModel.Unit[] }> = [];
+      if (Array.isArray(updatedGame.players)) {
+        playersArray = updatedGame.players;
+      } else if (
+        updatedGame.players &&
+        typeof updatedGame.players === 'object' &&
+        Array.isArray((updatedGame.players as any).players)
+      ) {
+        playersArray = (updatedGame.players as any).players;
+      } else {
+        this.notificationService.error('Error', 'La respuesta de endTurn no contiene un array players. Consulta la consola para ver la respuesta real.');
+        return false;
+      }
+
+      // Actualizar solo las ciudades y unidades del GameSession local
+      for (const playerData of playersArray) {
+        // Actualizar ciudades
+        currentGame.cities = currentGame.cities.filter(c => c.ownerId !== playerData.id)
+          .concat(playerData.cities || []);
+        // Actualizar unidades
+        currentGame.units = currentGame.units.filter(u => u.owner !== playerData.id)
+          .concat(playerData.units || []);
+      }
+      // Eliminar el incremento manual del turno
+      // currentGame.turn += 1;
+      // Notificar el nuevo estado y reiniciar el turno correctamente
+      this.currentGameSubject.next({ ...currentGame });
+      this.endTurn();
+      this.startTurn();
+      return true;
+    } catch (error) {
+      console.error('Error al finalizar turno:', error);
+      this.notificationService.error('Error', 'No se pudo finalizar el turno');
+      return false;
+    }
+  }
+
+  /**
+   * Aplica un cheat code al juego
+   * @param cheatCode Código de la trampa
+   * @param target Objetivo opcional de la trampa
+   */
+  async applyCheat(cheatCode: string, target?: { type: string, id: string }): Promise<boolean> {
+    try {
+      const currentGame = this.currentGame;
+      if (!currentGame) {
+        console.error('No hay juego activo para aplicar trampa');
+        return false;
+      }
+
+      // Crear el objeto de solicitud de trampa
+      const cheatRequest = {
+        game_id: currentGame.id,
+        cheat_code: cheatCode,
+        target: target
+      };
+
+      // Enviar la solicitud a la API
+      const response = await firstValueFrom(this.apiService.applyCheat(currentGame.id, cheatRequest));
+
+      // Si la trampa fue exitosa y devolvió un nuevo estado del juego, actualizarlo
+      if (response.success && response.GameSession) {
+        // Convertir el estado de la API al formato local
+        const gameSession = this.convertApiGameStateToLocalFormat(response.GameSession);
+
+        // Actualizar solo el estado del juego, manteniendo el resto de propiedades
+        this.currentGameSubject.next({
+          ...currentGame,
+          ...gameSession
+        });
+      }
+
+      // Mostrar mensaje de éxito o error
+      if (response.success) {
+        this.notificationService.success('Trampa aplicada', response.message || 'Trampa aplicada correctamente');
+      } else {
+        this.notificationService.error('Error', response.message || 'La trampa no tuvo efecto');
+      }
+
+      return response.success;
+    } catch (error) {
+      console.error('Error al aplicar trampa:', error);
+      this.notificationService.error('Error', 'No se pudo aplicar la trampa');
+      return false;
+    }
+  }
+
+  /**
+   * Activa el autoguardado periódico
+   * @param intervalMinutes Intervalo de autoguardado en minutos
+   */
+  enableAutoSave(intervalMinutes: number = 5): void {
+    // Limpiar cualquier intervalo existente
+    if (this._autoSaveInterval) {
+      clearInterval(this._autoSaveInterval);
+    }
+
+    // Configurar nuevo intervalo
+    this._autoSaveInterval = setInterval(() => {
+      if (this.currentGame) {
+        this.saveGameToApi(true)
+          .then(success => {
+            if (success) {
+              console.log('Autoguardado completado');
+            }
+          })
+          .catch(error => {
+            console.error('Error en autoguardado:', error);
+          });
+      }
+    }, intervalMinutes * 60 * 1000);
+
+    console.log(`Autoguardado activado cada ${intervalMinutes} minutos`);
+  }
+
+  /**
+   * Desactiva el autoguardado periódico
+   */
+  disableAutoSave(): void {
+    if (this._autoSaveInterval) {
+      clearInterval(this._autoSaveInterval);
+      this._autoSaveInterval = undefined;
+      console.log('Autoguardado desactivado');
+    }
+  }
+
+  // Variable privada para almacenar el intervalo de autoguardado
+  private _autoSaveInterval: any;
+
+  // ==================== MÉTODOS DE CONVERSIÓN DE FORMATO ====================
+
+  /**
+   * Convierte un juego del formato de la API al formato local
+   */
+  private convertApiGameToLocalFormat(apiGame: GameOut): GameSession {
+    // Extraer el estado del juego de la API
+    const apiGameState = apiGame.gamesession;
+
+    // Convertir el estado del juego
+    //const gameState = this.convertApiGameStateToLocalFormat(apiGameState);
+    const gameState = JSON.parse(apiGameState, (key, value) => {
+      if (value && typeof value === 'object' && value.__type === 'Date') {
+        return new Date(value.value);
+      }
+      return value;
+    });
+    // Crear el objeto GameSession
+    return gameState
+  }
+
+  /**
+   * Convierte el estado del juego del formato de la API al formato local
+   */
+  private convertApiGameStateToLocalFormat(apiGameState: string): any {
+    // Extraer datos del jugador y la IA
+    const playerData = JSON.parse(apiGameState, (key, value) => {
+      if (value && typeof value === 'object' && value.__type === 'Date') {
+        return new Date(value.value);
+      }
+      return value;
+    });
+    alert(playerData);
+    return playerData;
+  }
+
+  /**
+   * Convierte un juego del formato local al formato de la API
+   */
+  public convertLocalGameToApiFormat(localGame: GameSession): any {
+    // Asegurar estructura mínima antes de enviar
+    return this.ensureMinimalGameSessionStructure(localGame);
+  }
+
+  /**
+   * Devuelve un objeto con la estructura mínima requerida para gamesession
+   */
+  private ensureMinimalGameSessionStructure(game: any): any {
+    const current_player = game.current_player ?? game.currentPlayerId ?? '';
+    let player = game.player;
+    if (!player && Array.isArray(game.players)) {
+      player = game.players.find((p: any) => p.id === current_player) ?? {};
+    }
+    player = {
+      cities: player?.cities ?? [],
+      units: player?.units ?? [],
+      technologies: player?.technologies ?? [],
+      resources: player?.resources ?? {}
+    };
+    let ai = game.ai;
+    if (!ai && Array.isArray(game.players)) {
+      ai = game.players.filter((p: any) => p.id !== current_player);
+    }
+    ai = (ai ?? []).map((a: any) => ({
+      cities: a?.cities ?? [],
+      units: a?.units ?? [],
+      technologies: a?.technologies ?? [],
+      resources: a?.resources ?? {}
+    }));
+    // map: asegurar que solo tiene size, explored y visible_objects
+    let map = game.map ?? {};
+    const size = map.size ?? { width: 10, height: 10 };
+    let explored = map.explored;
+    if (!Array.isArray(explored) || explored.length !== size.height || !Array.isArray(explored[0]) || explored[0].length !== size.width) {
+      explored = Array.from({ length: size.height }, () => Array(size.width).fill(0));
+    }
+    const visible_objects = map.visible_objects ?? [];
+    map = {
+      size,
+      explored,
+      visible_objects
+    };
+    const turn = game.turn ?? 0;
+    return {
+      current_player,
+      player,
+      ai,
+      map,
+      turn,
+      ...game // Se añaden el resto de campos originales
+    };
+  }
+
+  /**
+   * Extrae solo las ciudades y unidades agrupadas por civilización/jugador
+   * Siempre incluye un array 'players' aunque solo haya uno
+   */
+  private extractCitiesAndUnitsByCivilization(game: GameSession) {
+    // Si no hay jugadores definidos, incluir al menos el jugador actual
+    let playersArr = (game.players && game.players.length > 0)
+      ? game.players
+      : [{ id: game.currentPlayerId }];
+    const players = playersArr.map(player => ({
+      id: player.id,
+      cities: game.cities.filter(city => city.ownerId === player.id),
+      units: game.units.filter(unit => unit.owner === player.id)
+    }));
+    return { players };
   }
 }

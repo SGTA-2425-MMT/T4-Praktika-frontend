@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MapViewComponent } from './map/map-view/map-view.component';
@@ -6,12 +6,14 @@ import { TechTreeComponent } from './technology/tech-tree/tech-tree.component';
 import { NotificationPanelComponent } from './notification-panel/notification-panel.component';
 import { GameService, GameSession } from '../core/services/game.service';
 import { DebugService } from '../core/services/debug.service';
+import { CheatService } from '../core/services/cheat.service';
+import { CheatConsoleComponent } from './cheat-console/cheat-console.component';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-game',
   standalone: true,
-  imports: [CommonModule, MapViewComponent, TechTreeComponent, NotificationPanelComponent],
+  imports: [CommonModule, MapViewComponent, TechTreeComponent, NotificationPanelComponent, CheatConsoleComponent],
   templateUrl: './game.component.html',
   styleUrl: './game.component.scss'
 })
@@ -22,11 +24,19 @@ export class GameComponent implements OnInit, OnDestroy {
   subscription: Subscription = new Subscription();
   showTechTree = false; // Estado para mostrar/ocultar el árbol tecnológico
 
+  // Referencia al componente de consola de trucos
+  @ViewChild(CheatConsoleComponent) cheatConsoleRef!: CheatConsoleComponent;
+  @ViewChild(MapViewComponent) mapViewRef!: MapViewComponent;
+
+  // Estado para mostrar/ocultar la consola de trucos
+  showCheatConsole = false;
+
   constructor(
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly gameService: GameService,
-    private readonly debugService: DebugService
+    private readonly debugService: DebugService,
+    public cheatService: CheatService
   ) { }
 
   ngOnInit(): void {
@@ -87,14 +97,19 @@ export class GameComponent implements OnInit, OnDestroy {
     this.subscription.unsubscribe();
   }
 
-  saveGame(): void {
-    if (this.gameService.saveGame()) {
-      // Mostrar mensaje de éxito
-      alert('Partida guardada correctamente');
-    } else {
-      alert('Ha ocurrido un error al guardar la partida');
+  async saveGame(): Promise<void> {
+      try {
+        const result = await this.gameService.saveGame();
+        if (result) {
+          // Mostrar mensaje de éxito
+          alert('Partida guardada correctamente');
+        } else {
+          alert('Ha ocurrido un error al guardar la partida');
+        }
+      } catch {
+        alert('Ha ocurrido un error al guardar la partida');
+      }
     }
-  }
 
   exitToMenu(): void {
     const confirmExit = confirm('¿Estás seguro de que quieres salir? Los cambios no guardados se perderán.');
@@ -104,13 +119,13 @@ export class GameComponent implements OnInit, OnDestroy {
     }
   }
 
-  endTurn(): void {
-    // El método endTurn ahora procesará completamente el final del turno
-    this.gameService.endTurn();
+  async endTurn(): Promise<void> {
+    // Usar el nuevo flujo: solo actualiza el estado del juego
+    const result = await this.gameService.endTurnWithApi();
     this.gameSession = this.gameService.currentGame;
+    // Si se desea animar cambios de unidades IA, aquí se puede comparar el estado anterior y el nuevo
+    // y pasar los cambios a mapViewRef.animateAIUnitUpdates().
     this.showNewTurnNotification();
-
-    // También iniciamos el nuevo turno
     this.startTurn();
   }
 
@@ -141,7 +156,6 @@ export class GameComponent implements OnInit, OnDestroy {
       case 'diplomacia_decisiones': return 'Diplomacia y Decisiones';
       case 'creacion_investigacion': return 'Construcción e Investigación';
       case 'movimiento_accion': return 'Movimiento y Acción';
-      case 'ia': return 'IA';
       default: return 'Desconocida';
     }
   }
@@ -185,5 +199,48 @@ export class GameComponent implements OnInit, OnDestroy {
       this.debugService.forceResearchUpdate();
       alert("Se ha forzado la actualización de la investigación. Verifica la consola para más detalles.");
     }
+
+    // Ctrl+T para abrir la ventana de trucos (considera también 't' minúscula)
+    if (event.ctrlKey && (event.key === 'T' || event.key === 't')) {
+      console.log("Ctrl+T detectado. Abriendo ventana de trucos...");
+      event.preventDefault(); // Prevenir el comportamiento por defecto de Ctrl+T
+      this.openCheatInput();
+    }
+  }
+
+  openCheatInput(): void {
+    console.log("Abriendo consola de trucos, estado actual:", this.showCheatConsole);
+    this.showCheatConsole = true;
+    setTimeout(() => {
+      // Forzar que el focus vaya a la consola
+      const inputElement = document.querySelector('.console-input input');
+      if (inputElement) {
+        (inputElement as HTMLElement).focus();
+      }
+    }, 100);
+  }
+
+  executeCheat(command: string): void {
+    const context = this.getCurrentGameContext();
+    const result = this.cheatService.executeCheat(command, context);
+
+    // Enviar respuesta al componente de la consola de trucos
+    if (this.cheatConsoleRef) {
+      this.cheatConsoleRef.addResponse(result);
+    }
+  }
+
+  closeCheatConsole(): void {
+    this.showCheatConsole = false;
+  }
+
+  getCurrentGameContext(): any {
+    return {
+      gameId: this.gameSession?.id,
+      gameName: this.gameSession?.name,
+      currentTurn: this.gameSession?.turn,
+      currentPhase: this.gameSession?.currentPhase,
+      currentPlayer: this.gameSession?.currentPlayerId
+    };
   }
 }

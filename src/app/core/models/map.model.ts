@@ -15,7 +15,6 @@ export interface MapTile {
   movementCost: number;
   defense: number;
   isVisible: boolean;
-  isExplored: boolean;
   yields: {
     food: number;
     production: number;

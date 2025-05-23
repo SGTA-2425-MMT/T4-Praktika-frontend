@@ -16,12 +16,12 @@ export class RegisterComponent {
   isSubmitting = false;
   errorMessage = '';
   successMessage = '';
-  
+
   get username() { return this.registerForm.get('username'); }
   get email() { return this.registerForm.get('email'); }
   get password() { return this.registerForm.get('password'); }
   get confirmPassword() { return this.registerForm.get('confirmPassword'); }
-  
+
   constructor(
     private readonly fb: FormBuilder,
     private readonly router: Router,
@@ -36,14 +36,14 @@ export class RegisterComponent {
       validators: this.passwordMatchValidator
     });
   }
-  
+
   passwordMatchValidator(g: FormGroup) {
     const password = g.get('password')?.value;
     const confirmPassword = g.get('confirmPassword')?.value;
-    
+
     return password === confirmPassword ? null : { passwordMismatch: true };
   }
-  
+
   async onSubmit() {
     if (this.registerForm.invalid) {
       return;
@@ -53,35 +53,14 @@ export class RegisterComponent {
     this.successMessage = '';
     const { username, email, password } = this.registerForm.value;
     try {
-      await this.authService.register(username, email, password);
-      this.successMessage = '¡Registro completado! Revisa tu correo electrónico para verificar tu cuenta.\nSerás redirigido a la página de inicio de sesión en 10 segundos.';
-      setTimeout(() => this.router.navigate(['/auth/login']), 10000);
+      const response = await this.authService.register(username, email, password);
+      this.successMessage = `¡Registro completado! ${response.message}\nSerás redirigido a la página de inicio de sesión en 5 segundos.`;
+      setTimeout(() => this.router.navigate(['/auth/login']), 5000);
     } catch (err: any) {
-      // Handle new backend error format (object) and legacy (string)
+      // Manejar errores del nuevo backend
       let msg = 'Error al registrar usuario.';
-      const detail = err?.error?.detail;
-      if (detail && typeof detail === 'object' && detail !== null) {
-        // New backend: JSON object with error_description or error
-        if (typeof detail.error_description === 'string' && detail.error_description) {
-          msg = detail.error_description;
-        } else if (typeof detail.error === 'string' && detail.error) {
-          msg = detail.error;
-        } else {
-          msg = JSON.stringify(detail, null, 2);
-        }
-      } else if (typeof detail === 'string') {
-        // Legacy: try to extract JSON from string, fallback to string
-        const match = RegExp(/\{.*\}/).exec(detail);
-        if (match) {
-          try {
-            const json = JSON.parse(match[0]);
-            msg = (json.error_description ?? json.error ?? match[0]);
-          } catch {
-            msg = detail;
-          }
-        } else {
-          msg = detail;
-        }
+      if (err.error?.detail) {
+        msg = err.error.detail;
       }
       this.errorMessage = msg;
     } finally {

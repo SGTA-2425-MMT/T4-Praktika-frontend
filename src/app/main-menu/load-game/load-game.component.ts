@@ -19,9 +19,9 @@ export class LoadGameComponent implements OnInit {
     private readonly gameService: GameService
   ) { }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     // Cargar la lista de partidas guardadas
-    this.savedGames = this.gameService.getSavedGames();
+    this.savedGames = await this.gameService.getSavedGames();
   }
 
   selectGame(game: GameSession): void {
@@ -38,14 +38,14 @@ export class LoadGameComponent implements OnInit {
     this.router.navigate(['/game'], { queryParams: { load: this.selectedGame.id } });
   }
 
-  deleteGame(game: GameSession, event: Event): void {
+  async deleteGame(game: GameSession, event: Event): Promise<void> {
     event.stopPropagation();  // Evitar que se seleccione el juego al eliminar
 
     const confirmed = confirm(`¿Estás seguro de que quieres eliminar la partida "${game.name}"?`);
     if (confirmed) {
-      if (this.gameService.deleteGame(game.id)) {
+      if (await this.gameService.deleteGame(game.id)) {
         // Actualizar la lista después de eliminar
-        this.savedGames = this.gameService.getSavedGames();
+        this.savedGames = await this.gameService.getSavedGames();
 
         // Si el juego eliminado era el seleccionado, limpiar la selección
         if (this.selectedGame && this.selectedGame.id === game.id) {

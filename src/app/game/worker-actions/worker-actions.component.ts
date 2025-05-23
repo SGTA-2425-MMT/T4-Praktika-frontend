@@ -1,11 +1,10 @@
 import { Component, Input, Output, EventEmitter, Injector } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BuildingsService, BuildingType } from '../../core/services/buildings.service';
-import { GameService, GameSession } from '../../core/services/game.service';
+import { GameService } from '../../core/services/game.service';
 import { MapTile } from '../../core/models/map.model';
 import { Unit, UnitAction } from '../../core/models/unit.model';
 import { BUILDING_TEMPLATES, Building } from '../../core/models/building.model';
-import { ImprovementType } from '../../core/models/map.model';
 import { TileImprovementService } from '../../core/services/tile-improvement.service';
 
 @Component({
@@ -69,7 +68,7 @@ export class WorkerActionsComponent {
           description: template.description,
           turns: template.turnsToBuild,
           canBuild: canBuildResult.canBuild,
-          reason: canBuildResult.reason || ''
+          reason: canBuildResult.reason ?? ''
         };
       });
     console.log(`[updateAvailableActions] Mejoras disponibles (data-driven): ${this.availableImprovements.length}`);
@@ -156,7 +155,7 @@ export class WorkerActionsComponent {
   // Obtener una descripción legible de la acción
   getActionDescription(action: string): string {
     const improvementName = action.replace('build_', '');
-    const improvement = (BUILDING_TEMPLATES as Building[]).find((b: Building) => b.type === improvementName);
+    const improvement = (BUILDING_TEMPLATES).find((b: Building) => b.type === improvementName);
     if (improvement) {
       return `${improvement.name} (${improvement.turnsToBuild} turnos)`;
     } else if (action === 'clear_forest') {

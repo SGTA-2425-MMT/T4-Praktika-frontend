@@ -100,8 +100,6 @@ export class CityService {
 
   // Actualizar los rendimientos de la ciudad basándose en las casillas trabajadas
   updateCityYields(city: City, map: GameMap): void {
-    // Obtener casillas trabajables
-    const workableTiles = this.getWorkableTiles(city, map);
 
     // Valores base
     let baseFood = 1;
@@ -355,23 +353,23 @@ export class CityService {
   private getAllEraBuildings(): Building[] {
     // Obtenemos la lista completa de edificios solo una vez para evitar duplicados
     const allBuildings = this.getAvailableBuildingsForEra(Era.MODERN);
-    
+
     // Eliminamos cualquier duplicado basándonos en los IDs
     const uniqueBuildings = Array.from(
       new Map(allBuildings.map(building => [building.id, building])).values()
     );
-    
+
     console.log(`[CityService] Total de edificios únicos: ${uniqueBuildings.length}`);
     return uniqueBuildings;
   }
-  
+
   getAvailableBuildings(city: City): Building[] {
     // Obtener edificios de todas las eras
     const allEraBuildings = this.getAllEraBuildings();
-    
+
     // Obtener tecnologías descubiertas
     const discoveredTechs = this.technologyService.discoveredTechnologies || [];
-    
+
     // Crear un mapa de los edificios desbloqueados por tecnologías
     const techUnlocks = new Map<string, string[]>();
     discoveredTechs.forEach(tech => {
@@ -382,18 +380,15 @@ export class CityService {
         techUnlocks.set(tech.id, tech.unlocksBuildings);
       }
     });
-    
+
     // Lista de IDs de tecnologías descubiertas
     const discoveredTechIds = discoveredTechs.map(tech => tech.id);
-    
-    // Lista de IDs de edificios ya construidos o en construcción
-    const existingBuildingIds = new Set(city.buildings.map(b => b.id));
-    
+
     // Lista de IDs de edificios en cola de construcción
     const queuedBuildingIds = new Set(
       city.buildingProductionQueue?.map(bp => bp.buildingId) || []
     );
-    
+
     // Filtrar edificios que ya están construidos, en cola, o no cumplen con los requisitos
     return allEraBuildings.filter((building: Building) => {
       // Verificar si ya existe este edificio en la ciudad y no se puede mejorar más
@@ -411,7 +406,7 @@ export class CityService {
       if (queuedBuildingIds.has(building.id)) {
         return false;
       }
-      
+
       // Verificar si el edificio tiene un requisito tecnológico específico
       if (building.prerequisites?.technology) {
         if (!discoveredTechIds.includes(building.prerequisites.technology)) {
@@ -430,10 +425,10 @@ export class CityService {
           return false;
         }
       }
-      
+
       // Verificar si este edificio está desbloqueado por alguna tecnología descubierta
       let isUnlockedByTech = false;
-      
+
       // Buscar entre las tecnologías descubiertas si alguna desbloquea este edificio
       for (const [techId, unlockedBuildings] of techUnlocks.entries()) {
         if (unlockedBuildings?.includes(building.id)) {
@@ -442,13 +437,13 @@ export class CityService {
           break;
         }
       }
-      
+
       // Si el edificio tiene un prerrequisito de tecnología específico y esa tecnología está descubierta
       if (!isUnlockedByTech && building.prerequisites?.technology && discoveredTechIds.includes(building.prerequisites.technology)) {
         console.log(`Edificio ${building.name} desbloqueado por tecnología prerrequisito: ${building.prerequisites.technology}`);
         isUnlockedByTech = true;
       }
-      
+
       // IMPORTANTE: Todos los edificios, incluyendo los de la Era Antigua, deben ser desbloqueados por tecnologías
       if (!isUnlockedByTech) {
         console.log(`Edificio ${building.name} (${building.id}) no está desbloqueado por ninguna tecnología descubierta`);

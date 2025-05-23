@@ -1,84 +1,148 @@
-//
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, BehaviorSubject } from 'rxjs';
+
+interface LoginResponse {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+}
+
+interface RegisterResponse {
+  id: string;
+  message: string;
+}
+
+export interface UserProfile {
+  _id: string;
+  username: string;
+  email: string;
+  created_at: string;
+  last_login: string | null;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
+  private readonly apiUrl = '/api/auth';
+  private readonly currentUserSubject = new BehaviorSubject<UserProfile | null>(null);
+
+  // Observable para que los componentes puedan suscribirse a cambios en el usuario actual
+  public currentUser$ = this.currentUserSubject.asObservable();
+
+  constructor(private readonly router: Router, private readonly http: HttpClient) {
+    // Intenta cargar el perfil del usuario si hay un token almacenado
+    if (this.getToken()) {
+      this.loadUserProfile().catch(err => {
+        console.error('Error loading user profile:', err);
+        this.logout();
+      });
+    }
+  }
+
   /**
-   * Register a new user by sending a POST request to /api/auth/register with username, email, and password as URL parameters.
-   * Returns true if registration is successful, otherwise throws an error.
+   * Registra un nuevo usuario
+   * @returns Promise resuelto cuando el registro es exitoso
    */
-  async register(username: string, email: string, password: string): Promise<boolean> {
+  async register(username: string, email: string, password: string): Promise<RegisterResponse> {
     try {
-      // Build URL with query parameters
-      const params = new URLSearchParams({ username, email, password });
-      await firstValueFrom(
-        this.http.post(`${this.apiUrl}/register?${params.toString()}`, {})
+      // Podemos enviar los datos como parámetros de consulta o como un JSON
+      const response = await firstValueFrom(
+        this.http.post<RegisterResponse>(`${this.apiUrl}/register`, {
+          username,
+          email,
+          password
+        })
       );
-      return true;
+      return response;
     } catch (err: any) {
       throw err;
     }
   }
-  private isAuthenticated = false;
-  private token: string | null = null;
-  private readonly apiUrl = '/api/auth';
 
-  constructor(private readonly router: Router, private readonly http: HttpClient) {}
-
+  /**
+   * Inicia sesión con username y password
+   * @returns Promise resuelto con true cuando el login es exitoso
+   */
   async login(username: string, password: string): Promise<boolean> {
     try {
-      const res: any = await firstValueFrom(
-        this.http.post(`${this.apiUrl}/login`, { username, password })
+      // El endpoint espera un formulario URL-encoded, no un FormData
+      const formData = new URLSearchParams();
+      formData.append('username', username);
+      formData.append('password', password);
+
+      const response = await firstValueFrom(
+        this.http.post<LoginResponse>(`${this.apiUrl}/token`, formData.toString(), {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        })
       );
-      this.isAuthenticated = true;
-      this.token = res.access_token;
-      // Guardar ambos tokens
-      if (this.token) {
-        localStorage.setItem('access_token', this.token);
-      }
-      if (res.refresh_token) {
-        localStorage.setItem('refresh_token', res.refresh_token);
-      }
+
+      // Guardar el token
+      localStorage.setItem('access_token', response.access_token);
+
+      // Cargar el perfil del usuario
+      await this.loadUserProfile();
+
       return true;
     } catch (err: any) {
-      this.isAuthenticated = false;
-      this.token = null;
       localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
       throw err;
     }
   }
 
-  async logout(): Promise<void> {
-    const refreshToken = localStorage.getItem('refresh_token');
-    const accessToken = localStorage.getItem('access_token');
-    try {
-      if (refreshToken && accessToken) {
-        await firstValueFrom(
-          this.http.post(
-            `${this.apiUrl}/logout`,
-            { refresh_token: refreshToken },
-            { headers: { Authorization: `Bearer ${accessToken}` } }
-          )
-        );
-      }
-    } catch (err) {
-      console.error('Logout error:', err);
-    } finally {
-      this.isAuthenticated = false;
-      this.token = null;
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      this.router.navigate(['/auth/login']);
-    }
+  /**
+   * Cierra la sesión del usuario
+   */
+  logout(): void {
+    localStorage.removeItem('access_token');
+    this.currentUserSubject.next(null);
+    this.router.navigate(['/auth/login']);
   }
 
+  /**
+   * Comprueba si el usuario está autenticado
+   */
   isLoggedIn(): boolean {
-    return !!this.token || !!localStorage.getItem('access_token');
+    return !!this.getToken();
+  }
+
+  /**
+   * Obtiene el token de acceso almacenado
+   */
+  getToken(): string | null {
+    return localStorage.getItem('access_token');
+  }
+
+  /**
+   * Carga el perfil del usuario actual
+   */
+  async loadUserProfile(): Promise<UserProfile> {
+    const response = await firstValueFrom(
+      this.http.get<UserProfile>(`${this.apiUrl}/me`)
+    );
+    this.currentUserSubject.next(response);
+    return response;
+  }
+
+  /**
+   * Obtiene el perfil del usuario actual
+   */
+  getCurrentUser(): UserProfile | null {
+    return this.currentUserSubject.value;
+  }
+
+  /**
+   * Actualiza el perfil del usuario
+   */
+  async updateProfile(userData: Partial<UserProfile>): Promise<UserProfile> {
+    const response = await firstValueFrom(
+      this.http.put<UserProfile>(`${this.apiUrl}/me`, userData)
+    );
+    this.currentUserSubject.next(response);
+    return response;
   }
 }
